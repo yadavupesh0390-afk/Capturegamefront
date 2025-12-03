@@ -2,6 +2,7 @@
   "rewrites": [
     { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
     { "source": "/Refund-policy", "destination": "/Refund-policy.html" },
+    { "source": "/contact-us", "destination": "/contact-us.html" },
     { "source": "/Terms-and-conditions", "destination": "/Terms-and-conditions.html" }
   ]
 }
