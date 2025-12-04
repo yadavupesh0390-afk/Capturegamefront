@@ -234,7 +234,53 @@ button{
   <button onclick="withdraw()">Withdraw</button>
 
   <p id="status" class="info"></p>
+   <!-- REWARD HISTORY SECTION -->
+<div id="rewardHistoryBox" style="margin-top:20px;">
+  <h3 style="margin-bottom:8px;">Live Reward History</h3>
 
+  <div class="history-panel" style="
+      padding:12px;
+      background:rgba(255,255,255,0.03);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.05);
+  ">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:13px;color:#93a3b5">History</div>
+        <div style="font-size:12px;color:#93a3b5">Showing latest</div>
+      </div>
+
+      <!-- live short list -->
+      <div id="liveList" class="live-list" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;max-height:120px;overflow:hidden;">
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button id="moreBtn" class="btn ghost" style="
+            flex:1;padding:10px 12px;border-radius:10px;
+            background:transparent;border:1px solid rgba(255,255,255,0.05);
+            color:#dbe9ff;font-weight:700;cursor:pointer;
+        ">More</button>
+
+        <button id="fakeRefresh" class="btn primary" style="
+            flex:1;padding:10px 12px;border-radius:10px;
+            background:#f59e0b;color:#061018;
+            font-weight:700;cursor:pointer;
+        ">Refresh</button>
+      </div>
+
+      <div class="full-panel" id="fullPanel" style="
+          margin-top:14px;max-height:0;overflow:hidden;
+          transition:max-height .45s ease, opacity .35s ease;
+          opacity:0;border-radius:12px;padding:0;
+      ">
+        <div style="font-size:12px;color:#93a3b5;margin-top:8px;">Showing ~50 recent winners (scroll for more)</div>
+
+        <div id="fullList" style="
+            display:flex;flex-direction:column;gap:8px;
+            max-height:360px;overflow:auto;margin-top:8px;padding-right:6px;
+        "></div>
+      </div>
+  </div>
+</div>
   <div class="rewardBox">
     <div class="rewardTitle">Play With Just ₹1</div>
     <div class="rewardTag">Rewards depend on your captcha typing speed & accuracy</div>
@@ -247,6 +293,7 @@ button{
 </div>
 
 </div>
+
 
 
 <!-- CAPTCHA POPUP -->
@@ -478,7 +525,108 @@ async function withdraw(){
   alert(data.msg);
   if(data.success) loadWallet();
 }
+    
+/* ===========================
+   REWARD HISTORY SCRIPT
+   =========================== */
+
+const SAMPLE_NAMES = [
+  "Aman Kumar","Riya Sharma","Vikram Singh","Sneha Patel","Rahul Yadav",
+  "Pooja Gupta","Ankit Verma","Neha Rani","Suresh Tiwari","Divya Joshi",
+  "Aditya Mehra","Karan Chauhan","Meera Bhatia","Rohan Malik","Priya Nair",
+  "Sakshi Rao","Vikas Chauhan","Tanya Jain","Nitin Agarwal","Kavita Desai",
+  "Manish Kapoor","Sheetal Sinha","Ishaan Khanna","Alka Mishra","Rakesh S.",
+  "Geeta Sharma","Yogesh Dubey","Anu Rao","Suman Khurana","Arjun Patel"
+];
+
+function getRandomName(){ return SAMPLE_NAMES[Math.floor(Math.random()*SAMPLE_NAMES.length)]; }
+
+function getRandomReward(){
+  const r=Math.random();
+  if(r<0.45) return `₹${(0.30+Math.random()*0.10).toFixed(2)} (Basic)`;
+  if(r<0.82) return `₹${Math.floor(1+Math.random()*10)} (Skill)`;
+  if(r<0.97) return `₹${Math.floor(100+Math.random()*900)} (Pro)`;
+  let arr=[10000,25000,50000,75000,100000];
+  return `₹${arr[Math.floor(Math.random()*arr.length)]} (Premium)`;
+}
+
+/* entry object */
+function makeEntry(){
+  return {
+    name:getRandomName(),
+    reward:getRandomReward(),
+    id:Date.now()+""+Math.floor(Math.random()*1000)
+  };
+}
+
+let pool=[];
+
+/* generate 50 random */
+function generatePool(){
+  pool=[];
+  for(let i=0;i<50;i++){ pool.push(makeEntry()); }
+}
+
+/* DOM */
+const liveList=document.getElementById("liveList");
+const fullList=document.getElementById("fullList");
+const fullPanel=document.getElementById("fullPanel");
+const moreBtn=document.getElementById("moreBtn");
+const refreshBtn=document.getElementById("fakeRefresh");
+
+function renderLive(){
+  liveList.innerHTML="";
+  pool.slice(0,3).forEach(e=>{
+    let div=document.createElement("div");
+    div.className="live-item";
+    div.style="display:flex;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,0.05);border-radius:10px;";
+    div.innerHTML=`<div>${e.name}</div><div style="color:#f59e0b;font-weight:700">${e.reward}</div>`;
+    liveList.appendChild(div);
+  });
+}
+
+function renderFull(){
+  fullList.innerHTML="";
+  pool.forEach(e=>{
+    let d=document.createElement("div");
+    d.className="live-item";
+    d.style="display:flex;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,0.05);border-radius:10px;";
+    d.innerHTML=`<div>${e.name}</div><div style="color:#f59e0b;font-weight:700">${e.reward}</div>`;
+    fullList.appendChild(d);
+  });
+}
+
+moreBtn.onclick=()=>{
+  if(fullPanel.style.maxHeight==="0px"){
+    fullPanel.classList.add("open");
+    fullPanel.style.maxHeight="420px";
+    fullPanel.style.opacity="1";
+  }else{
+    fullPanel.classList.remove("open");
+    fullPanel.style.maxHeight="0px";
+    fullPanel.style.opacity="0";
+  }
+};
+
+refreshBtn.onclick=()=>{
+  generatePool();
+  renderLive();
+  renderFull();
+};
+
+generatePool();
+renderLive();
+renderFull();
+
+/* Auto rotate every 2 sec */
+setInterval(()=>{
+  pool.unshift(makeEntry());
+  pool.pop();
+  renderLive();
+  renderFull();
+},1800);    
+    
 </script>
 
 </body>
-      </html>
+</html>
