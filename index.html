@@ -10,7 +10,7 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
-body{min-height:100vh;background:radial-gradient(circle at top,#000000,#0a0a0a,#111);display:flex;justify-content:center;align-items:flex-start;padding:50px 0;overflow-x:hidden;color:#fff;}
+body{min-height:100vh;background: radial-gradient(circle at top,#000,#0a0a0a,#111);display:flex;justify-content:center;align-items:flex-start;padding:50px 0;overflow-x:hidden;color:#fff;}
 body::before{content:'';position:fixed;top:-100px;left:-100px;width:300px;height:300px;background:#00eaff22;border-radius:50%;filter:blur(120px);animation:move1 12s infinite linear;}
 body::after{content:'';position:fixed;bottom:-100px;right:-100px;width:350px;height:350px;background:#ff00ff22;border-radius:50%;filter:blur(150px);animation:move2 15s infinite linear;}
 @keyframes move1{0%{transform:translate(0,0);}50%{transform:translate(80px,120px);}100%{transform:translate(0,0);}}
@@ -38,180 +38,178 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
 <body>
 
 <div class="container">
-<h1>सबका साथी</h1>
+    <h1>सबका साथी</h1>
+    <div class="nav-buttons">
+        <button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>
+        <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>
+        <button onclick="showPanel('delivery')"><i class="fas fa-motorcycle" style="color:#00ff88;"></i> Delivery Boy</button>
+        <button onclick="showPanel('admin')"><i class="fas fa-user-shield" style="color:#ff77ff;"></i> Admin</button>
+    </div>
 
-<div class="nav-buttons">
-<button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>
-<button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>
-<button onclick="showPanel('delivery')"><i class="fas fa-motorcycle" style="color:#00ff88;"></i> Delivery Boy</button>
-<button onclick="showPanel('admin')"><i class="fas fa-user-shield" style="color:#ff77ff;"></i> Admin</button>
-</div>
+    <!-- WHOLESALER -->
+    <div id="wholesaler" class="panel" style="display:none;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>
+            <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>
+        </div>
+        <form id="wholesaler-signup" class="active">
+            <input type="text" placeholder="Name">
+            <input type="number" placeholder="UPI Mobile Number">
+            <input type="text" placeholder="Shop Current Location">
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm Password">
+            <button type="button" class="submit">Create Account</button>
+        </form>
+        <form id="wholesaler-login">
+            <input type="number" placeholder="Mobile Number">
+            <input type="password" placeholder="Password">
+            <button type="button" class="submit">Login</button>
+        </form>
+    </div>
 
-<!-- WHOLSALER PANEL -->
-<div id="wholesaler" class="panel" style="display:none;">
-<div class="tabs">
-<div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>
-<div class="tab" onclick="switchTab('wholesaler','login')">Login</div>
-</div>
-<form id="wholesaler-signup" class="active">
-<input type="text" placeholder="Name">
-<input type="text" placeholder="Mobile Number">
-<input type="text" placeholder="Shop Current Location">
-<input type="password" placeholder="Password">
-<input type="password" placeholder="Confirm Password">
-<button type="button" class="submit">Create Account</button>
-</form>
-<form id="wholesaler-login">
-<input type="text" placeholder="Mobile Number">
-<input type="password" placeholder="Password">
-<button type="button" class="submit">Login</button>
-</form>
-</div>
+    <!-- RETAILER -->
+    <div id="retailer" class="panel" style="display:none;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>
+            <div class="tab" onclick="switchTab('retailer','login')">Login</div>
+        </div>
+        <form id="retailer-signup" class="active">
+            <input type="text" placeholder="Name">
+            <input type="text" placeholder="Mobile Number">
+            <input type="text" placeholder="Shop Current Location">
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm Password">
+            <button type="button" class="submit">Create Account</button>
+        </form>
+        <form id="retailer-login">
+            <input type="text" placeholder="Mobile Number">
+            <input type="password" placeholder="Password">
+            <button type="button" class="submit">Login</button>
+        </form>
+    </div>
 
-<!-- RETAILER PANEL -->
-<div id="retailer" class="panel" style="display:none;">
-<div class="tabs">
-<div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>
-<div class="tab" onclick="switchTab('retailer','login')">Login</div>
-</div>
-<form id="retailer-signup" class="active">
-<input type="text" placeholder="Name">
-<input type="text" placeholder="Mobile Number">
-<input type="text" placeholder="Shop Current Location">
-<input type="password" placeholder="Password">
-<input type="password" placeholder="Confirm Password">
-<button type="button" class="submit">Create Account</button>
-</form>
-<form id="retailer-login">
-<input type="text" placeholder="Mobile Number">
-<input type="password" placeholder="Password">
-<button type="button" class="submit">Login</button>
-</form>
-</div>
+    <!-- DELIVERY BOY -->
+    <div id="delivery" class="panel" style="display:none;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>
+            <div class="tab" onclick="switchTab('delivery','login')">Login</div>
+        </div>
+        <form id="delivery-signup" class="active">
+            <input type="text" placeholder="Name">
+            <input type="text" placeholder="Mobile Number">
+            <input type="text" placeholder="Alternate Mobile (optional)">
+            <input type="text" placeholder="Current Live Location">
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm Password">
+            <select>
+                <option>2-Wheeler</option>
+                <option>3-Wheeler</option>
+                <option>4-Wheeler</option>
+            </select>
+            <input type="text" placeholder="Vehicle Model">
+            <input type="text" placeholder="Vehicle Number">
+            <button type="button" class="submit">Create Account</button>
+        </form>
+        <form id="delivery-login">
+            <input type="text" placeholder="Mobile Number">
+            <input type="password" placeholder="Password">
+            <button type="button" class="submit">Login</button>
+        </form>
+    </div>
 
-<!-- DELIVERY PANEL -->
-<div id="delivery" class="panel" style="display:none;">
-<div class="tabs">
-<div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>
-<div class="tab" onclick="switchTab('delivery','login')">Login</div>
-</div>
-<form id="delivery-signup" class="active">
-<input type="text" placeholder="Name">
-<input type="text" placeholder="Mobile Number">
-<input type="text" placeholder="Alternate Mobile (optional)">
-<input type="text" placeholder="Current Live Location">
-<input type="password" placeholder="Password">
-<input type="password" placeholder="Confirm Password">
-<select>
-<option>2-Wheeler</option>
-<option>3-Wheeler</option>
-<option>4-Wheeler</option>
-</select>
-<input type="text" placeholder="Vehicle Model">
-<input type="text" placeholder="Vehicle Number">
-<button type="button" class="submit">Create Account</button>
-</form>
-<form id="delivery-login">
-<input type="text" placeholder="Mobile Number">
-<input type="password" placeholder="Password">
-<button type="button" class="submit">Login</button>
-</form>
-</div>
-
-<!-- ADMIN PANEL -->
-<div id="admin" class="panel" style="display:none;">
-<div class="tabs">
-<div class="tab active" onclick="switchTab('admin','signup')">Sign-Up</div>
-<div class="tab" onclick="switchTab('admin','login')">Login</div>
-</div>
-<form id="admin-signup" class="active">
-<input type="text" placeholder="Full Name">
-<input type="text" placeholder="Official Mobile Number">
-<input type="text" placeholder="Login Mobile">
-<input type="password" placeholder="Password">
-<input type="password" placeholder="Confirm Password">
-<button type="button" class="submit">Create Account</button>
-</form>
-<form id="admin-login">
-<input type="text" placeholder="Mobile Number">
-<input type="password" placeholder="Password">
-<button type="button" class="submit">Login</button>
-</form>
-</div>
-
+    <!-- ADMIN -->
+    <div id="admin" class="panel" style="display:none;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('admin','signup')">Sign-Up</div>
+            <div class="tab" onclick="switchTab('admin','login')">Login</div>
+        </div>
+        <form id="admin-signup" class="active">
+            <input type="text" placeholder="Full Name">
+            <input type="text" placeholder="Official Mobile Number">
+            <input type="text" placeholder="Login Mobile">
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm Password">
+            <button type="button" class="submit">Create Account</button>
+        </form>
+        <form id="admin-login">
+            <input type="text" placeholder="Mobile Number">
+            <input type="password" placeholder="Password">
+            <button type="button" class="submit">Login</button>
+        </form>
+    </div>
 </div>
 
 <script>
-window.onload = ()=> showPanel('wholesaler');
-function showPanel(panelId){
-document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-document.getElementById(panelId).style.display='block';
-switchTab(panelId,'signup');
-}
-function switchTab(panel, tab){
-document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
-document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
-let tabs=document.querySelectorAll('#'+panel+' .tab');
-tabs.forEach(t=>t.classList.remove('active'));
-tabs[tab==='signup'?0:1].classList.add('active');
-}
-
 const SERVER_URL = "https://shopbacked-vmhs.onrender.com";
 
+window.onload = ()=> showPanel('wholesaler');
+
+function showPanel(panelId){
+  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+  document.getElementById(panelId).style.display='block';
+  switchTab(panelId,'signup');
+}
+
+function switchTab(panel, tab){
+  document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
+  document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
+  document.querySelectorAll('#'+panel+' .tab').forEach((t,i)=>t.classList.toggle('active', i === (tab==='signup'?0:1)));
+}
+
 async function signupUser(type,data){
-try{
-const res = await fetch(`${SERVER_URL}/api/signup`,{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({...data,role:type})
-});
-const json = await res.json();
-if(json.success){
-alert(type+" signup success!");
-localStorage.setItem("token",json.token);
-localStorage.setItem("userId",json.userId);
-localStorage.setItem("role",type);
-window.location.href = type+".html";
-} else { alert(json.message); }
-}catch(err){ alert("Server error: "+err.message); }
+  try{
+    const res = await fetch(`${SERVER_URL}/api/signup`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...data,role:type})
+    });
+    const json = await res.json();
+    if(json.success){
+      localStorage.setItem("token",json.token);
+      localStorage.setItem("userId",json.userId);
+      localStorage.setItem("role",type);
+      alert(type+" signup success");
+      window.location.href = type+".html";
+    } else { alert(json.message); }
+  }catch(err){ alert("Server error: "+err.message); }
 }
 
 async function loginUser(type,mobile,password){
-try{
-const res = await fetch(`${SERVER_URL}/api/login`,{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({mobile,password,role:type})
-});
-const json = await res.json();
-if(json.success){
-alert(type+" login success!");
-localStorage.setItem("token",json.token);
-localStorage.setItem("userId",json.userId);
-localStorage.setItem("role",type);
-window.location.href = type+".html";
-}else{ alert(json.message);}
-}catch(err){ alert("Server error: "+err.message);}
+  try{
+    const res = await fetch(`${SERVER_URL}/api/login`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({mobile,password,role:type})
+    });
+    const json = await res.json();
+    if(json.success){
+      localStorage.setItem("token",json.token);
+      localStorage.setItem("userId",json.userId);
+      localStorage.setItem("role",type);
+      window.location.href = type+".html";
+    } else { alert(json.message); }
+  }catch(err){ alert("Server error: "+err.message); }
 }
 
 ['wholesaler','retailer','delivery','admin'].forEach(type=>{
-document.querySelector(`#${type}-signup .submit`).onclick = ()=>{
-let data = {};
-document.querySelectorAll(`#${type}-signup input, #${type}-signup select`).forEach(i=>{
-if(i.type==='file') return;
-let key = i.placeholder ? i.placeholder.replace(/ /g,'_').toLowerCase() : "vehicle";
-data[key]=i.value;
-});
-if(data.password!==data.confirm_password){ alert('Password mismatch'); return; }
-signupUser(type,data);
-};
-document.querySelector(`#${type}-login .submit`).onclick = ()=>{
-let m = document.querySelector(`#${type}-login input`).value;
-let p = document.querySelectorAll(`#${type}-login input`)[1].value;
-loginUser(type,m,p);
-};
+  document.querySelector(`#${type}-signup .submit`).onclick=()=>{
+    let data={};
+    document.querySelectorAll(`#${type}-signup input, #${type}-signup select`).forEach(i=>{
+      if(i.type==='file') return;
+      let key=i.placeholder?i.placeholder.replace(/ /g,'_').toLowerCase():"vehicle";
+      data[key]=i.value;
+    });
+    if(data.password!==data.confirm_password){ alert('Password mismatch'); return; }
+    signupUser(type,data);
+  };
+  
+  document.querySelector(`#${type}-login .submit`).onclick=()=>{
+    let m=document.querySelector(`#${type}-login input`).value;
+    let p=document.querySelectorAll(`#${type}-login input`)[1].value;
+    if(!m || !p){ alert('Fill all fields'); return; }
+    loginUser(type,m,p);
+  };
 });
 </script>
-
 </body>
 </html>
