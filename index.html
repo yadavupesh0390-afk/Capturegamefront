@@ -1,739 +1,262 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="hi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>₹1 Captcha Game</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>सबका साथी • Black Theme Ultra Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-/* ------------------- GLOBAL ------------------- */
-body {
-    background: #0b1220;
-    font-family: "Poppins", sans-serif;
-    color: #fff;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 12px;
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+body{
+    min-height:100vh;
+    background: radial-gradient(circle at top,#000000,#0a0a0a,#111);
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:50px 0;
+    overflow-x:hidden;
+    color:#fff;
 }
-
-/* ------------------- CARD ------------------- */
-.card {
-    width: 100%;
-    max-width: 350px;
-    background: #0f1724;
-    padding: 20px;
-    border-radius: 14px;
-    box-shadow: 0 0 20px #000;
-    margin-bottom: 20px;
+body::before{
+    content:'';
+    position:fixed;
+    top:-100px; left:-100px; width:300px; height:300px;
+    background:#00eaff22; border-radius:50%; filter:blur(120px);
+    animation:move1 12s infinite linear;
 }
-
-/* ------------------- INPUT ------------------- */
-input {
-    width: 95%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: 1px solid #2b3948;
-    background: #071126;
-    font-size: 15px;
-    color: #fff;
+body::after{
+    content:'';
+    position:fixed;
+    bottom:-100px; right:-100px; width:350px; height:350px;
+    background:#ff00ff22; border-radius:50%; filter:blur(150px);
+    animation:move2 15s infinite linear;
 }
+@keyframes move1{0%{transform:translate(0,0);}50%{transform:translate(80px,120px);}100%{transform:translate(0,0);}}
+@keyframes move2{0%{transform:translate(0,0);}50%{transform:translate(-100px,-160px);}100%{transform:translate(0,0);}}
 
-/* ------------------- BUTTON ------------------- */
-button {
-    width: 95%;
-    padding: 12px;
-    margin-top: 8px;
-    border-radius: 6px;
-    border: none;
-    background: #f59e0b;
-    color: #000;
-    font-weight: 700;
-    font-size: 16px;
-    cursor: pointer;
+.container{
+    width:90%; max-width:500px; background:rgba(0,0,0,0.55);
+    border:1px solid #ffffff22; padding:35px; border-radius:20px;
+    box-shadow:0 0 35px #00eaff33; backdrop-filter:blur(18px); text-align:center; z-index:10;
 }
-
-/* INFO TEXT */
-.info {
-    font-size: 13px;
-    color: #94a3b8;
-    margin-top: 8px;
-    text-align: center;
+h1{font-size:34px; font-weight:800; margin-bottom:25px; text-shadow:0 0 18px #00eaff;}
+.nav-buttons{
+    display:flex; flex-wrap:wrap; justify-content:center; margin-bottom:25px; gap:12px;
 }
-
-/* ------------------- REWARD BOX ------------------- */
-.rewardBox {
-    width: 95%;
-    background: #111827;
-    padding: 14px;
-    border-radius: 13px;
-    border: 1px solid rgba(255, 221, 0, 0.4);
-    box-shadow: 0px 0px 20px rgba(255, 199, 0, 0.15);
-    text-align: center;
-    animation: fadeIn 0.8s ease-in-out;
-    margin-top: 18px;
+.nav-buttons button{
+    padding:14px 20px; border:none; border-radius:14px; cursor:pointer; font-weight:700; color:#fff;
+    background:#000000aa; border:1px solid #ffffff22; transition:0.4s; display:flex; align-items:center; gap:8px;
+    font-size:16px; box-shadow:0 0 8px #00000088;
 }
+.nav-buttons button:hover{background:#00eaff33; transform:scale(1.06); box-shadow:0 0 20px #00eaff55;}
+.nav-buttons i{font-size:20px;}
 
-.rewardTitle {
-    font-size: 17px;
-    background: linear-gradient(90deg, #ffd700, #ffb300);
-    -webkit-background-clip: text;
-    color: transparent;
-    font-weight: 700;
-    margin-bottom: 6px;
+.tabs{display:flex;margin-bottom:18px;border-radius:12px;overflow:hidden;background:#00000055;border:1px solid #333;}
+.tab{width:50%;padding:12px;cursor:pointer;color:#fff;font-weight:600;transition:0.3s;}
+.tab.active{background:#00eaff33;}
+
+form{display:none; max-height:600px; overflow-y:auto; padding-right:5px;}
+form.active{display:block;}
+
+input, select{
+    width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;
+    outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;
 }
+input::placeholder{color:#aaa;}
+input:focus{border:1px solid #00eaff; box-shadow:0 0 12px #00eaff66;}
 
-.rewardTag {
-    font-size: 12px;
-    color: #dcdcdc;
-    margin-bottom: 10px;
-    font-style: italic;
+button.submit{
+    width:100%;padding:14px;border:none;border-radius:14px;margin-top:18px;
+    background:#00eaffaa;color:#000;font-size:19px;font-weight:700;cursor:pointer;
+    transition:0.3s; box-shadow:0 0 18px #00eaff88;
 }
-
-.rewardItem {
-    font-size: 12px;
-    margin: 6px 0;
-    opacity: 0;
-    animation: itemPop 0.5s ease forwards;
-}
-
-.rewardItem:nth-child(1) { animation-delay: 0.6s; }
-.rewardItem:nth-child(2) { animation-delay: 0.8s; }
-.rewardItem:nth-child(3) { animation-delay: 1s; }
-.rewardItem:nth-child(4) { animation-delay: 1.2s; }
-
-.megaReward {
-    font-size: 15px;
-    color: #ffd700;
-    font-weight: 700;
-    margin-top: 10px;
-    opacity: 0;
-    text-shadow: 0px 0px 8px #ffce00;
-    animation: fadeInMega 1s ease forwards 1.8s;
-}
-
-/* ------------------- CAPTCHA POPUP ------------------- */
-#captchaBox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 15px;
-}
-
-#captchaCard {
-    width: 100%;
-    max-width: 320px;
-    background: #141e30;
-    padding: 20px;
-    border-radius: 14px;
-    text-align: center;
-    box-shadow: 0 0 20px #000;
-}
-
-#captchaText {
-    font-size: 28px;
-    letter-spacing: 4px;
-    background: #f59e0b;
-    color: #000;
-    padding: 10px 0;
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-/* ------------------- SCRATCH CARD ------------------- */
-#couponWrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.75);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 15px;
-}
-
-#scratchCanvas {
-    width: 100%;
-    max-width: 300px;
-    height: 150px;
-    border-radius: 14px;
-    box-shadow: 0 0 20px #000;
-    touch-action: none;
-}
-
-#couponMessage {
-    margin-top: 15px;
-    padding: 12px;
-    background: #0f1724;
-    color: #fff;
-    border-radius: 10px;
-    font-size: 17px;
-    display: none;
-}
-
-/* ------------------- ANIMATIONS ------------------- */
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.97); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes itemPop {
-    from { opacity: 0; transform: translateX(-10px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes fadeInMega {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+button.submit:hover{transform:scale(1.03); background:#00eaff; box-shadow:0 0 25px #00eaff;}
+form::-webkit-scrollbar{width:6px;}
+form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
 </style>
 </head>
-
 <body>
 
-<div class="card">
+<div class="container">
+    <h1>सबका साथी</h1>
 
-    <!-- ------------------- SIGNUP ------------------- -->
-    <div id="signupBox" style="display:none;">
-        <h3>Create Account</h3>
-
-        <input id="s_name" placeholder="Full Name">
-        <input id="s_mobile" placeholder="Mobile Number">
-        <input id="s_pass" type="password" placeholder="Password">
-
-        <button onclick="signup()">Sign Up</button>
-
-        <p class="info">
-            <a style="color:#f59e0b;cursor:pointer" onclick="showLogin()">Already have account? Login</a>
-        </p>
-
-        <!-- Reward Box -->
-        <div class="rewardBox">
-            <div class="rewardTitle">Play With Just ₹1</div>
-            <div class="rewardTag">Rewards depend on your captcha typing speed & accuracy</div>
-
-            <div class="rewardItem">🔸 ₹0.30 – ₹0.40 (Basic)</div>
-            <div class="rewardItem">🔸 ₹1 – ₹10 (Skill)</div>
-            <div class="rewardItem">🔸 ₹100 – ₹1,000 (Pro Level)</div>
-            <div class="rewardItem">🔸 ₹10,000 – ₹1,00,000 (Premium)</div>
-
-            <div class="megaReward">⭐ Mega Reward: ₹3,50,000 ⭐</div>
-        </div>
+    <div class="nav-buttons">
+        <button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>
+        <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>
+        <button onclick="showPanel('delivery')"><i class="fas fa-motorcycle" style="color:#00ff88;"></i> Delivery Boy</button>
+        <button onclick="showPanel('admin')"><i class="fas fa-user-shield" style="color:#ff77ff;"></i> Admin</button>
     </div>
 
-    <!-- ------------------- LOGIN ------------------- -->
-    <div id="loginBox">
-        <h3>Login</h3>
-
-        <input id="l_mobile" placeholder="Mobile Number">
-        <input id="l_pass" type="password" placeholder="Password">
-
-        <button onclick="login()">Login</button>
-
-        <p class="info">
-            <a style="color:#f59e0b;cursor:pointer" onclick="showSignup()">Create New Account</a>
-        </p>
-
-        <div class="rewardBox">
-            <div class="rewardTitle">Play With Just ₹1</div>
-            <div class="rewardTag">Rewards depend on your captcha typing speed & accuracy</div>
-
-            <div class="rewardItem">🔸 ₹0.30 – ₹0.40 (Basic)</div>
-            <div class="rewardItem">🔸 ₹1 – ₹10 (Skill)</div>
-            <div class="rewardItem">🔸 ₹100 – ₹1,000 (Pro Level)</div>
-            <div class="rewardItem">🔸 ₹10,000 – ₹1,00,000 (Premium)</div>
-
-            <div class="megaReward">⭐ Mega Reward: ₹3,50,000 ⭐</div>
+    <!-- WHOLESALER -->
+    <div id="wholesaler" class="panel" style="display:none;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>
+            <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>
         </div>
+        <form id="wholesaler-signup" class="active">
+            <input type="text" placeholder="Name">
+            <input type="number" placeholder="UPI Mobile Number">
+            <input type="text" placeholder="Shop Current Location">
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm Password">
+            <button type="button" class="submit">Create Account</button>
+        </form>
+        <form id="wholesaler-login">
+            <input type="number" placeholder="Mobile Number">
+            <input type="password" placeholder="Password">
+            <button type="button" class="submit">Login</button>
+        </form>
     </div>
 
-    <!-- ------------------- GAME ------------------- -->
-    <div id="gameBox" style="display:none;">
-        <h3>छोटा पैक बड़ा धमाका</h3>
-
-        <p>Wallet: ₹<span id="wallet">0.00</span></p>
-
-        <button id="payBtn">Pay ₹1</button>
-
-        <input id="upi" placeholder="पैसे निकालने के लिए UPI ID डाले">
-        <button onclick="withdraw()">Withdraw</button>
-
-        <p id="status" class="info"></p>
-
-        <!-- -------- Reward History -------- -->
-        <div id="rewardHistoryBox" style="margin-top:20px;">
-            <h3 style="margin-bottom:8px;">Live Reward History</h3>
-
-            <div class="history-panel" style="
-                padding:12px;
-                background:rgba(255,255,255,0.03);
-                border-radius:12px;
-                border:1px solid rgba(255,255,255,0.05);
-            ">
-
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                    <div style="font-size:13px;color:#93a3b5">History</div>
-                    <div style="font-size:12px;color:#93a3b5">Showing latest</div>
-                </div>
-
-                <div id="liveList" style="
-                    margin-top:10px;
-                    display:flex;
-                    flex-direction:column;
-                    gap:8px;
-                    max-height:120px;
-                    overflow:hidden;
-                "></div>
-
-                <div style="display:flex;gap:10px;margin-top:12px;">
-                    <button id="moreBtn" style="
-                        flex:1;padding:10px 12px;border-radius:10px;
-                        background:transparent;border:1px solid rgba(255,255,255,0.05);
-                        color:#dbe9ff;font-weight:700;cursor:pointer;
-                    ">More</button>
-
-                    <button id="fakeRefresh" style="
-                        flex:1;padding:10px 12px;border-radius:10px;
-                        background:#f59e0b;color:#061018;
-                        font-weight:700;cursor:pointer;
-                    ">Refresh</button>
-                </div>
-
-                <div id="fullPanel" style="
-                    margin-top:14px;
-                    max-height:0;
-                    overflow:hidden;
-                    transition:max-height .45s ease, opacity .35s ease;
-                    opacity:0;
-                    border-radius:12px;
-                    padding:0;
-                ">
-                    <div style="font-size:12px;color:#93a3b5;margin-top:8px;">
-                        Showing ~50 recent winners (scroll for more)
-                    </div>
-
-                    <div id="fullList" style="
-                        display:flex;
-                        flex-direction:column;
-                        gap:8px;
-                        max-height:360px;
-                        overflow:auto;
-                        margin-top:8px;
-                        padding-right:6px;
-                    "></div>
-                </div>
-            </div>
+    <!-- RETAILER -->
+    <div id="retailer" class="panel" style="display:none;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>
+            <div class="tab" onclick="switchTab('retailer','login')">Login</div>
         </div>
+        <form id="retailer-signup" class="active">
+            <input type="text" placeholder="Name">
+            <input type="text" placeholder="Mobile Number">
+            <input type="text" placeholder="Shop Current Location">
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm Password">
+            <button type="button" class="submit">Create Account</button>
+        </form>
+        <form id="retailer-login">
+            <input type="text" placeholder="Mobile Number">
+            <input type="password" placeholder="Password">
+            <button type="button" class="submit">Login</button>
+        </form>
+    </div>
 
-        <div class="rewardBox">
-            <div class="rewardTitle">Play With Just ₹1</div>
-            <div class="rewardTag">Rewards depend on your captcha typing speed & accuracy</div>
-
-            <div class="rewardItem">🔸 ₹0.30 – ₹0.40 (Basic)</div>
-            <div class="rewardItem">🔸 ₹1 – ₹10 (Skill)</div>
-            <div class="rewardItem">🔸 ₹100 – ₹1,000 (Pro Level)</div>
-            <div class="rewardItem">🔸 ₹10,000 – ₹1,00,000 (Premium)</div>
-
-            <div class="megaReward">⭐ Mega Reward: ₹3,50,000 ⭐</div>
+    <!-- DELIVERY BOY -->
+    <div id="delivery" class="panel" style="display:none;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>
+            <div class="tab" onclick="switchTab('delivery','login')">Login</div>
         </div>
+        <form id="delivery-signup" class="active">
+            <input type="text" placeholder="Name">
+            <input type="text" placeholder="Mobile Number">
+            <input type="text" placeholder="Alternate Mobile (optional)">
+            <input type="text" placeholder="Current Live Location">
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm Password">
+            <select>
+                <option>2-Wheeler</option>
+                <option>3-Wheeler</option>
+                <option>4-Wheeler</option>
+            </select>
+            <input type="text" placeholder="Vehicle Model">
+            <input type="text" placeholder="Vehicle Number">
+            <button type="button" class="submit">Create Account</button>
+        </form>
+        <form id="delivery-login">
+            <input type="text" placeholder="Mobile Number">
+            <input type="password" placeholder="Password">
+            <button type="button" class="submit">Login</button>
+        </form>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="admin" class="panel" style="display:none;">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('admin','signup')">Sign-Up</div>
+            <div class="tab" onclick="switchTab('admin','login')">Login</div>
+        </div>
+        <form id="admin-signup" class="active">
+            <input type="text" placeholder="Full Name">
+            <input type="text" placeholder="Official Mobile Number">
+            <input type="text" placeholder="Login Mobile">
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm Password">
+            <button type="button" class="submit">Create Account</button>
+        </form>
+        <form id="admin-login">
+            <input type="text" placeholder="Mobile Number">
+            <input type="password" placeholder="Password">
+            <button type="button" class="submit">Login</button>
+        </form>
     </div>
 
 </div>
-
-
-<!-- ------------------- CAPTCHA BOX ------------------- -->
-<div id="captchaBox">
-    <div id="captchaCard">
-        <h3>Enter Captcha</h3>
-        <div id="captchaText"></div>
-        <input id="captchaInput" placeholder="Type captcha here">
-        <button onclick="submitCaptcha()">Submit</button>
-    </div>
-</div>
-
-<!-- ------------------- SCRATCH CARD ------------------- -->
-<div id="couponWrapper">
-    <canvas id="scratchCanvas" width="300" height="150"></canvas>
-    <div id="couponMessage">You Won ₹<span id="couponAmount"></span></div>
-</div>
-
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-/* --------------------------------------------------------------------------
-    BACKEND BASE URL
--------------------------------------------------------------------------- */
-const BASE = "https://capture-game.onrender.com";
+window.onload = ()=> showPanel('wholesaler');
 
-let user = null;
-let orderData = null;
-let captchaCode = "";
-let paymentResponse = null;
-
-
-/* --------------------------------------------------------------------------
-    SHOW LOGIN / SIGNUP
--------------------------------------------------------------------------- */
-function showSignup() {
-    signupBox.style.display = "block";
-    loginBox.style.display = "none";
+function showPanel(panelId){
+  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+  document.getElementById(panelId).style.display='block';
+  switchTab(panelId,'signup');
 }
 
-function showLogin() {
-    signupBox.style.display = "none";
-    loginBox.style.display = "block";
+function switchTab(panel, tab){
+  document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
+  document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
+  let tabs=document.querySelectorAll('#'+panel+' .tab');
+  tabs.forEach(t=>t.classList.remove('active'));
+  tabs[tab==='signup'?0:1].classList.add('active');
 }
 
+// ----------- SERVER-CONNECTED LOGIC -------------
+const SERVER_URL = "https://shopbacked-vmhs.onrender.com";
 
-/* --------------------------------------------------------------------------
-    SIGNUP
--------------------------------------------------------------------------- */
-async function signup() {
-    const res = await fetch(BASE + "/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            name: s_name.value,
-            mobile: s_mobile.value,
-            password: s_pass.value
-        })
+async function signupUser(type,data){
+  try{
+    let res=await fetch(`${SERVER_URL}/api/signup`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...data,role:type})
     });
-
-    const data = await res.json();
-    alert(data.msg);
-
-    if (data.success) showLogin();
+    let json=await res.json();
+    if(json.success){
+      localStorage.setItem("token",json.token);
+      localStorage.setItem("userId",json.userId);
+      localStorage.setItem("role",type);
+      alert(type+" signup success");
+      window.location.href=type+".html";
+    }else{alert(json.message);}
+  }catch(err){alert("Server error: "+err.message);}
 }
 
-
-/* --------------------------------------------------------------------------
-    LOGIN
--------------------------------------------------------------------------- */
-async function login() {
-    const res = await fetch(BASE + "/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            mobile: l_mobile.value,
-            password: l_pass.value
-        })
+async function loginUser(type,mobile,password){
+  try{
+    let res=await fetch(`${SERVER_URL}/api/login`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({mobile,password,role:type})
     });
-
-    const data = await res.json();
-
-    if (!data.success) return alert(data.msg);
-
-    user = data.user;
-    localStorage.setItem("token", data.token);
-
-    loginBox.style.display = "none";
-    signupBox.style.display = "none";
-    gameBox.style.display = "block";
-
-    loadWallet();
+    let json=await res.json();
+    if(json.success){
+      localStorage.setItem("token",json.token);
+      localStorage.setItem("userId",json.userId);
+      localStorage.setItem("role",type);
+      window.location.href=type+".html";
+    }else{alert(json.message);}
+  }catch(err){alert("Server error: "+err.message);}
 }
 
-
-/* --------------------------------------------------------------------------
-    LOAD WALLET
--------------------------------------------------------------------------- */
-async function loadWallet() {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(BASE + "/get-user", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        }
+['wholesaler','retailer','delivery','admin'].forEach(type=>{
+  document.querySelector(`#${type}-signup .submit`).onclick=()=>{
+    let data={};
+    document.querySelectorAll(`#${type}-signup input, #${type}-signup select`).forEach(i=>{
+      if(i.type==='file') return;
+      let key=i.placeholder?i.placeholder.replace(/ /g,'_').toLowerCase():"vehicle";
+      data[key]=i.value;
     });
+    if(data.password!==data.confirm_password){ alert('Password mismatch'); return; }
+    signupUser(type,data);
+  };
 
-    const data = await res.json();
-    wallet.innerText = Number(data.wallet).toFixed(2);
-}
-
-
-/* --------------------------------------------------------------------------
-    PAYMENT ₹1
--------------------------------------------------------------------------- */
-payBtn.onclick = async () => {
-    const token = localStorage.getItem("token");
-    status.innerText = "Creating order...";
-
-    orderData = await fetch(BASE + "/pay1", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        }
-    }).then(r => r.json());
-
-    if (!orderData.success) return alert("Order creation failed");
-
-    const rz = new Razorpay({
-        key: orderData.key,
-        order_id: orderData.id,
-        handler: function (response) {
-            paymentResponse = response;
-            generateCaptcha();
-            captchaBox.style.display = "flex";
-        }
-    });
-
-    rz.open();
-};
-
-
-/* --------------------------------------------------------------------------
-    CAPTCHA GENERATE
--------------------------------------------------------------------------- */
-function generateCaptcha() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    captchaCode = "";
-
-    for (let i = 0; i < 5; i++) {
-        captchaCode += chars[Math.floor(Math.random() * chars.length)];
-    }
-
-    captchaText.innerText = captchaCode;
-}
-
-
-/* --------------------------------------------------------------------------
-    CAPTCHA SUBMIT
--------------------------------------------------------------------------- */
-function submitCaptcha() {
-    const userInput = captchaInput.value.trim().toUpperCase();
-    const correct = (userInput === captchaCode);
-
-    captchaBox.style.display = "none";
-
-    verifyPayment(correct);
-}
-
-
-/* --------------------------------------------------------------------------
-    VERIFY PAYMENT + CAPTCHA
--------------------------------------------------------------------------- */
-async function verifyPayment(captchaStatus) {
-    const token = localStorage.getItem("token");
-
-    const verify = await fetch(BASE + "/verify", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-            orderId: orderData.id,
-            paymentId: paymentResponse.razorpay_payment_id,
-            signature: paymentResponse.razorpay_signature,
-            captchaStatus
-        })
-    }).then(r => r.json());
-
-    if (!verify.success) {
-        status.innerText = "Payment verification failed!";
-        return;
-    }
-
-    startAutoScratch(verify.prize);
-}
-
-
-/* --------------------------------------------------------------------------
-    SCRATCH CARD
--------------------------------------------------------------------------- */
-function startAutoScratch(prize) {
-    const wrap = document.getElementById("couponWrapper");
-    const canvas = document.getElementById("scratchCanvas");
-    const msg = document.getElementById("couponMessage");
-    const prizeTag = document.getElementById("couponAmount");
-
-    wrap.style.display = "flex";
-    msg.style.display = "none";
-
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#C0C0C0";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.globalCompositeOperation = "destination-out";
-
-    let drawing = false;
-
-    function getPos(e) {
-        let r = canvas.getBoundingClientRect();
-        let t = e.touches ? e.touches[0] : e;
-        return { x: t.clientX - r.left, y: t.clientY - r.top };
-    }
-
-    function draw(p) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 26, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function checkReveal() {
-        drawing = false;
-        let img = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        let clear = 0;
-
-        for (let i = 3; i < img.length; i += 4) {
-            if (img[i] === 0) clear++;
-        }
-
-        let percent = (clear / (img.length / 4)) * 100;
-
-        if (percent > 55) {
-            prizeTag.innerText = prize;
-            msg.style.display = "block";
-            loadWallet();
-
-            setTimeout(() => wrap.style.display = "none", 1500);
-        }
-    }
-
-    canvas.onmousedown = e => { drawing = true; draw(getPos(e)); };
-    canvas.onmousemove = e => drawing && draw(getPos(e));
-    window.onmouseup = checkReveal;
-
-    canvas.addEventListener("touchstart", e => { drawing = true; draw(getPos(e)); });
-    canvas.addEventListener("touchmove", e => { e.preventDefault(); drawing && draw(getPos(e)); }, { passive: false });
-    canvas.addEventListener("touchend", checkReveal);
-}
-
-
-/* --------------------------------------------------------------------------
-    WITHDRAW
--------------------------------------------------------------------------- */
-async function withdraw() {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(BASE + "/withdraw", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({ upi: upi.value })
-    });
-
-    const data = await res.json();
-    alert(data.msg);
-
-    if (data.success) loadWallet();
-}
-
-
-/* --------------------------------------------------------------------------
-    REWARD HISTORY (AUTO LIVE)
--------------------------------------------------------------------------- */
-const SAMPLE_NAMES = [
-    "Aman Kumar", "Riya Sharma", "Vikram Singh", "Sneha Patel", "Rahul Yadav",
-    "Pooja Gupta", "Ankit Verma", "Neha Rani", "Suresh Tiwari", "Divya Joshi",
-    "Aditya Mehra", "Karan Chauhan", "Meera Bhatia", "Rohan Malik", "Priya Nair",
-    "Sakshi Rao", "Vikas Chauhan", "Tanya Jain", "Nitin Agarwal", "Kavita Desai",
-    "Manish Kapoor", "Sheetal Sinha", "Ishaan Khanna", "Alka Mishra", "Rakesh S.",
-    "Geeta Sharma", "Yogesh Dubey", "Anu Rao", "Suman Khurana", "Arjun Patel"
-];
-
-function getRandomName() {
-    return SAMPLE_NAMES[Math.floor(Math.random() * SAMPLE_NAMES.length)];
-}
-
-function getRandomReward() {
-    const r = Math.random();
-
-    if (r < 0.45) return `₹${(0.30 + Math.random() * 0.10).toFixed(2)} (Basic)`;
-    if (r < 0.82) return `₹${Math.floor(1 + Math.random() * 10)} (Skill)`;
-    if (r < 0.97) return `₹${Math.floor(100 + Math.random() * 900)} (Pro)`;
-
-    let arr = [10000, 25000, 50000, 75000, 100000];
-    return `₹${arr[Math.floor(Math.random() * arr.length)]} (Premium)`;
-}
-
-function makeEntry() {
-    return {
-        name: getRandomName(),
-        reward: getRandomReward(),
-        id: Date.now() + "" + Math.floor(Math.random() * 1000)
-    };
-}
-
-let pool = [];
-
-function generatePool() {
-    pool = [];
-    for (let i = 0; i < 50; i++) pool.push(makeEntry());
-}
-
-const liveList = document.getElementById("liveList");
-const fullList = document.getElementById("fullList");
-const fullPanel = document.getElementById("fullPanel");
-const moreBtn = document.getElementById("moreBtn");
-const refreshBtn = document.getElementById("fakeRefresh");
-
-function renderLive() {
-    liveList.innerHTML = "";
-    pool.slice(0, 3).forEach(e => {
-        let div = document.createElement("div");
-        div.style = "display:flex;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,0.05);border-radius:10px;";
-        div.innerHTML = `<div>${e.name}</div><div style="color:#f59e0b;font-weight:700">${e.reward}</div>`;
-        liveList.appendChild(div);
-    });
-}
-
-function renderFull() {
-    fullList.innerHTML = "";
-    pool.forEach(e => {
-        let d = document.createElement("div");
-        d.style = "display:flex;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,0.05);border-radius:10px;";
-        d.innerHTML = `<div>${e.name}</div><div style="color:#f59e0b;font-weight:700">${e.reward}</div>`;
-        fullList.appendChild(d);
-    });
-}
-
-moreBtn.onclick = () => {
-    if (fullPanel.style.maxHeight === "0px") {
-        fullPanel.style.maxHeight = "420px";
-        fullPanel.style.opacity = "1";
-    } else {
-        fullPanel.style.maxHeight = "0px";
-        fullPanel.style.opacity = "0";
-    }
-};
-
-refreshBtn.onclick = () => {
-    generatePool();
-    renderLive();
-    renderFull();
-};
-
-generatePool();
-renderLive();
-renderFull();
-
-/* Auto update every 1.8 sec */
-setInterval(() => {
-    pool.unshift(makeEntry());
-    pool.pop();
-    renderLive();
-    renderFull();
-}, 1800);
+  document.querySelector(`#${type}-login .submit`).onclick=()=>{
+    let m=document.querySelector(`#${type}-login input`).value;
+    let p=document.querySelectorAll(`#${type}-login input`)[1].value;
+    loginUser(type,m,p);
+  };
+});
 </script>
-
 </body>
 </html>
