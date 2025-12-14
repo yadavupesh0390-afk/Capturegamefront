@@ -35,6 +35,7 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
 </style>
 </head>
 <body>
+
 <div class="container">
 <h1>सबका साथी</h1>
 <div class="nav-buttons">
@@ -44,8 +45,8 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
 <button onclick="showPanel('admin')"><i class="fas fa-user-shield" style="color:#ff77ff;"></i> Admin</button>
 </div>
 
-<!-- Panels (same as original, skipped here for brevity; paste your form HTML) -->
-<!-- WHOLESALER / RETAILER / DELIVERY / ADMIN forms same as above -->
+<!-- --- PASTE ALL PANELS (wholesaler, retailer, delivery, admin) --- -->
+<!-- SAME AS YOUR ORIGINAL HTML ABOVE -->
 
 </div>
 
@@ -69,42 +70,43 @@ const SERVER_URL = "https://shopbacked-vmhs.onrender.com";
 
 async function signupUser(type,data){
   try{
-    let res=await fetch(`${SERVER_URL}/api/signup`,{
+    let res = await fetch(`${SERVER_URL}/api/signup`, {
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({...data,role:type})
+      body:JSON.stringify({...data, role:type})
     });
-    if(!res.ok){ throw new Error("HTTP error "+res.status); }
-    let json=await res.json();
+    if(!res.ok){ throw new Error("HTTP "+res.status); }
+    let json = await res.json();
     if(json.success){
       localStorage.setItem("token",json.token);
       localStorage.setItem("userId",json.userId);
       localStorage.setItem("role",type);
       alert(type+" signup success");
-      window.location.href=type+".html";
+      window.location.href = type+".html";
     } else { alert(json.message||"Signup failed"); }
   } catch(err){ alert("Server error: "+err.message); }
 }
 
 async function loginUser(type,mobile,password){
   try{
-    let res=await fetch(`${SERVER_URL}/api/login`,{
+    let res = await fetch(`${SERVER_URL}/api/login`, {
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify({mobile,password,role:type})
     });
-    if(!res.ok){ throw new Error("HTTP error "+res.status); }
-    let json=await res.json();
+    if(!res.ok){ throw new Error("HTTP "+res.status); }
+    let json = await res.json();
     if(json.success){
       localStorage.setItem("token",json.token);
       localStorage.setItem("userId",json.userId);
       localStorage.setItem("role",type);
       alert(type+" login success");
-      window.location.href=type+".html";
+      window.location.href = type+".html";
     } else { alert(json.message||"Login failed"); }
   } catch(err){ alert("Server error: "+err.message); }
 }
 
+// --- EVENT LISTENERS ---
 ['wholesaler','retailer','delivery','admin'].forEach(type=>{
   document.querySelector(`#${type}-signup .submit`).onclick=()=>{
     let data={};
@@ -116,9 +118,11 @@ async function loginUser(type,mobile,password){
     if(data.password!==data.confirm_password){ alert('Password mismatch'); return; }
     signupUser(type,data);
   };
+
   document.querySelector(`#${type}-login .submit`).onclick=()=>{
     let m=document.querySelector(`#${type}-login input`).value;
     let p=document.querySelectorAll(`#${type}-login input`)[1].value;
+    if(!m || !p){ alert("Enter credentials"); return; }
     loginUser(type,m,p);
   };
 });
