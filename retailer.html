@@ -41,7 +41,7 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
    <h3>Retailer Dashboard</h3>
  </div>
  <div class="header">
-   <input id="wid" placeholder="Enter Wholesaler ID (first 8 chars)">
+   <input id="wid" placeholder="Enter Wholesaler ID (full ID)">
    <button class="primary" onclick="loadProducts()">Search</button>
  </div>
  <div class="products-grid" id="products"></div>
@@ -63,29 +63,93 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
  </div>
 </div>
 
+<!-- PAYMENT MODAL -->
+<div class="modal" id="payModal">
+ <div class="modal-content">
+   <h3>Payment & Proof</h3>
+   <p><b>Shop:</b> <span id="pShop"></span></p>
+   <p><b>UPI / Mobile:</b> <span id="pMobile"></span></p>
+   <img id="pImg" class="full">
+   <input id="rName" placeholder="Retailer Name">
+   <input id="rMobile" placeholder="Retailer Mobile">
+   <input id="txn" placeholder="Transaction ID">
+   <input id="proof" type="file" accept="image/*">
+   <button type="button" class="primary" onclick="submitOrder()">Submit Order</button>
+   <button type="button" onclick="closeAll()">Cancel</button>
+ </div>
+</div>
+
+<!-- MY ORDERS MODAL -->
+<div class="modal" id="ordersModal">
+ <div class="modal-content">
+   <div class="close-btn" onclick="closeAll()">✕</div>
+   <h3>My Orders</h3>
+   <div id="myOrders"></div>
+ </div>
+</div>
+
 <script>
-const API = "https://shopbacked-vmhs.onrender.com";
-const TOKEN = localStorage.getItem("token");
-let selectedProduct = null;
+const API="https://shopbacked-vmhs.onrender.com";
+const TOKEN=localStorage.getItem("token");
+let selectedProduct=null;
 
 async function loadProducts(){
- const shortId = wid.value.trim();
- if(!shortId) return alert("Enter Wholesaler ID");
-
+ const wholesalerId=wid.value.trim();
+ if(!wholesalerId) return alert("Enter Wholesaler ID");
  try{
-   const res = await fetch(`${API}/api/products/wholesaler/${shortId}`, { headers: { "Authorization":"Bearer "+TOKEN } });
-   const data = await res.json();
+   const res=await fetch(`${API}/api/products/wholesaler/${wholesalerId}`,{headers:{"Authorization":"Bearer "+TOKEN}});
+   const data=await res.json();
    if(!data.success || !data.products.length){ products.innerHTML="No products found"; return; }
-
-   products.innerHTML = data.products.map(p=>`<div class="product-card" onclick='showDetail(${JSON.stringify(p)})'><img src="${p.image}"><h4>${p.productName}</h4><div class="price">₹${p.price}</div></div>`).join("");
-
- }catch(err){ console.log(err); products.innerHTML="Server error"; }
+   products.innerHTML=data.products.map(p=>`<div class="product-card" onclick='showDetail(${JSON.stringify(p)})'><img src="${p.image}"><h4>${p.productName}</h4><div class="price">₹${p.price}</div></div>`).join("");
+ }catch(err){console.log(err); products.innerHTML="Server error";}
 }
 
 function showDetail(p){
- selectedProduct=p; dName.innerText=p.productName; dImg.src=p.image; dPrice.innerText="₹"+p.price; dDetail.innerText=p.detail;
- dShop.innerText=p.shopName; dMobile.innerText=p.mobile; dAddress.innerText=p.address;
+ selectedProduct=p;
+ dName.innerText=p.productName;
+ dImg.src=p.image;
+ dPrice.innerText="₹"+p.price;
+ dDetail.innerText=p.detail;
+ dShop.innerText=p.shopName;
+ dMobile.innerText=p.mobile;
+ dAddress.innerText=p.address;
  detailModal.style.display="flex";
+}
+
+function openPayment(){
+ pShop.innerText=selectedProduct.shopName;
+ pMobile.innerText=selectedProduct.mobile;
+ pImg.src=selectedProduct.image;
+ payModal.style.display="flex";
+}
+
+async function submitOrder(){
+ const name=rName.value.trim();
+ const mobile=rMobile.value.trim();
+ const txnId=txn.value.trim();
+ const proofFile=proof.files[0];
+ if(!name||!mobile||!txnId||!proofFile){ alert("All fields required"); return; }
+ const reader=new FileReader();
+ reader.onload=async ()=>{
+   const body={wholesalerId:selectedProduct.wholesalerId,productId:selectedProduct._id,productName:selectedProduct.productName,price:selectedProduct.price,productImg:selectedProduct.image,retailerName:name,retailerMobile:mobile,txnId:txnId,proofImg:reader.result};
+   try{
+     const res=await fetch(`${API}/api/orders`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify(body)});
+     const data=await res.json();
+     if(data.success){ alert("Order placed ✅"); closeAll(); } else alert(data.message||"Order failed");
+   }catch(err){console.log(err); alert("Server error");}
+ };
+ reader.readAsDataURL(proofFile);
+}
+
+async function openOrders(){
+ ordersModal.style.display="flex";
+ const mobile=rMobile.value.trim();
+ if(!mobile){ myOrders.innerHTML="Enter mobile number first"; return; }
+ try{
+   const res=await fetch(`${API}/api/orders/retailer/${mobile}`,{headers:{"Authorization":"Bearer "+TOKEN}});
+   const data=await res.json();
+   myOrders.innerHTML=data.orders.map(o=>`<div class="order-status"><b>${o.productName}</b> (₹${o.price})<div class="step ${o.status==='pending'?'active':''}">● PENDING</div><div class="step ${o.status==='confirmed'?'active':''}">● CONFIRMED</div><div class="step ${o.status==='pickup'?'active':''}">● PICKUP</div><div class="step ${o.status==='delivered'?'active':''}">● DELIVERED</div></div>`).join("")||"No orders";
+ }catch(err){console.log(err); myOrders.innerHTML="Server error";}
 }
 
 function closeAll(){ document.querySelectorAll(".modal").forEach(m=>m.style.display="none"); }
