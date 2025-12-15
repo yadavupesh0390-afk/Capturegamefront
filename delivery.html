@@ -12,142 +12,80 @@
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
 body{margin:0;background:#f3f6fb}
 .main{padding:15px;max-width:900px;margin:auto}
-
-/* TOP BAR */
-.top-bar{
- display:flex;justify-content:space-between;align-items:center;
- background:#0f172a;color:#fff;
- padding:12px 16px;border-radius:14px
-}
+.top-bar{display:flex;justify-content:space-between;align-items:center;background:#0f172a;color:#fff;padding:12px 16px;border-radius:14px}
 .top-bar h3{margin:0;font-size:18px}
-.icon-btn{
- background:#2563eb;border:none;color:#fff;
- width:42px;height:42px;border-radius:50%;
- font-size:20px;cursor:pointer;margin-left:6px
-}
-
-/* STATUS */
-.status-box{
- background:#fff;margin-top:12px;
- padding:12px;border-radius:12px;
- box-shadow:0 4px 10px rgba(0,0,0,.08);
- font-size:14px
-}
+.icon-btn{background:#2563eb;border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer;margin-left:6px}
+.status-box{background:#fff;margin-top:12px;padding:12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.08);font-size:14px}
 .location{color:#2563eb;font-size:13px}
-
-/* ORDER CARD */
-.order-card{
- background:#fff;margin-top:12px;
- padding:12px;border-radius:12px;
- box-shadow:0 4px 10px rgba(0,0,0,.08);
- display:flex;gap:10px
-}
-.order-card img{
- width:80px;height:70px;object-fit:cover;border-radius:8px
-}
+.order-card{background:#fff;margin-top:12px;padding:12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.08);display:flex;gap:10px}
+.order-card img{width:80px;height:70px;object-fit:cover;border-radius:8px}
 .order-info{flex:1;font-size:13px}
-button.primary{
- margin-top:6px;
- background:#16a34a;color:#fff;
- border:none;padding:7px 12px;
- border-radius:8px;cursor:pointer
-}
-
-/* MODAL */
-.modal{
- position:fixed;inset:0;
- background:rgba(0,0,0,.5);
- display:none;align-items:center;justify-content:center;
- z-index:20
-}
-.modal-content{
- background:#fff;padding:20px;
- width:95%;max-width:600px;
- border-radius:15px;max-height:90vh;overflow:auto
-}
-input,select{
- width:100%;padding:10px;margin:6px 0;
- border-radius:8px;border:1px solid #ccc
-}
+button.primary{margin-top:6px;background:#16a34a;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
+.modal-content{background:#fff;padding:20px;width:95%;max-width:600px;border-radius:15px;max-height:90vh;overflow:auto}
+input,select{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc}
 </style>
 </head>
 
 <body>
 <div class="main">
 
-<!-- TOP BAR -->
 <div class="top-bar">
  <h3>Delivery Dashboard</h3>
  <div>
-  <!-- PROFILE -->
-  <button class="icon-btn" onclick="openProfile()" title="Profile">
-   <i class="bi bi-person-circle"></i>
-  </button>
-
-  <!-- LIVE LOCATION -->
-  <button class="icon-btn" onclick="setLiveLocation()" title="Live Location">
-   <i class="bi bi-geo-alt-fill"></i>
-  </button>
-
-  <!-- ORDERS -->
-  <button class="icon-btn" onclick="loadOrders()" title="Orders">
-   <i class="bi bi-bag-check"></i>
-  </button>
+  <button class="icon-btn" onclick="openProfile()"><i class="bi bi-person-circle"></i></button>
+  <button class="icon-btn" onclick="setLiveLocation()"><i class="bi bi-geo-alt-fill"></i></button>
+  <button class="icon-btn" onclick="loadOrders()"><i class="bi bi-bag-check"></i></button>
  </div>
 </div>
 
-<!-- STATUS BOX -->
 <div class="status-box">
  <b>Delivery Boy ID:</b> <span id="dbId"></span><br><br>
  <b>Status:</b> <span id="liveStatus">🟢 ACTIVE</span><br>
  <span class="location">📍 <span id="liveLoc">Location not set</span></span>
 </div>
 
-<!-- ORDERS -->
 <div id="orders"></div>
-
 </div>
 
-<!-- PROFILE MODAL -->
+<!-- PROFILE -->
 <div class="modal" id="profileModal">
 <div class="modal-content">
  <h3>Delivery Boy Profile</h3>
-
  <input id="dName" placeholder="Name">
  <input id="dMobile" placeholder="UPI / Mobile">
  <input id="dLocation" placeholder="Address / Area">
-
  <select id="dVehicleType">
   <option value="">Vehicle Type</option>
   <option>2-Wheeler</option>
   <option>3-Wheeler</option>
   <option>4-Wheeler</option>
  </select>
-
  <input id="dVehicleNumber" placeholder="Vehicle Number">
-
  <select id="dStatus">
   <option value="ACTIVE">🟢 ACTIVE</option>
   <option value="BUSY">🔴 BUSY</option>
   <option value="OFFLINE">⚫ OFFLINE</option>
  </select>
-
  <button class="primary" onclick="saveProfile()">Save Profile</button>
 </div>
 </div>
 
 <script>
-/* ===== UNIQUE DELIVERY BOY ID ===== */
-let deliveryBoyId = localStorage.getItem("deliveryBoyId");
-if(!deliveryBoyId){
- deliveryBoyId = "D"+Math.floor(1000+Math.random()*9000);
- localStorage.setItem("deliveryBoyId",deliveryBoyId);
+/* ===== AUTO LOCKED DELIVERY BOY ID ===== */
+const deliveryBoyId = localStorage.getItem("userId");
+const role = localStorage.getItem("role");
+
+if(!deliveryBoyId || role!=="delivery"){
+ alert("Please login again");
+ window.location.href="index.html";
 }
-dbId.innerText = deliveryBoyId;
+
+dbId.innerText = deliveryBoyId.substring(0,8).toUpperCase();
 
 /* ===== PROFILE ===== */
 function openProfile(){
- let p = JSON.parse(localStorage.getItem("deliveryBoy_"+deliveryBoyId)||"{}");
+ let p = JSON.parse(localStorage.getItem("delivery_"+deliveryBoyId)||"{}");
  dName.value=p.name||"";
  dMobile.value=p.mobile||"";
  dLocation.value=p.location||"";
@@ -159,6 +97,7 @@ function openProfile(){
 
 function saveProfile(){
  let p={
+  id:deliveryBoyId,
   name:dName.value,
   mobile:dMobile.value,
   location:dLocation.value,
@@ -166,11 +105,8 @@ function saveProfile(){
   vehicleNumber:dVehicleNumber.value,
   status:dStatus.value
  };
- localStorage.setItem("deliveryBoy_"+deliveryBoyId,JSON.stringify(p));
- liveStatus.innerText =
-  (p.status==="ACTIVE"?"🟢 ":"")+
-  (p.status==="BUSY"?"🔴 ":"")+
-  (p.status==="OFFLINE"?"⚫ ":"")+p.status;
+ localStorage.setItem("delivery_"+deliveryBoyId,JSON.stringify(p));
+ liveStatus.innerText = "● "+p.status;
  profileModal.style.display="none";
  alert("Profile Saved ✅");
 }
@@ -192,7 +128,6 @@ function setLiveLocation(){
  },()=>alert("Location permission denied"));
 }
 
-/* LOAD LOCATION */
 let savedLoc = JSON.parse(localStorage.getItem("liveLoc_"+deliveryBoyId)||"null");
 if(savedLoc){
  liveLoc.innerText = savedLoc.lat.toFixed(5)+", "+savedLoc.lng.toFixed(5);
@@ -203,7 +138,7 @@ function loadOrders(){
  let all = JSON.parse(localStorage.getItem("orders")||"[]");
  let available = all.filter(o=>o.status==="confirmed");
 
- orders.innerHTML = available.map((o,i)=>`
+ orders.innerHTML = available.map(o=>`
   <div class="order-card">
    <img src="${o.productImg||'https://via.placeholder.com/80'}">
    <div class="order-info">
@@ -230,7 +165,6 @@ function acceptOrder(id){
  loadOrders();
 }
 
-/* AUTO LOAD */
 loadOrders();
 setInterval(loadOrders,5000);
 </script>
