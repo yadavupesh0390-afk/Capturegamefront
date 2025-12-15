@@ -101,11 +101,17 @@ img.full{
 <body>
 <div class="main">
 
+  <!-- ICON BAR (ID BUTTON REMOVED) -->
   <div class="icon-bar">
-    <button class="icon-btn" onclick="openWid()" title="Set ID"><i class="bi bi-person-badge"></i></button>
-    <button class="icon-btn" onclick="openProfile()" title="Shop Profile"><i class="bi bi-shop"></i></button>
-    <button class="icon-btn" onclick="openProduct()" title="Add Product"><i class="bi bi-plus"></i></button>
-    <button class="icon-btn" onclick="openOrders()" title="Orders"><i class="bi bi-bag-check"></i></button>
+    <button class="icon-btn" onclick="openProfile()" title="Shop Profile">
+      <i class="bi bi-shop"></i>
+    </button>
+    <button class="icon-btn" onclick="openProduct()" title="Add Product">
+      <i class="bi bi-plus"></i>
+    </button>
+    <button class="icon-btn" onclick="openOrders()" title="Orders">
+      <i class="bi bi-bag-check"></i>
+    </button>
   </div>
 
   <div class="header">
@@ -114,15 +120,6 @@ img.full{
   </div>
 
   <div class="products-grid" id="products"></div>
-</div>
-
-<!-- SET WID -->
-<div class="modal" id="widModal">
- <div class="modal-content">
-  <h3>Set Wholesaler ID</h3>
-  <input id="widInput" placeholder="W001">
-  <button class="primary" onclick="setWid()">Save</button>
- </div>
 </div>
 
 <!-- SHOP PROFILE -->
@@ -160,10 +157,17 @@ img.full{
 </div>
 
 <script>
-let WID = localStorage.getItem("wid") || "W001";
-widText.innerText = WID;
+/* ===== AUTO LOCKED WHOLESALER ID ===== */
+const WID = localStorage.getItem("userId");
 
-function openWid(){widModal.style.display="flex"}
+if(!WID || localStorage.getItem("role")!=="wholesaler"){
+  alert("Please login again");
+  window.location.href="index.html";
+}
+
+widText.innerText = WID.substring(0,8).toUpperCase();
+
+/* ===== UI ===== */
 function openProduct(){productModal.style.display="flex"}
 function openOrders(){orderModal.style.display="flex";loadOrders()}
 function openProfile(){
@@ -175,17 +179,6 @@ function openProfile(){
 }
 function closeAll(){
  document.querySelectorAll(".modal").forEach(m=>m.style.display="none")
-}
-
-/* ===== SET WID ===== */
-function setWid(){
- let v=widInput.value.trim();
- if(!v) return alert("Enter ID");
- WID=v;
- localStorage.setItem("wid",WID);
- widText.innerText=WID;
- closeAll();
- loadProducts();
 }
 
 /* ===== SAVE SHOP PROFILE ===== */
@@ -207,6 +200,7 @@ function addProduct(){
  if(!f) return alert("Image required");
  let profile = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID) || "{}");
  if(!profile.shopName){ alert("Set Shop Profile first"); return; }
+
  let r=new FileReader();
  r.onload=()=>{
   let p=JSON.parse(localStorage.getItem("products")||"[]");
@@ -231,74 +225,26 @@ function loadProducts(){
  let list=JSON.parse(localStorage.getItem("products")||"[]")
   .filter(p=>p.wid===WID);
  products.innerHTML=list.map((p,i)=>`
-  <div class="product-card" onclick="showDetail(${i})">
+  <div class="product-card">
    <img src="${p.img}">
    <h4>${p.name}</h4>
    <div class="price">₹${p.price}</div>
   </div>`).join("") || "No products";
 }
 
-/* ===== LOAD ORDERS ===== */
+/* ===== ORDERS ===== */
 function loadOrders(){
- autoCleanOrders(); // remove old delivered orders
- let all=JSON.parse(localStorage.getItem("orders")||"[]").filter(o=>o.wid===WID);
- all = all.map(o=>{
-   if(!o.orderId) o.orderId=Date.now()+Math.floor(Math.random()*1000);
-   return o;
- });
- orders.innerHTML = all.map(o=>{
-   let steps=['pending','confirmed','pickup','delivered'];
-   let statusLine=steps.map(s=>{
-     let cls='';
-     if(s===o.status) cls='active';
-     if(s==='delivered' && o.status==='delivered') cls='delivered';
-     return `<span class="${cls}">${s.toUpperCase()}</span>`;
-   }).join(' → ');
-
-   let confirmBtn = o.status==='pending'?`<button class="success" onclick="updateStatus(${o.orderId},'confirmed')">Confirm</button>`:'';
-
-   return `<div class="card">
-    <b>${o.product}</b> (₹${o.price})<br>
-    <img src="${o.productImg}" class="small-img">
-    <p>Retailer: ${o.retailerName}</p>
-    <p>Mobile: ${o.retailerMobile}</p>
-    <p>Txn ID: ${o.txnId}</p>
-    <div class="status-line">${statusLine}</div>
-    <div class="buttons">${confirmBtn}</div>
-   </div>`;
- }).join('') || "No pending orders";
- localStorage.setItem("orders",JSON.stringify(all));
-}
-
-/* ===== UPDATE STATUS ===== */
-function updateStatus(orderId,newStatus){
- let all=JSON.parse(localStorage.getItem("orders")||"[]");
- all=all.map(o=>{
-   if(o.orderId==orderId){
-     o.status=newStatus;
-     o.statusTime=Date.now();
-   }
-   return o;
- });
- localStorage.setItem("orders",JSON.stringify(all));
- loadOrders();
-}
-
-/* ===== AUTO CLEAN DELIVERED ORDERS AFTER 10 MIN ===== */
-function autoCleanOrders(){
- let all=JSON.parse(localStorage.getItem("orders")||"[]");
- let now=Date.now();
- all = all.filter(o=>{
-   if(o.status==='delivered'){
-     return now - o.statusTime < 600000; // 10 min
-   }
-   return true;
- });
- localStorage.setItem("orders",JSON.stringify(all));
+ let all=JSON.parse(localStorage.getItem("orders")||"[]")
+  .filter(o=>o.wid===WID);
+ orders.innerHTML = all.map(o=>`
+  <div class="card">
+   <b>${o.product}</b> (₹${o.price})
+   <p>Status: ${o.status}</p>
+  </div>
+ `).join("") || "No orders";
 }
 
 loadProducts();
-setInterval(autoCleanOrders,60000);
 </script>
 </body>
 </html>
