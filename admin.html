@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin</title>
+<style>
+body{font-family:Arial;background:#fce4ec;padding:20px}
+.card{background:#fff;padding:10px;margin:10px}
+</style>
+</head>
+<body>
+<h2>🟥 Admin Dashboard</h2>
+
+<div class="card">
+<h3>All Orders</h3>
+<pre id="all"></pre>
+</div>
+
+<script>
+all.textContent=JSON.stringify(JSON.parse(localStorage.getItem('orders')||[]),null,2);
+</script>
+</body>
+</html>
