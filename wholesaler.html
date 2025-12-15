@@ -24,8 +24,9 @@ body{margin:0;background:#f3f6fb}
 .modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
 input,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
 button.primary{background:#2563eb;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
-img.full{width:100%;border-radius:10px;margin:10px 0}
+button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:6px}
 .card{background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:12px}
+.status{font-size:12px;margin-top:4px}
 </style>
 </head>
 
@@ -33,9 +34,9 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 <div class="main">
 
   <div class="icon-bar">
-    <button class="icon-btn" onclick="openProfile()" title="Shop Profile"><i class="bi bi-shop"></i></button>
-    <button class="icon-btn" onclick="openProduct()" title="Add Product"><i class="bi bi-plus"></i></button>
-    <button class="icon-btn" onclick="openOrders()" title="Orders"><i class="bi bi-bag-check"></i></button>
+    <button class="icon-btn" onclick="openProfile()"><i class="bi bi-shop"></i></button>
+    <button class="icon-btn" onclick="openProduct()"><i class="bi bi-plus"></i></button>
+    <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>
   </div>
 
   <div class="header">
@@ -46,7 +47,7 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
   <div class="products-grid" id="products"></div>
 </div>
 
-<!-- SHOP PROFILE -->
+<!-- PROFILE -->
 <div class="modal" id="profileModal">
  <div class="modal-content">
   <h3>Shop Profile</h3>
@@ -58,7 +59,7 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
  </div>
 </div>
 
-<!-- ADD PRODUCT -->
+<!-- PRODUCT -->
 <div class="modal" id="productModal">
  <div class="modal-content">
   <h3>Add Product</h3>
@@ -74,84 +75,88 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 <!-- ORDERS -->
 <div class="modal" id="orderModal">
  <div class="modal-content">
-  <h3>Manage Orders</h3>
+  <h3>Orders</h3>
   <div id="orders"></div>
   <button onclick="closeAll()">Close</button>
  </div>
 </div>
 
 <script>
-const API = "https://shopbacked-vmhs.onrender.com";
-const TOKEN = localStorage.getItem("token");
-const WID   = localStorage.getItem("userId");
-const ROLE  = localStorage.getItem("role");
+const API="https://shopbacked-vmhs.onrender.com";
+const TOKEN=localStorage.getItem("token");
+const WID=localStorage.getItem("userId");
+const ROLE=localStorage.getItem("role");
 
-if(!TOKEN || !WID || ROLE!=="wholesaler"){
-  alert("Session expired. Login again");
-  window.location.href="index.html";
+if(!TOKEN||!WID||ROLE!=="wholesaler"){
+  alert("Login again"); location.href="index.html";
 }
 widText.innerText=WID.substring(0,8).toUpperCase();
 
-function openProduct(){ productModal.style.display="flex"; }
-function openOrders(){ orderModal.style.display="flex"; loadOrders(); }
+function openProduct(){productModal.style.display="flex";}
+function openOrders(){orderModal.style.display="flex";loadOrders();}
 function openProfile(){
-  profileModal.style.display="flex";
-  const p = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
-  shopName.value=p.shopName||"";
-  shopMobile.value=p.mobile||"";
-  shopAddress.value=p.address||"";
+ profileModal.style.display="flex";
+ const p=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
+ shopName.value=p.shopName||"";
+ shopMobile.value=p.mobile||"";
+ shopAddress.value=p.address||"";
 }
-function closeAll(){ document.querySelectorAll(".modal").forEach(m=>m.style.display="none"); }
+function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}
 
 function saveProfile(){
-  const profile={wid:WID,shopName:shopName.value.trim(),mobile:shopMobile.value.trim(),address:shopAddress.value.trim()};
-  if(!profile.shopName || !profile.mobile){ alert("Shop name & mobile required"); return; }
-  localStorage.setItem("wholesalerProfile_"+WID,JSON.stringify(profile));
-  alert("Shop profile saved ✅"); closeAll();
+ const p={shopName:shopName.value,mobile:shopMobile.value,address:shopAddress.value};
+ localStorage.setItem("wholesalerProfile_"+WID,JSON.stringify(p));
+ alert("Profile saved"); closeAll();
 }
 
 async function addProduct(){
-  if(!pname.value||!pprice.value||!pdetail.value){ alert("All fields required"); return; }
-  const imgFile=pimg.files[0]; if(!imgFile){ alert("Product image required"); return; }
-  const profile=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
-  if(!profile.shopName){ alert("Set shop profile first"); return; }
-
-  const reader=new FileReader();
-  reader.onload=async ()=>{
-    const body={
-      productName:pname.value.trim(),
-      price:Number(pprice.value),
-      detail:pdetail.value.trim(),
-      image:reader.result,
-      wholesalerId:WID,
-      shopName:profile.shopName,
-      mobile:profile.mobile,
-      address:profile.address
-    };
-    try{
-      const res=await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify(body)});
-      const data=await res.json();
-      if(data.success){ alert("Product added ✅"); closeAll(); loadProducts(); } 
-      else alert(data.message||"Product add failed");
-    }catch(err){console.error(err); alert("Server error");}
-  };
-  reader.readAsDataURL(imgFile);
+ const img=pimg.files[0]; if(!img) return alert("Image required");
+ const prof=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
+ const r=new FileReader();
+ r.onload=async()=>{
+  const res=await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+  body:JSON.stringify({
+    wholesalerId:WID,
+    productName:pname.value,
+    price:pprice.value,
+    detail:pdetail.value,
+    image:r.result,
+    shopName:prof.shopName,
+    mobile:prof.mobile,
+    address:prof.address
+  })});
+  const d=await res.json();
+  if(d.success){alert("Product added");closeAll();loadProducts();}
+ };
+ r.readAsDataURL(img);
 }
 
 async function loadProducts(){
-  try{
-    const res=await fetch(API+"/api/products/wholesaler/"+WID,{headers:{"Authorization":"Bearer "+TOKEN}});
-    const data=await res.json();
-    products.innerHTML=data.success?data.products.map(p=>`<div class="product-card"><img src="${p.image}"><h4>${p.productName}</h4><div class="price">₹${p.price}</div></div>`).join(""):"No products";
-  }catch(err){console.error(err); products.innerHTML="Server error";}
+ const r=await fetch(API+"/api/products/wholesaler/"+WID);
+ const d=await r.json();
+ products.innerHTML=d.products.map(p=>`
+  <div class="product-card">
+    <img src="${p.image}">
+    <h4>${p.productName}</h4>
+    <div class="price">₹${p.price}</div>
+  </div>`).join("");
+}
+
+async function confirmOrder(id){
+ if(!confirm("Confirm this order?"))return;
+ await fetch(API+"/api/orders/"+id+"/confirm",{method:"POST"});
+ loadOrders();
 }
 
 async function loadOrders(){
-  try{
-    const res=await fetch(API+"/api/orders/wholesaler/"+WID,{headers:{"Authorization":"Bearer "+TOKEN}});
-    const data=await res.json();
-    orders.innerHTML=data.orders.map(o=>`<div class="card"><b>${o.productName}</b> (₹${o.price})<br><small>Status: <b>${o.status}</b></small></div>`).join("")||"No orders";
-  }catch(err){console.error(err); orders.innerHTML="Error loading orders";}
+ const r=await fetch(API+"/api/orders/wholesaler/"+WID);
+ const d=await r.json();
+ orders.innerHTML=d.orders.map(o=>`
+  <div class="card">
+   <b>${o.productName}</b> ₹${o.price}<br>
+   <div class="status">Status: <b>${o.status}</b></div>
+   ${o.status==="pending"?`<button class="success" onclick="confirmOrder('${o._id}')">Confirm Order</button>`:""}
+  </div>`).join("") || "No orders";
 }
 
 loadProducts();
