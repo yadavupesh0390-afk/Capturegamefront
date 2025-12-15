@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <title>Wholesaler Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
 <style>
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
 body{margin:0;background:#f3f6fb}
@@ -22,13 +24,14 @@ body{margin:0;background:#f3f6fb}
 .modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
 input,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
 button.primary{background:#2563eb;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
-button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-.card{background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:12px}
 img.full{width:100%;border-radius:10px;margin:10px 0}
+.card{background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:12px}
 </style>
 </head>
+
 <body>
 <div class="main">
+
   <div class="icon-bar">
     <button class="icon-btn" onclick="openProfile()" title="Shop Profile"><i class="bi bi-shop"></i></button>
     <button class="icon-btn" onclick="openProduct()" title="Add Product"><i class="bi bi-plus"></i></button>
@@ -39,6 +42,7 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
     <h3>Wholesaler Dashboard</h3>
     <small>ID: <b id="widText"></b></small>
   </div>
+
   <div class="products-grid" id="products"></div>
 </div>
 
@@ -79,77 +83,75 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 <script>
 const API = "https://shopbacked-vmhs.onrender.com";
 const TOKEN = localStorage.getItem("token");
-const WID = localStorage.getItem("userId");
-const ROLE = localStorage.getItem("role");
+const WID   = localStorage.getItem("userId");
+const ROLE  = localStorage.getItem("role");
 
 if(!TOKEN || !WID || ROLE!=="wholesaler"){
-  alert("Please login again");
+  alert("Session expired. Login again");
   window.location.href="index.html";
 }
-widText.innerText = WID.substring(0,8).toUpperCase();
+widText.innerText=WID.substring(0,8).toUpperCase();
 
 function openProduct(){ productModal.style.display="flex"; }
 function openOrders(){ orderModal.style.display="flex"; loadOrders(); }
 function openProfile(){
   profileModal.style.display="flex";
   const p = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
-  shopName.value = p.shopName||"";
-  shopMobile.value = p.mobile||"";
-  shopAddress.value = p.address||"";
+  shopName.value=p.shopName||"";
+  shopMobile.value=p.mobile||"";
+  shopAddress.value=p.address||"";
 }
 function closeAll(){ document.querySelectorAll(".modal").forEach(m=>m.style.display="none"); }
 
 function saveProfile(){
-  const profile = { wid:WID, shopName:shopName.value.trim(), mobile:shopMobile.value.trim(), address:shopAddress.value.trim() };
-  if(!profile.shopName||!profile.mobile){ alert("Shop name & mobile required"); return; }
+  const profile={wid:WID,shopName:shopName.value.trim(),mobile:shopMobile.value.trim(),address:shopAddress.value.trim()};
+  if(!profile.shopName || !profile.mobile){ alert("Shop name & mobile required"); return; }
   localStorage.setItem("wholesalerProfile_"+WID,JSON.stringify(profile));
   alert("Shop profile saved ✅"); closeAll();
 }
 
 async function addProduct(){
   if(!pname.value||!pprice.value||!pdetail.value){ alert("All fields required"); return; }
-  const imgFile = pimg.files[0]; if(!imgFile){ alert("Product image required"); return; }
-  const profile = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
+  const imgFile=pimg.files[0]; if(!imgFile){ alert("Product image required"); return; }
+  const profile=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
   if(!profile.shopName){ alert("Set shop profile first"); return; }
 
-  const reader = new FileReader();
-  reader.onload = async ()=>{
-    const body = {
-      productName: pname.value.trim(),
+  const reader=new FileReader();
+  reader.onload=async ()=>{
+    const body={
+      productName:pname.value.trim(),
       price:Number(pprice.value),
       detail:pdetail.value.trim(),
       image:reader.result,
-      wid:WID,
       wholesalerId:WID,
       shopName:profile.shopName,
       mobile:profile.mobile,
       address:profile.address
     };
     try{
-      const res = await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify(body)});
-      const data = await res.json();
+      const res=await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify(body)});
+      const data=await res.json();
       if(data.success){ alert("Product added ✅"); closeAll(); loadProducts(); } 
       else alert(data.message||"Product add failed");
-    }catch(err){ console.error(err); alert("Server error"); }
+    }catch(err){console.error(err); alert("Server error");}
   };
   reader.readAsDataURL(imgFile);
 }
 
 async function loadProducts(){
   try{
-    const res = await fetch(API+"/api/products/wholesaler/"+WID,{headers:{"Authorization":"Bearer "+TOKEN}});
-    const data = await res.json();
-    if(!data.success){ products.innerHTML="No products found"; return; }
-    products.innerHTML = data.products.map(p=>`<div class="product-card"><img src="${p.image}"><h4>${p.productName}</h4><div class="price">₹${p.price}</div></div>`).join("")||"No products";
-  }catch(err){ console.error(err); products.innerHTML="Server error"; }
+    const res=await fetch(API+"/api/products/wholesaler/"+WID,{headers:{"Authorization":"Bearer "+TOKEN}});
+    const data=await res.json();
+    products.innerHTML=data.success?data.products.map(p=>`<div class="product-card"><img src="${p.image}"><h4>${p.productName}</h4><div class="price">₹${p.price}</div></div>`).join(""):"No products";
+  }catch(err){console.error(err); products.innerHTML="Server error";}
 }
 
 async function loadOrders(){
   try{
-    const res = await fetch(API+"/api/orders/wholesaler/"+WID,{headers:{"Authorization":"Bearer "+TOKEN}});
-    const data = await res.json();
-    orders.innerHTML = data.orders.map(o=>`<div class="card"><b>${o.productName}</b> (₹${o.price})<br><small>Status: <b>${o.status}</b></small></div>`).join("")||"No orders";
-  }catch(err){ console.error(err); orders.innerHTML="Error loading orders"; }
+    const res=await fetch(API+"/api/orders/wholesaler/"+WID,{headers:{"Authorization":"Bearer "+TOKEN}});
+    const data=await res.json();
+    orders.innerHTML=data.orders.map(o=>`<div class="card"><b>${o.productName}</b> (₹${o.price})<br><small>Status: <b>${o.status}</b></small></div>`).join("")||"No orders";
+  }catch(err){console.error(err); orders.innerHTML="Error loading orders";}
 }
 
 loadProducts();
