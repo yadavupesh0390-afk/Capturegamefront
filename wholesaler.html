@@ -4,121 +4,41 @@
 <meta charset="UTF-8">
 <title>Wholesaler Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
 <style>
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
 body{margin:0;background:#f3f6fb}
 .main{padding:20px}
-
-.icon-bar{
- display:flex;justify-content:center;gap:20px;
- background:#0f172a;padding:12px;border-radius:14px;
- max-width:650px;margin:auto
-}
-.icon-btn{
- background:#2563eb;color:#fff;border:none;
- width:55px;height:55px;border-radius:50%;
- font-size:22px;cursor:pointer
-}
-
-.header{
- margin-top:15px;background:#fff;padding:15px;
- border-radius:12px;text-align:center;
- box-shadow:0 5px 15px rgba(0,0,0,.1)
-}
-
-.products-grid{
- display:grid;
- grid-template-columns:repeat(3,1fr);
- gap:10px;margin-top:20px
-}
-.product-card{
- background:#fff;padding:5px;border-radius:10px;
- text-align:center;cursor:pointer;
- box-shadow:0 3px 8px rgba(0,0,0,.08)
-}
-.product-card img{
- width:100%;height:80px;object-fit:cover;border-radius:8px
-}
+.icon-bar{display:flex;justify-content:center;gap:20px;background:#0f172a;padding:12px;border-radius:14px;max-width:650px;margin:auto}
+.icon-btn{background:#2563eb;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer}
+.header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.1)}
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.product-card{background:#fff;padding:5px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+.product-card img{width:100%;height:80px;object-fit:cover;border-radius:8px}
 .product-card h4{font-size:12px;margin:5px 0}
 .price{color:#2563eb;font-weight:600;font-size:12px}
-
-.modal{
- position:fixed;inset:0;
- background:rgba(0,0,0,.5);
- display:none;align-items:center;justify-content:center;
- z-index:20
-}
-.modal-content{
- background:#fff;padding:20px;
- width:90%;max-width:500px;
- border-radius:15px;max-height:85vh;overflow:auto
-}
-input,textarea{
- width:100%;padding:10px;margin:8px 0;
- border-radius:8px;border:1px solid #ccc
-}
-button.primary{
- background:#2563eb;color:#fff;border:none;
- padding:10px 15px;border-radius:10px;cursor:pointer
-}
-button.success{
- background:#16a34a;color:#fff;border:none;
- padding:8px 12px;border-radius:8px;cursor:pointer
-}
-.card{
- background:#f8fafc;padding:12px;
- border-radius:10px;margin-bottom:12px
-}
-img.full{
- width:100%;border-radius:10px;margin:10px 0
-}
-.small-img{
- width:80px;height:50px;object-fit:cover;border-radius:5px;margin:5px 0;
-}
-
-.status-line{
- display:flex;gap:5px;flex-wrap:wrap;margin:5px 0;
-}
-.status-line span{
- padding:5px 10px;
- border-radius:5px;
- background:#eee;
- color:#555;
- font-size:12px;
- font-weight:500;
-}
-.status-line span.active{background:#16a34a;color:#fff;}
-.status-line span.delivered{background:#059669;color:#fff;}
-
-.buttons button{margin:3px;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
+.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
+input,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+button.primary{background:#2563eb;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
+button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+.card{background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:12px}
+img.full{width:100%;border-radius:10px;margin:10px 0}
 </style>
 </head>
-
 <body>
 <div class="main">
-
-  <!-- ICON BAR -->
   <div class="icon-bar">
-    <button class="icon-btn" onclick="openProfile()" title="Shop Profile">
-      <i class="bi bi-shop"></i>
-    </button>
-    <button class="icon-btn" onclick="openProduct()" title="Add Product">
-      <i class="bi bi-plus"></i>
-    </button>
-    <button class="icon-btn" onclick="openOrders()" title="Orders">
-      <i class="bi bi-bag-check"></i>
-    </button>
+    <button class="icon-btn" onclick="openProfile()" title="Shop Profile"><i class="bi bi-shop"></i></button>
+    <button class="icon-btn" onclick="openProduct()" title="Add Product"><i class="bi bi-plus"></i></button>
+    <button class="icon-btn" onclick="openOrders()" title="Orders"><i class="bi bi-bag-check"></i></button>
   </div>
 
   <div class="header">
     <h3>Wholesaler Dashboard</h3>
     <small>ID: <b id="widText"></b></small>
   </div>
-
   <div class="products-grid" id="products"></div>
 </div>
 
@@ -157,154 +77,81 @@ img.full{
 </div>
 
 <script>
-/* ================= CONFIG ================= */
 const API = "https://shopbacked-vmhs.onrender.com";
 const TOKEN = localStorage.getItem("token");
-const WID   = localStorage.getItem("userId");
-const ROLE  = localStorage.getItem("role");
+const WID = localStorage.getItem("userId");
+const ROLE = localStorage.getItem("role");
 
-/* ================= AUTH CHECK ================= */
-if(!TOKEN || !WID || ROLE !== "wholesaler"){
-  alert("Session expired. Please login again.");
-  window.location.href = "index.html";
+if(!TOKEN || !WID || ROLE!=="wholesaler"){
+  alert("Please login again");
+  window.location.href="index.html";
 }
-
-/* SHOW SHORT ID */
 widText.innerText = WID.substring(0,8).toUpperCase();
 
-/* ================= UI HELPERS ================= */
 function openProduct(){ productModal.style.display="flex"; }
 function openOrders(){ orderModal.style.display="flex"; loadOrders(); }
 function openProfile(){
   profileModal.style.display="flex";
-  const p = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID) || "{}");
-  shopName.value = p.shopName || "";
-  shopMobile.value = p.mobile || "";
-  shopAddress.value = p.address || "";
+  const p = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
+  shopName.value = p.shopName||"";
+  shopMobile.value = p.mobile||"";
+  shopAddress.value = p.address||"";
 }
-function closeAll(){
-  document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
-}
+function closeAll(){ document.querySelectorAll(".modal").forEach(m=>m.style.display="none"); }
 
-/* ================= SAVE SHOP PROFILE ================= */
 function saveProfile(){
-  const profile = {
-    shopName: shopName.value.trim(),
-    mobile: shopMobile.value.trim(),
-    address: shopAddress.value.trim()
-  };
-
-  if(!profile.shopName || !profile.mobile){
-    alert("Shop name & mobile required");
-    return;
-  }
-
-  localStorage.setItem("wholesalerProfile_"+WID, JSON.stringify(profile));
-  alert("Shop profile saved ✅");
-  closeAll();
+  const profile = { wid:WID, shopName:shopName.value.trim(), mobile:shopMobile.value.trim(), address:shopAddress.value.trim() };
+  if(!profile.shopName||!profile.mobile){ alert("Shop name & mobile required"); return; }
+  localStorage.setItem("wholesalerProfile_"+WID,JSON.stringify(profile));
+  alert("Shop profile saved ✅"); closeAll();
 }
 
-/* ================= ADD PRODUCT (SERVER) ================= */
 async function addProduct(){
-  if(!pname.value || !pprice.value || !pdetail.value){
-    alert("All fields required");
-    return;
-  }
-
-  const imgFile = pimg.files[0];
-  if(!imgFile){
-    alert("Product image required");
-    return;
-  }
-
-  const profile = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID) || "{}");
-  if(!profile.shopName){
-    alert("Set shop profile first");
-    return;
-  }
+  if(!pname.value||!pprice.value||!pdetail.value){ alert("All fields required"); return; }
+  const imgFile = pimg.files[0]; if(!imgFile){ alert("Product image required"); return; }
+  const profile = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
+  if(!profile.shopName){ alert("Set shop profile first"); return; }
 
   const reader = new FileReader();
-  reader.onload = async () => {
+  reader.onload = async ()=>{
     const body = {
       productName: pname.value.trim(),
-      price: Number(pprice.value),
-      detail: pdetail.value.trim(),
-      image: reader.result,
-      wholesalerId: WID,       // 🔑 MongoDB _id automatically
-      shopName: profile.shopName,
-      mobile: profile.mobile,
-      address: profile.address
+      price:Number(pprice.value),
+      detail:pdetail.value.trim(),
+      image:reader.result,
+      wid:WID,
+      wholesalerId:WID,
+      shopName:profile.shopName,
+      mobile:profile.mobile,
+      address:profile.address
     };
-
     try{
-      const res = await fetch(`${API}/api/products`, {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":"Bearer " + TOKEN
-        },
-        body: JSON.stringify(body)
-      });
+      const res = await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify(body)});
       const data = await res.json();
-      console.log("ADD PRODUCT RESPONSE:", data);
-      if(data.success){
-        alert("Product added ✅");
-        closeAll();
-        loadProducts();
-      } else alert(data.message || "Failed");
-    } catch(err){
-      console.error(err);
-      alert("Server error");
-    }
+      if(data.success){ alert("Product added ✅"); closeAll(); loadProducts(); } 
+      else alert(data.message||"Product add failed");
+    }catch(err){ console.error(err); alert("Server error"); }
   };
   reader.readAsDataURL(imgFile);
 }
 
-/* ================= LOAD PRODUCTS ================= */
 async function loadProducts(){
   try{
-    const res = await fetch(`${API}/api/products/wholesaler/${WID}`, {
-      headers:{ "Authorization":"Bearer "+TOKEN }
-    });
+    const res = await fetch(API+"/api/products/wholesaler/"+WID,{headers:{"Authorization":"Bearer "+TOKEN}});
     const data = await res.json();
-    if(!data.success || data.products.length===0){
-      products.innerHTML = "No products found";
-      return;
-    }
-
-    products.innerHTML = data.products.map(p=>`
-      <div class="product-card">
-        <img src="${p.image}">
-        <h4>${p.productName}</h4>
-        <div class="price">₹${p.price}</div>
-      </div>
-    `).join("");
-  } catch(err){
-    console.error(err);
-    products.innerHTML = "Server error";
-  }
+    if(!data.success){ products.innerHTML="No products found"; return; }
+    products.innerHTML = data.products.map(p=>`<div class="product-card"><img src="${p.image}"><h4>${p.productName}</h4><div class="price">₹${p.price}</div></div>`).join("")||"No products";
+  }catch(err){ console.error(err); products.innerHTML="Server error"; }
 }
 
-/* ================= LOAD ORDERS ================= */
 async function loadOrders(){
   try{
-    const res = await fetch(`${API}/api/orders/wholesaler/${WID}`, {
-      headers:{ "Authorization":"Bearer "+TOKEN }
-    });
+    const res = await fetch(API+"/api/orders/wholesaler/"+WID,{headers:{"Authorization":"Bearer "+TOKEN}});
     const data = await res.json();
-    orders.innerHTML = data.orders.map(o=>`
-      <div class="card">
-        <b>${o.productName}</b> (₹${o.price})<br>
-        <small>Status: <b>${o.status}</b></small>
-      </div>
-    `).join("") || "No orders";
-  } catch(err){
-    console.error(err);
-    orders.innerHTML = "Error loading orders";
-  }
+    orders.innerHTML = data.orders.map(o=>`<div class="card"><b>${o.productName}</b> (₹${o.price})<br><small>Status: <b>${o.status}</b></small></div>`).join("")||"No orders";
+  }catch(err){ console.error(err); orders.innerHTML="Error loading orders"; }
 }
 
-/* ================= INIT ================= */
 loadProducts();
 </script>
 </body>
