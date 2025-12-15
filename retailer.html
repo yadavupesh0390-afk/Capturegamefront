@@ -120,136 +120,136 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
  <h3>My Orders</h3>  
  <div id="myOrders"></div>  
 </div>  
-</div>  <script>  
-let selectedProduct=null;  
-  
-function loadProducts(){  
- let list=JSON.parse(localStorage.getItem("products")||"[]")  
-  .filter(p=>p.wid===wid.value);  
-  
- products.innerHTML=list.map((p,i)=>`  
-  <div class="product-card" onclick="showDetail(${i})">  
-   <img src="${p.img}">  
-   <h4>${p.name}</h4>  
-   <div class="price">₹${p.price}</div>  
-  </div>  
- `).join("") || "No products found";  
-}  
-  
-function showDetail(i){  
- let WID = wid.value.trim();  
- let all = JSON.parse(localStorage.getItem("products")||"[]");  
- let list = all.filter(p=>p.wid===WID);  
- let p = list[i];  
-  
- let profile = JSON.parse(  
-   localStorage.getItem("wholesalerProfile_"+WID) || "{}"  
- );  
-  
- selectedProduct = {  
-   ...p,  
-   shop: p.shopName || profile.shopName || "N/A",  
-   mobile: p.mobile || profile.mobile || "N/A",  
-   address: p.address || profile.address || "N/A"  
- };  
-  
- dName.innerText=p.name;  
- dImg.src=p.img;  
- dPrice.innerText="₹"+p.price;  
- dDetail.innerText=p.detail;  
-  
- dShop.innerText=selectedProduct.shop;  
- dMobile.innerText=selectedProduct.mobile;  
- dAddress.innerText=selectedProduct.address;  
-  
- detailModal.style.display="flex";  
-}  
-  
-function openPayment(){  
- pShop.innerText=selectedProduct.shop;  
- pMobile.innerText=selectedProduct.mobile;  
- pImg.src=selectedProduct.img;  
- payModal.style.display="flex";  
-}  
-  
-function submitOrder(){  
- let name=document.getElementById("rName").value;  
- let mobile=document.getElementById("rMobile").value;  
- let txnId=document.getElementById("txn").value;  
- let proof=document.getElementById("proof").files[0];  
-  
- if(!name||!mobile||!txnId||!proof){  
-  alert("All fields required");  
-  return;  
- }  
-  
- let reader=new FileReader();  
- reader.onload=function(){  
-  let orders=JSON.parse(localStorage.getItem("orders")||"[]");  
-  let orderId=Date.now();  
-  
-  orders.push({  
-   orderId: orderId,  
-   wid:selectedProduct.wid,  
-   product:selectedProduct.name,  
-   price:selectedProduct.price,  
-   productImg:selectedProduct.img,  
-   retailerName:name,  
-   retailerMobile:mobile,  
-   txnId:txnId,  
-   proofImg:reader.result,  
-   status:"pending",  
-   statusTime:Date.now()  
-  });  
-  
-  localStorage.setItem("orders",JSON.stringify(orders));  
-  alert("Order sent successfully ✅");  
-  closeAll();  
-};  
-  
- reader.readAsDataURL(proof);  
-}  
-  
-function closeAll(){  
- document.querySelectorAll(".modal").forEach(m=>m.style.display="none");  
-}  
-  
-// ===== MY ORDERS =====  
-function openOrders(){  
- document.getElementById("ordersModal").style.display="flex";  
- displayMyOrders();  
-}  
-  
-function displayMyOrders(){  
- let all=JSON.parse(localStorage.getItem("orders")||"[]");  
- let rMobile=document.getElementById("rMobile").value;  
- let myOrders=all.filter(o=>o.retailerMobile===rMobile);  
-  
- // Remove delivered orders older than 10 min  
- let now=Date.now();  
- myOrders=myOrders=myOrders.filter(o=>{  
-   if(o.status==="delivered" && now - o.statusTime > 600000) return false;  
-   return true;  
- });  
-  
- let myOrdersDiv=document.getElementById("myOrders");  
- myOrdersDiv.innerHTML=myOrders.map(o=>`  
-   <div class="order-status">  
-     <b>${o.product}</b> (₹${o.price})<br>  
-     <div class="step ${o.status==='pending'?'active':''}">● PENDING</div>  
-     <div class="step ${o.status==='confirmed'?'active':''}">● CONFIRMED</div>  
-     <div class="step ${o.status==='pickup'?'active':''}">● PICKUP</div>  
-     <div class="step ${o.status==='delivered'?'active':''}">● DELIVERED</div>  
-   </div>  
- `).join('') || "No orders";  
-  
- localStorage.setItem("orders",JSON.stringify(all));  
-}  
-  
-setInterval(()=>{  
- if(document.getElementById("ordersModal").style.display==="flex"){  
-   displayMyOrders();  
- }  
-},30000);  
+</div>  
+ <script>
+const API = "https://shopbacked-vmhs.onrender.com";
+const TOKEN = localStorage.getItem("token");
+
+let selectedProduct = null;
+
+/* ===== LOAD PRODUCTS FROM SERVER ===== */
+async function loadProducts(){
+ const wholesalerId = wid.value.trim();
+ if(!wholesalerId) return alert("Enter Wholesaler ID");
+
+ const res = await fetch(API+"/api/products/wholesaler/"+wholesalerId,{
+   headers:{ "Authorization":"Bearer "+TOKEN }
+ });
+ const data = await res.json();
+
+ if(!data.success){
+   products.innerHTML = "No products found";
+   return;
+ }
+
+ products.innerHTML = data.products.map(p=>`
+  <div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
+   <img src="${p.image}">
+   <h4>${p.productName}</h4>
+   <div class="price">₹${p.price}</div>
+  </div>
+ `).join("") || "No products";
+}
+
+/* ===== SHOW DETAIL ===== */
+function showDetail(p){
+ selectedProduct = p;
+
+ dName.innerText = p.productName;
+ dImg.src = p.image;
+ dPrice.innerText = "₹"+p.price;
+ dDetail.innerText = p.detail;
+
+ dShop.innerText = p.shopName;
+ dMobile.innerText = p.mobile;
+ dAddress.innerText = p.address;
+
+ detailModal.style.display = "flex";
+}
+
+/* ===== OPEN PAYMENT ===== */
+function openPayment(){
+ pShop.innerText = selectedProduct.shopName;
+ pMobile.innerText = selectedProduct.mobile;
+ pImg.src = selectedProduct.image;
+ payModal.style.display = "flex";
+}
+
+/* ===== SUBMIT ORDER (SERVER) ===== */
+async function submitOrder(){
+ let name = rName.value;
+ let mobile = rMobile.value;
+ let txnId = txn.value;
+ let proofFile = proof.files[0];
+
+ if(!name || !mobile || !txnId || !proofFile){
+  alert("All fields required");
+  return;
+ }
+
+ let reader = new FileReader();
+ reader.onload = async ()=>{
+   const body = {
+     wholesalerId: selectedProduct.wholesalerId,
+     productId: selectedProduct._id,
+     productName: selectedProduct.productName,
+     price: selectedProduct.price,
+     productImg: selectedProduct.image,
+     retailerName: name,
+     retailerMobile: mobile,
+     txnId: txnId,
+     proofImg: reader.result
+   };
+
+   const res = await fetch(API+"/api/orders",{
+     method:"POST",
+     headers:{
+       "Content-Type":"application/json",
+       "Authorization":"Bearer "+TOKEN
+     },
+     body: JSON.stringify(body)
+   });
+
+   const data = await res.json();
+   if(data.success){
+     alert("Order placed successfully ✅");
+     closeAll();
+   }else{
+     alert(data.message || "Order failed");
+   }
+ };
+ reader.readAsDataURL(proofFile);
+}
+
+/* ===== MY ORDERS ===== */
+async function openOrders(){
+ ordersModal.style.display="flex";
+
+ const mobile = rMobile.value;
+ if(!mobile){
+   myOrders.innerHTML="Enter mobile number first";
+   return;
+ }
+
+ const res = await fetch(API+"/api/orders/retailer/"+mobile,{
+   headers:{ "Authorization":"Bearer "+TOKEN }
+ });
+ const data = await res.json();
+
+ myOrders.innerHTML = data.orders.map(o=>`
+  <div class="order-status">
+   <b>${o.productName}</b> (₹${o.price})
+   <div class="step ${o.status==='pending'?'active':''}">● PENDING</div>
+   <div class="step ${o.status==='confirmed'?'active':''}">● CONFIRMED</div>
+   <div class="step ${o.status==='pickup'?'active':''}">● PICKUP</div>
+   <div class="step ${o.status==='delivered'?'active':''}">● DELIVERED</div>
+  </div>
+ `).join("") || "No orders";
+}
+
+/* ===== CLOSE ===== */
+function closeAll(){
+ document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
+}
 </script>  </body>  
 </html>  
