@@ -159,6 +159,7 @@ img.full{
 <script>
 /* ===== AUTO LOCKED WHOLESALER ID ===== */
 const WID = localStorage.getItem("userId");
+const TOKEN = localStorage.getItem("token");
 
 if(!WID || localStorage.getItem("role")!=="wholesaler"){
   alert("Please login again");
@@ -166,6 +167,7 @@ if(!WID || localStorage.getItem("role")!=="wholesaler"){
 }
 
 widText.innerText = WID.substring(0,8).toUpperCase();
+const API = "https://shopbacked-vmhs.onrender.com";
 
 /* ===== UI ===== */
 function openProduct(){productModal.style.display="flex"}
@@ -194,51 +196,85 @@ function saveProfile(){
  closeAll();
 }
 
-/* ===== ADD PRODUCT ===== */
-function addProduct(){
+/* ===== ADD PRODUCT (SERVER) ===== */
+async function addProduct(){
  let f=pimg.files[0];
  if(!f) return alert("Image required");
- let profile = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID) || "{}");
- if(!profile.shopName){ alert("Set Shop Profile first"); return; }
 
- let r=new FileReader();
- r.onload=()=>{
-  let p=JSON.parse(localStorage.getItem("products")||"[]");
-  p.push({
-   wid: WID,
-   name: pname.value,
-   price: pprice.value,
-   detail: pdetail.value,
-   img: r.result,
-   shopName: profile.shopName,
-   mobile: profile.mobile,
-   address: profile.address
+ let profile = JSON.parse(localStorage.getItem("wholesalerProfile_"+WID) || "{}");
+ if(!profile.shopName){
+  alert("Set Shop Profile first");
+  return;
+ }
+
+ let reader = new FileReader();
+ reader.onload = async () => {
+
+  const body = {
+    productName: pname.value,
+    price: pprice.value,
+    detail: pdetail.value,
+    image: reader.result,
+    wholesalerId: WID,
+    shopName: profile.shopName,
+    mobile: profile.mobile,
+    address: profile.address
+  };
+
+  const res = await fetch(API+"/api/products",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+TOKEN
+    },
+    body: JSON.stringify(body)
   });
-  localStorage.setItem("products",JSON.stringify(p));
-  closeAll(); loadProducts();
+
+  const data = await res.json();
+
+  if(data.success){
+    alert("Product added ✅");
+    closeAll();
+    loadProducts();
+  }else{
+    alert(data.message || "Error");
+  }
  };
- r.readAsDataURL(f);
+
+ reader.readAsDataURL(f);
 }
 
-/* ===== LOAD PRODUCTS ===== */
-function loadProducts(){
- let list=JSON.parse(localStorage.getItem("products")||"[]")
-  .filter(p=>p.wid===WID);
- products.innerHTML=list.map((p,i)=>`
+/* ===== LOAD PRODUCTS (SERVER) ===== */
+async function loadProducts(){
+ const res = await fetch(API+"/api/products/wholesaler/"+WID,{
+   headers:{ "Authorization":"Bearer "+TOKEN }
+ });
+ const data = await res.json();
+
+ if(!data.success){
+  products.innerHTML="Error loading products";
+  return;
+ }
+
+ products.innerHTML = data.products.map(p=>`
   <div class="product-card">
-   <img src="${p.img}">
-   <h4>${p.name}</h4>
+   <img src="${p.image}">
+   <h4>${p.productName}</h4>
    <div class="price">₹${p.price}</div>
-  </div>`).join("") || "No products";
+  </div>
+ `).join("") || "No products";
 }
 
 /* ===== ORDERS ===== */
-function loadOrders(){
- let all=JSON.parse(localStorage.getItem("orders")||"[]")
-  .filter(o=>o.wid===WID);
- orders.innerHTML = all.map(o=>`
+async function loadOrders(){
+ const res = await fetch(API+"/api/orders/wholesaler/"+WID,{
+   headers:{ "Authorization":"Bearer "+TOKEN }
+ });
+ const data = await res.json();
+
+ orders.innerHTML = data.orders.map(o=>`
   <div class="card">
-   <b>${o.product}</b> (₹${o.price})
+   <b>${o.productName}</b> (₹${o.price})
    <p>Status: ${o.status}</p>
   </div>
  `).join("") || "No orders";
