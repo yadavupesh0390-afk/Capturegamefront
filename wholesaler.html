@@ -101,7 +101,7 @@ img.full{
 <body>
 <div class="main">
 
-  <!-- ICON BAR (ID BUTTON REMOVED) -->
+  <!-- ICON BAR -->
   <div class="icon-bar">
     <button class="icon-btn" onclick="openProfile()" title="Shop Profile">
       <i class="bi bi-shop"></i>
@@ -189,7 +189,6 @@ function closeAll(){
 /* ================= SAVE SHOP PROFILE ================= */
 function saveProfile(){
   const profile = {
-    wid: WID,
     shopName: shopName.value.trim(),
     mobile: shopMobile.value.trim(),
     address: shopAddress.value.trim()
@@ -207,7 +206,6 @@ function saveProfile(){
 
 /* ================= ADD PRODUCT (SERVER) ================= */
 async function addProduct(){
-
   if(!pname.value || !pprice.value || !pdetail.value){
     alert("All fields required");
     return;
@@ -227,61 +225,49 @@ async function addProduct(){
 
   const reader = new FileReader();
   reader.onload = async () => {
-
     const body = {
       productName: pname.value.trim(),
       price: Number(pprice.value),
       detail: pdetail.value.trim(),
       image: reader.result,
-
-      /* 🔥 IMPORTANT */
-      wid: WID,
-      wholesalerId: WID,
-
+      wholesalerId: WID,       // 🔑 MongoDB _id automatically
       shopName: profile.shopName,
       mobile: profile.mobile,
       address: profile.address
     };
 
     try{
-      const res = await fetch(API + "/api/products",{
-        method: "POST",
+      const res = await fetch(`${API}/api/products`, {
+        method:"POST",
         headers:{
           "Content-Type":"application/json",
           "Authorization":"Bearer " + TOKEN
         },
         body: JSON.stringify(body)
       });
-
       const data = await res.json();
       console.log("ADD PRODUCT RESPONSE:", data);
-
       if(data.success){
-        alert("Product added successfully ✅");
+        alert("Product added ✅");
         closeAll();
         loadProducts();
-      }else{
-        alert(data.message || "Product add failed");
-      }
-
-    }catch(err){
+      } else alert(data.message || "Failed");
+    } catch(err){
       console.error(err);
       alert("Server error");
     }
   };
-
   reader.readAsDataURL(imgFile);
 }
 
-/* ================= LOAD MY PRODUCTS ================= */
+/* ================= LOAD PRODUCTS ================= */
 async function loadProducts(){
   try{
-    const res = await fetch(API + "/api/products/wholesaler/" + WID,{
-      headers:{ "Authorization":"Bearer " + TOKEN }
+    const res = await fetch(`${API}/api/products/wholesaler/${WID}`, {
+      headers:{ "Authorization":"Bearer "+TOKEN }
     });
     const data = await res.json();
-
-    if(!data.success){
+    if(!data.success || data.products.length===0){
       products.innerHTML = "No products found";
       return;
     }
@@ -292,9 +278,8 @@ async function loadProducts(){
         <h4>${p.productName}</h4>
         <div class="price">₹${p.price}</div>
       </div>
-    `).join("") || "No products";
-
-  }catch(err){
+    `).join("");
+  } catch(err){
     console.error(err);
     products.innerHTML = "Server error";
   }
@@ -303,19 +288,17 @@ async function loadProducts(){
 /* ================= LOAD ORDERS ================= */
 async function loadOrders(){
   try{
-    const res = await fetch(API + "/api/orders/wholesaler/" + WID,{
-      headers:{ "Authorization":"Bearer " + TOKEN }
+    const res = await fetch(`${API}/api/orders/wholesaler/${WID}`, {
+      headers:{ "Authorization":"Bearer "+TOKEN }
     });
     const data = await res.json();
-
     orders.innerHTML = data.orders.map(o=>`
       <div class="card">
         <b>${o.productName}</b> (₹${o.price})<br>
         <small>Status: <b>${o.status}</b></small>
       </div>
     `).join("") || "No orders";
-
-  }catch(err){
+  } catch(err){
     console.error(err);
     orders.innerHTML = "Error loading orders";
   }
