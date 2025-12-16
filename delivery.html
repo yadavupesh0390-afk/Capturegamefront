@@ -4,30 +4,36 @@
 <meta charset="UTF-8">
 <title>Delivery Boy Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
 <style>
-body{margin:0;background:#f3f6fb;font-family:Poppins,sans-serif}
+*{box-sizing:border-box;font-family:Poppins,sans-serif}
+body{margin:0;background:#f3f6fb}
 .main{padding:15px;max-width:900px;margin:auto}
 .top-bar{display:flex;justify-content:space-between;align-items:center;background:#0f172a;color:#fff;padding:12px 16px;border-radius:14px}
 .icon-btn{background:#2563eb;border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer}
 .status-box,.order-card{background:#fff;margin-top:12px;padding:12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
-.order-card{display:flex;gap:10px}
+.order-card{display:flex;gap:10px;position:relative}
 .order-card img{width:80px;height:70px;object-fit:cover;border-radius:8px}
 button.primary{background:#16a34a;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
 button.warn{background:#f59e0b;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
 button.done{background:#2563eb;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
+.submit-code{display:flex;gap:8px;margin-top:5px}
+.submit-code input{flex:1;padding:6px;border-radius:6px;border:1px solid #ccc}
+.submit-code button{padding:6px 10px;border:none;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer}
 </style>
 </head>
+
 <body>
 <div class="main">
+
 <div class="top-bar">
  <h3>🚚 Delivery Dashboard</h3>
  <div>
   <button class="icon-btn" onclick="updateLocation()"><i class="bi bi-geo-alt-fill"></i></button>
-  <button class="icon-btn" onclick="loadOrders()"><i class="bi bi-bag-check"></i></button>
+  <button class="icon-btn" onclick="openProfile()"><i class="bi bi-person-circle"></i></button>
  </div>
 </div>
 
@@ -40,94 +46,151 @@ button.done{background:#2563eb;color:#fff;border:none;padding:7px 12px;border-ra
 <div id="orders"></div>
 </div>
 
+<!-- PROFILE MODAL -->
+<div class="modal" id="profileModal">
+ <div class="modal-content">
+   <h3>Profile</h3>
+   <input id="dbName" placeholder="Name">
+   <input id="dbMobile" placeholder="Mobile">
+   <button class="primary" onclick="saveProfile()">Save</button>
+   <button onclick="closeAll()">Close</button>
+ </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
 const API = "https://shopbacked-vmhs.onrender.com";
-const deliveryBoyId = localStorage.getItem("userId");
-const role = localStorage.getItem("role");
 const TOKEN = localStorage.getItem("token");
+const DBID = localStorage.getItem("userId");
+const ROLE = localStorage.getItem("role");
 
-if(!deliveryBoyId || role!=="delivery"){
+if(!DBID || ROLE!=="delivery"){
   alert("Login again"); location.href="index.html";
 }
 
-dbId.innerText = deliveryBoyId.substring(0,8).toUpperCase();
+dbId.innerText = DBID.substring(0,8).toUpperCase();
 
 /* ===== SOCKET.IO ===== */
 const socket = io(API);
-socket.emit("join", deliveryBoyId);
+socket.emit("joinDeliveryBoy", DBID);
 
-socket.on("newOrder", order=>{
-  alert(`New order: ${order.productName} (${order.vehicleRequired})`);
-  loadOrders();
-});
-socket.on("updateOrder", order=>{
-  loadOrders();
-});
+/* ===== PROFILE ===== */
+function openProfile(){
+ profileModal.style.display="flex";
+ const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
+ dbName.value = p.name||"";
+ dbMobile.value = p.mobile||"";
+}
+function saveProfile(){
+ const p = {name:dbName.value,mobile:dbMobile.value};
+ localStorage.setItem("deliveryProfile_"+DBID, JSON.stringify(p));
+ alert("Profile saved"); closeAll();
+}
 
 /* ===== LIVE LOCATION ===== */
 function updateLocation(){
  navigator.geolocation.getCurrentPosition(async pos=>{
+  const body={
+   deliveryBoyId:DBID,
+   lat:pos.coords.latitude,
+   lng:pos.coords.longitude
+  };
   await fetch(API+"/api/delivery/location",{
    method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({deliveryBoyId,lat:pos.coords.latitude,lng:pos.coords.longitude})
+   headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+   body:JSON.stringify(body)
   });
-  locText.innerText=`📍 ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+  locText.innerText=`📍 ${body.lat.toFixed(4)}, ${body.lng.toFixed(4)}`;
   alert("Location updated");
  });
 }
 
 /* ===== ORDERS ===== */
-async function loadOrders(){
- const res = await fetch(API+"/api/orders/delivery/available",{
-  headers:{ "Authorization":"Bearer "+TOKEN }
- });
- const data = await res.json();
+let ordersList = [];
 
- orders.innerHTML = data.orders.map(o=>`
-  <div class="order-card">
+function renderOrders(){
+ orders.innerHTML = ordersList.map(o=>`
+ <div class="order-card" id="order_${o._id}">
    <img src="${o.productImg}">
    <div style="flex:1">
-    <b>${o.productName}</b> ₹${o.price}<br>
-    🏪 ${o.shopName}<br>
-    🏬 ${o.retailerName}<br>
-    📞 ${o.retailerMobile}<br>
-    🚗 Vehicle: ${o.vehicleRequired}<br>
+     <b>${o.productName}</b> ₹${o.price}<br>
+     🏪 ${o.shopName} | 📞 ${o.shopMobile}<br>
+     🏬 ${o.retailerName} | 📞 ${o.retailerMobile}<br>
+     Vehicle: ${o.vehicle}<br>
+     <div>Status: <b>${o.status}</b></div>
 
-    ${o.status==="confirmed_by_wholesaler"?`<button class="primary" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
-    ${o.status==="delivery_accepted"?`<button class="warn" onclick="pickupOrder('${o._id}')">Picked Up</button>`:""}
-    ${o.status==="picked_up"?`<input id="code_${o._id}" placeholder="Enter code"><button class="done" onclick="deliverOrder('${o._id}')">Delivered</button>`:""}
-
-    <div><small>Status: <b>${o.status}</b></small></div>
+     ${o.status==="delivery_assigned"?`<button class="primary" onclick="acceptOrder('${o._id}')">Accept Delivery</button>`:""}
+     ${o.status==="delivery_accepted"?`<button class="warn" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
+     ${o.status==="pickup"?`
+       <div class="submit-code">
+         <input placeholder="Enter code from Retailer" id="code_${o._id}">
+         <button onclick="submitDelivered('${o._id}')">Submit</button>
+       </div>`:""}
    </div>
-  </div>`).join("") || "<p>No orders</p>";
+ </div>`).join("") || "<p>No orders</p>";
 }
+
+/* ===== SOCKET NOTIFICATION ===== */
+socket.on("newOrder", order=>{
+  ordersList.unshift(order); // newest on top
+  renderOrders();
+  alert("New Order Assigned!");
+});
 
 /* ===== ACTIONS ===== */
 async function acceptOrder(id){
- await fetch(API+"/api/orders/"+id+"/delivery-accept",{method:"POST"});
- loadOrders();
+ await fetch(`${API}/api/orders/${id}/accept`,{method:"POST", headers:{"Authorization":"Bearer "+TOKEN}});
+ ordersList = ordersList.map(o=>o._id===id?{...o,status:"delivery_accepted"}:o);
+ renderOrders();
 }
 
 async function pickupOrder(id){
- await fetch(API+"/api/orders/"+id+"/pickup",{method:"POST"});
- loadOrders();
+ // Generate auto code for retailer
+ const code = Math.floor(100000 + Math.random()*900000);
+ const order = ordersList.find(o=>o._id===id);
+ const deliveryProfile = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
+ await fetch(`${API}/api/orders/${id}/pickup`,{
+   method:"POST",
+   headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+   body:JSON.stringify({
+     code,
+     deliveryBoyName: deliveryProfile.name,
+     deliveryBoyMobile: deliveryProfile.mobile
+   })
+ });
+ ordersList = ordersList.map(o=>o._id===id?{...o,status:"pickup"}:o);
+ renderOrders();
 }
 
-async function deliverOrder(id){
- const code = document.getElementById("code_"+id).value;
- const res = await fetch(API+"/api/orders/"+id+"/delivered",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({enteredCode:code})
+/* ===== SUBMIT DELIVERED ===== */
+async function submitDelivered(id){
+ const input = document.getElementById(`code_${id}`);
+ if(!input.value) return alert("Enter code");
+ await fetch(`${API}/api/orders/${id}/delivered`,{
+  method:"POST",
+  headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+  body:JSON.stringify({code: input.value})
+ });
+ ordersList = ordersList.map(o=>o._id===id?{...o,status:"delivered"}:o);
+ renderOrders();
+}
+
+/* ===== INITIAL LOAD ===== */
+async function loadOrders(){
+ const res = await fetch(`${API}/api/orders/delivery/available`,{
+   headers:{"Authorization":"Bearer "+TOKEN}
  });
  const data = await res.json();
- if(data.success){ alert("Delivered ✅"); loadOrders(); }
- else alert("Invalid code");
+ ordersList = data.orders;
+ renderOrders();
 }
-
 loadOrders();
 setInterval(loadOrders,10000);
+
+/* ===== CLOSE MODALS ===== */
+function closeAll(){
+ document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
+}
 </script>
 </body>
 </html>
