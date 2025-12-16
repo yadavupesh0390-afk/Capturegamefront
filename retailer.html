@@ -30,9 +30,6 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 .order-status{background:#f8fafc;padding:10px;border-radius:10px;margin-top:10px}
 .step{font-size:12px;color:#999}
 .step.active{color:#16a34a;font-weight:600}
-.code-box{display:flex;gap:8px;margin-top:5px}
-.code-box input{flex:1;padding:6px;border-radius:6px;border:1px solid #ccc}
-.code-box button{padding:6px 10px;border:none;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer}
 </style>
 </head>
 
@@ -99,14 +96,10 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 </div>
 </div>
 
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
 const API="https://shopbacked-vmhs.onrender.com";
 const TOKEN=localStorage.getItem("token");
 let selectedProduct=null;
-
-/* SOCKET.IO */
-const socket = io(API);
 
 /* LOAD PRODUCTS */
 async function loadProducts(){
@@ -199,39 +192,22 @@ async function openOrders(){
  const res=await fetch(`${API}/api/orders/retailer/${mobile}`);
  const data=await res.json();
 
- myOrders.innerHTML = data.orders.map(o=>{
-  let pickupCodeInput = '';
-  if(o.status === 'delivered' && o.autoCode){
-    pickupCodeInput = `<div class="code-box">
-      <input readonly value="${o.autoCode}" />
-    </div>`;
-  }
-  return `
+ myOrders.innerHTML=data.orders.map(o=>`
   <div class="order-status">
    <b>${o.productName}</b> ₹${o.price}
    <div class="step ${o.status==="pending"?"active":""}">● Pending</div>
    <div class="step ${o.status==="confirmed_by_wholesaler"?"active":""}">● Confirmed</div>
+   <div class="step ${o.status==="assigned_to_delivery"?"active":""}">● Delivery Assigned</div>
    <div class="step ${o.status==="delivery_accepted"?"active":""}">● Delivery Accepted</div>
-   <div class="step ${o.status==="pickup"?"active":""}">● Pickup</div>
+   <div class="step ${o.status==="picked_up"?"active":""}">● Pickup</div>
    <div class="step ${o.status==="delivered"?"active":""}">● Delivered</div>
-   ${pickupCodeInput}
   </div>
-  `;
- }).join("") || "No orders";
+ `).join("") || "No orders";
 }
 
-/* CLOSE MODALS */
 function closeAll(){
  document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
 }
-
-/* SOCKET: Receive auto-generated code from delivery boy */
-socket.on("orderPicked", data=>{
- if(data.retailerMobile === rMobile.value){
-   alert(`Your order ${data.productName} picked by Delivery Boy. Use Code: ${data.code}`);
-   openOrders();
- }
-});
 </script>
 </body>
 </html>
