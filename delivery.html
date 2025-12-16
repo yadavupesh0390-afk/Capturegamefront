@@ -4,176 +4,103 @@
 <meta charset="UTF-8">
 <title>Delivery Boy Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
 <style>
-*{box-sizing:border-box;font-family:Poppins,sans-serif}
-body{margin:0;background:#f3f6fb}
-
+body{margin:0;background:#f3f6fb;font-family:Poppins,sans-serif}
 .main{padding:15px;max-width:900px;margin:auto}
-
-.top-bar{
- display:flex;justify-content:space-between;align-items:center;
- background:#0f172a;color:#fff;
- padding:12px 16px;border-radius:14px
-}
-.icon-btn{
- background:#2563eb;border:none;color:#fff;
- width:42px;height:42px;border-radius:50%;
- font-size:20px;cursor:pointer
-}
-
-.status-box,.order-card{
- background:#fff;margin-top:12px;padding:12px;
- border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)
-}
-
+.top-bar{display:flex;justify-content:space-between;align-items:center;background:#0f172a;color:#fff;padding:12px 16px;border-radius:14px}
+.icon-btn{background:#2563eb;border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer}
+.status-box,.order-card{background:#fff;margin-top:12px;padding:12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
 .order-card{display:flex;gap:10px}
-.order-card img{
- width:80px;height:70px;object-fit:cover;border-radius:8px
-}
-
+.order-card img{width:80px;height:70px;object-fit:cover;border-radius:8px}
 button.primary{background:#16a34a;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
 button.warn{background:#f59e0b;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
 button.done{background:#2563eb;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
-
-/* MODAL */
-.modal{
- position:fixed;inset:0;
- background:rgba(0,0,0,.5);
- display:none;align-items:center;justify-content:center;
- z-index:50
-}
-.modal-content{
- background:#fff;padding:20px;
- width:90%;max-width:400px;
- border-radius:14px
-}
-input,select{
- width:100%;padding:10px;margin:8px 0;
- border-radius:8px;border:1px solid #ccc
-}
 </style>
 </head>
-
 <body>
 <div class="main">
-
-<!-- TOP BAR -->
 <div class="top-bar">
  <h3>🚚 Delivery Dashboard</h3>
  <div>
-  <button class="icon-btn" onclick="updateLocation()">
-   <i class="bi bi-geo-alt-fill"></i>
-  </button>
-  <button class="icon-btn" onclick="openProfile()">
-   <i class="bi bi-person-circle"></i>
-  </button>
-  <button class="icon-btn" onclick="loadOrders()">
-   <i class="bi bi-bell-fill"></i>
-  </button>
+  <button class="icon-btn" onclick="updateLocation()"><i class="bi bi-geo-alt-fill"></i></button>
+  <button class="icon-btn" onclick="loadOrders()"><i class="bi bi-bag-check"></i></button>
  </div>
 </div>
 
-<!-- STATUS -->
 <div class="status-box">
  <b>ID:</b> <span id="dbId"></span><br>
  <b>Status:</b> 🟢 ACTIVE<br>
  <small id="locText">📍 Location not set</small>
 </div>
 
-<!-- ORDERS -->
 <div id="orders"></div>
 </div>
 
-<!-- PROFILE MODAL -->
-<div class="modal" id="profileModal">
- <div class="modal-content">
-  <h3>👤 Delivery Profile</h3>
-
-  <input id="pName" placeholder="Full Name">
-  <input id="pMobile" placeholder="Mobile Number">
-
-  <select id="pVehicle">
-   <option value="">Select Vehicle Type</option>
-   <option value="two">Two Wheeler</option>
-   <option value="three">Three Wheeler</option>
-   <option value="four">Four Wheeler</option>
-  </select>
-
-  <input id="pVehicleNo" placeholder="Vehicle Number">
-
-  <button class="primary" onclick="saveProfile()">Save</button>
-  <button onclick="closeProfile()">Close</button>
- </div>
-</div>
-
 <script>
-const API="https://shopbacked-vmhs.onrender.com";
-const deliveryBoyId=localStorage.getItem("userId");
-const role=localStorage.getItem("role");
-const TOKEN=localStorage.getItem("token");
+const API = "https://shopbacked-vmhs.onrender.com";
+const deliveryBoyId = localStorage.getItem("userId");
+const role = localStorage.getItem("role");
+const TOKEN = localStorage.getItem("token");
 
 if(!deliveryBoyId || role!=="delivery"){
- alert("Login again");
- location.href="index.html";
+  alert("Login again"); location.href="index.html";
 }
 
-dbId.innerText=deliveryBoyId.substring(0,8).toUpperCase();
+dbId.innerText = deliveryBoyId.substring(0,8).toUpperCase();
 
-/* ===== LOCATION ===== */
+/* ===== SOCKET.IO ===== */
+const socket = io(API);
+socket.emit("join", deliveryBoyId);
+
+socket.on("newOrder", order=>{
+  alert(`New order: ${order.productName} (${order.vehicleRequired})`);
+  loadOrders();
+});
+socket.on("updateOrder", order=>{
+  loadOrders();
+});
+
+/* ===== LIVE LOCATION ===== */
 function updateLocation(){
  navigator.geolocation.getCurrentPosition(async pos=>{
-  const lat=pos.coords.latitude;
-  const lng=pos.coords.longitude;
-
   await fetch(API+"/api/delivery/location",{
    method:"POST",
-   headers:{
-    "Content-Type":"application/json",
-    "Authorization":"Bearer "+TOKEN
-   },
-   body:JSON.stringify({deliveryBoyId,lat,lng})
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({deliveryBoyId,lat:pos.coords.latitude,lng:pos.coords.longitude})
   });
-
-  locText.innerText=`📍 ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  locText.innerText=`📍 ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
   alert("Location updated");
  });
 }
 
 /* ===== ORDERS ===== */
 async function loadOrders(){
- const res=await fetch(API+"/api/orders/delivery/available",{
-  headers:{Authorization:"Bearer "+TOKEN}
+ const res = await fetch(API+"/api/orders/delivery/available",{
+  headers:{ "Authorization":"Bearer "+TOKEN }
  });
- const data=await res.json();
+ const data = await res.json();
 
- orders.innerHTML=data.orders.map(o=>`
- <div class="order-card">
-  <img src="${o.productImg}">
-  <div style="flex:1">
-   <b>${o.productName}</b><br>
-   ₹${o.price}<br>
-   🏪 ${o.shopName || "-"}<br>
-   🏬 ${o.retailerName}<br>
-   📞 ${o.retailerMobile}<br>
-   🚗 Vehicle: ${o.vehicle || "Any"}<br>
+ orders.innerHTML = data.orders.map(o=>`
+  <div class="order-card">
+   <img src="${o.productImg}">
+   <div style="flex:1">
+    <b>${o.productName}</b> ₹${o.price}<br>
+    🏪 ${o.shopName}<br>
+    🏬 ${o.retailerName}<br>
+    📞 ${o.retailerMobile}<br>
+    🚗 Vehicle: ${o.vehicleRequired}<br>
 
-   ${o.status==="confirmed_by_wholesaler"?
-    `<button class="primary" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
+    ${o.status==="confirmed_by_wholesaler"?`<button class="primary" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
+    ${o.status==="delivery_accepted"?`<button class="warn" onclick="pickupOrder('${o._id}')">Picked Up</button>`:""}
+    ${o.status==="picked_up"?`<input id="code_${o._id}" placeholder="Enter code"><button class="done" onclick="deliverOrder('${o._id}')">Delivered</button>`:""}
 
-   ${o.status==="delivery_accepted"?
-    `<button class="warn" onclick="pickupOrder('${o._id}')">Picked Up</button>`:""}
-
-   ${o.status==="picked_up"?
-    `<button class="done" onclick="deliverOrder('${o._id}')">Delivered</button>`:""}
-
-   <div><small>Status: <b>${o.status}</b></small></div>
-  </div>
- </div>
- `).join("") || "<p>No orders</p>";
+    <div><small>Status: <b>${o.status}</b></small></div>
+   </div>
+  </div>`).join("") || "<p>No orders</p>";
 }
 
 /* ===== ACTIONS ===== */
@@ -181,39 +108,26 @@ async function acceptOrder(id){
  await fetch(API+"/api/orders/"+id+"/delivery-accept",{method:"POST"});
  loadOrders();
 }
+
 async function pickupOrder(id){
  await fetch(API+"/api/orders/"+id+"/pickup",{method:"POST"});
  loadOrders();
 }
-async function deliverOrder(id){
- await fetch(API+"/api/orders/"+id+"/delivered",{method:"POST"});
- loadOrders();
-}
 
-/* ===== PROFILE ===== */
-function openProfile(){
- profileModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("deliveryProfile_"+deliveryBoyId)||"{}");
- pName.value=p.name||"";
- pMobile.value=p.mobile||"";
- pVehicle.value=p.vehicle||"";
- pVehicleNo.value=p.vehicleNo||"";
-}
-function closeProfile(){profileModal.style.display="none";}
-function saveProfile(){
- const profile={
-  name:pName.value,
-  mobile:pMobile.value,
-  vehicle:pVehicle.value,
-  vehicleNo:pVehicleNo.value
- };
- localStorage.setItem("deliveryProfile_"+deliveryBoyId,JSON.stringify(profile));
- alert("Profile saved ✅");
- closeProfile();
+async function deliverOrder(id){
+ const code = document.getElementById("code_"+id).value;
+ const res = await fetch(API+"/api/orders/"+id+"/delivered",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({enteredCode:code})
+ });
+ const data = await res.json();
+ if(data.success){ alert("Delivered ✅"); loadOrders(); }
+ else alert("Invalid code");
 }
 
 loadOrders();
-setInterval(loadOrders,5000);
+setInterval(loadOrders,10000);
 </script>
 </body>
 </html>
