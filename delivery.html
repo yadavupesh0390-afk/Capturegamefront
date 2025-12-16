@@ -46,13 +46,24 @@ button.done{background:#2563eb;color:#fff;border:none;padding:7px 12px;border-ra
 <div id="orders"></div>
 </div>
 
+
 <!-- PROFILE MODAL -->
-<div class="modal" id="profileModal">
- <div class="modal-content">
-   <h3>Profile</h3>
+<div class="modal" id="profileModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;align-items:center;justify-content:center">
+ <div style="background:#fff;padding:20px;width:90%;max-width:420px;border-radius:14px">
+   <h3>🚚 Delivery Boy Profile</h3>
+
    <input id="dbName" placeholder="Name">
    <input id="dbMobile" placeholder="Mobile">
-   <button class="primary" onclick="saveProfile()">Save</button>
+   <select id="dbVehicle">
+     <option value="">Vehicle Type</option>
+     <option value="two_wheeler">Two Wheeler</option>
+     <option value="three_wheeler">Three Wheeler</option>
+     <option value="four_wheeler">Four Wheeler</option>
+   </select>
+   <input id="dbVehicleNo" placeholder="Vehicle Number">
+   <input id="dbCity" placeholder="City">
+
+   <button class="primary" onclick="saveProfile()">Save Profile</button>
    <button onclick="closeAll()">Close</button>
  </div>
 </div>
@@ -80,6 +91,22 @@ function openProfile(){
  const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
  dbName.value = p.name||"";
  dbMobile.value = p.mobile||"";
+ dbVehicle.value = p.vehicle||"";
+ dbVehicleNo.value = p.vehicleNo||"";
+ dbCity.value = p.city||"";
+}
+
+function saveProfile(){
+ const p = {
+   name: dbName.value,
+   mobile: dbMobile.value,
+   vehicle: dbVehicle.value,
+   vehicleNo: dbVehicleNo.value,
+   city: dbCity.value
+ };
+ localStorage.setItem("deliveryProfile_"+DBID, JSON.stringify(p));
+ alert("Profile Saved ✅");
+ closeAll();
 }
 function saveProfile(){
  const p = {name:dbName.value,mobile:dbMobile.value};
@@ -110,22 +137,44 @@ let ordersList = [];
 
 function renderOrders(){
  orders.innerHTML = ordersList.map(o=>`
- <div class="order-card" id="order_${o._id}">
+ <div class="order-card">
    <img src="${o.productImg}">
    <div style="flex:1">
      <b>${o.productName}</b> ₹${o.price}<br>
-     🏪 ${o.wholesalerName} | 📞 ${o.wholesalerMobile} | 🏠 ${o.wholesalerAddress}<br>
-     🏬 ${o.retailerName} | 📞 ${o.retailerMobile} | 🏠 ${o.retailerAddress}<br>
-     Vehicle: ${o.vehicleType}<br>
-     <div>Status: <b>${o.status}</b></div>
 
-     ${o.status==="assigned_to_delivery"?`<button class="primary" onclick="acceptOrder('${o._id}')">Accept Delivery</button>`:""}
-     ${o.status==="delivery_accepted"?`<button class="warn" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
+     🏪 ${o.wholesalerName}<br>
+     📞 ${o.wholesalerMobile}<br>
+     🏠 ${o.wholesalerAddress}<br><br>
+
+     🏬 ${o.retailerName}<br>
+     📞 ${o.retailerMobile}<br>
+     🏠 ${o.retailerAddress}<br>
+
+     🚗 Vehicle: <b>${o.vehicleType}</b><br>
+     📌 Status: <b>${o.status}</b><br>
+
+     ${o.status==="assigned_to_delivery"?`
+       <button class="primary" onclick="acceptOrder('${o._id}')">
+         <i class="bi bi-check-circle"></i> Accept
+       </button>`:""}
+
+     ${o.status==="delivery_accepted"?`
+       <button class="warn" onclick="pickupOrder('${o._id}')">
+         <i class="bi bi-box-seam"></i> Pickup
+       </button>`:""}
+
      ${o.status==="picked_up"?`
        <div class="submit-code">
-         <input placeholder="Enter code from Retailer" id="code_${o._id}">
-         <button onclick="submitDelivered('${o._id}')">Submit</button>
+         <input placeholder="Delivery Code" id="code_${o._id}">
+         <button onclick="submitDelivered('${o._id}')">
+           <i class="bi bi-send-check"></i>
+         </button>
        </div>`:""}
+
+     ${o.status==="delivered"?`
+       <button class="done" disabled>
+         <i class="bi bi-check2-all"></i> Delivered
+       </button>`:""}
    </div>
  </div>`).join("") || "<p>No orders</p>";
 }
