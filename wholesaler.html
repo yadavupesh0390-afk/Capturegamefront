@@ -151,7 +151,7 @@ async function loadProducts(){
 
 /* CONFIRM ORDER WITH VEHICLE TYPE */
 async function confirmOrder(id){
- const vehicle = prompt("Enter Vehicle Type: two/three/four wheeler");
+ const vehicle = prompt("Enter Vehicle Type: two_wheeler / three_wheeler / four_wheeler");
  if(!vehicle) return alert("Vehicle type required");
 
  const res = await fetch(API+"/api/orders/"+id+"/confirm",{
@@ -164,7 +164,7 @@ async function confirmOrder(id){
    alert("Order confirmed ✅");
    loadOrders();
 
-   // Notify delivery boy (socket)
+   // Notify delivery boy
    socket.emit("newOrder", { orderId: id, vehicle });
  }
 }
@@ -176,9 +176,15 @@ async function loadOrders(){
  orders.innerHTML=d.orders.map(o=>`
   <div class="card">
    <b>${o.productName}</b> ₹${o.price}<br>
+   🏪 ${o.wholesalerName} | 📞 ${o.wholesalerMobile}<br>
+   📍 ${o.wholesalerAddress}<br>
+   🏬 ${o.retailerName} | 📞 ${o.retailerMobile}<br>
+   📍 ${o.retailerAddress}<br>
+   Vehicle: ${o.vehicleType}<br>
    <div class="status">Status: <b>${o.status}</b></div>
    ${o.status==="pending"?`<button class="success" onclick="confirmOrder('${o._id}')">Confirm Order</button>`:""}
-  </div>`).join("") || "No orders";
+  </div>
+ `).join("") || "No orders";
 }
 
 loadProducts();
