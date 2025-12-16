@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Retailer Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
@@ -21,18 +20,19 @@ body{margin:0;background:#f3f6fb}
 .product-card h4{font-size:12px;margin:5px 0}
 .price{font-size:12px;color:#16a34a;font-weight:600}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
-.modal-content{background:#fff;padding:20px;width:90%;max-width:520px;border-radius:15px;max-height:85vh;overflow:auto;position:relative}
+.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto;position:relative}
 .close-btn,.buy-btn{position:absolute;top:10px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}
 .close-btn{right:10px;background:#ef4444}
 .buy-btn{right:55px;background:#2563eb}
-input,select{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
-button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer;width:100%}
+input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
 img.full{width:100%;border-radius:10px;margin:10px 0}
-.order-status{background:#f8fafc;padding:12px;border-radius:10px;margin-top:12px}
+.order-status{background:#f8fafc;padding:10px;border-radius:10px;margin-top:10px}
 .step{font-size:12px;color:#999}
 .step.active{color:#16a34a;font-weight:600}
-.delivery-info{font-size:13px;margin-top:6px;color:#334155}
-.otp-box{margin-top:10px;background:#eef2ff;padding:10px;border-radius:10px}
+.code-box{display:flex;gap:8px;margin-top:5px}
+.code-box input{flex:1;padding:6px;border-radius:6px;border:1px solid #ccc}
+.code-box button{padding:6px 10px;border:none;border-radius:6px;background:#2563eb;color:#fff;cursor:pointer}
 </style>
 </head>
 
@@ -49,8 +49,8 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 </div>
 
 <div class="header">
- <input id="wid" placeholder="Enter Wholesaler ID">
- <button class="primary" onclick="loadProducts()">Search Products</button>
+ <input id="wid" placeholder="Enter Wholesaler ID (short / full)">
+ <button class="primary" onclick="loadProducts()">Search</button>
 </div>
 
 <div class="products-grid" id="products"></div>
@@ -66,7 +66,7 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
  <p id="dPrice" class="price"></p>
  <p id="dDetail"></p>
  <hr>
- <p><b>Wholesaler:</b> <span id="dShop"></span></p>
+ <p><b>Shop:</b> <span id="dShop"></span></p>
  <p><b>Address:</b> <span id="dAddress"></span></p>
  <p><b>Mobile / UPI:</b> <span id="dMobile"></span></p>
 </div>
@@ -75,22 +75,18 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 <!-- PAYMENT -->
 <div class="modal" id="payModal">
 <div class="modal-content">
- <h3>Payment & Order Details</h3>
+ <h3>Payment & Proof</h3>
+ <p><b>Shop:</b> <span id="pShop"></span></p>
+ <p><b>UPI:</b> <span id="pMobile"></span></p>
+ <img id="pImg" class="full">
 
  <input id="rName" placeholder="Retailer Name">
  <input id="rMobile" placeholder="Retailer Mobile">
-
- <select id="vehicle">
-  <option value="">Select Required Vehicle</option>
-  <option value="two_wheeler">Two Wheeler</option>
-  <option value="three_wheeler">Three Wheeler</option>
-  <option value="four_wheeler">Four Wheeler</option>
- </select>
-
  <input id="txn" placeholder="Transaction ID">
  <input id="proof" type="file" accept="image/*">
 
  <button class="primary" onclick="submitOrder()">Submit Order</button>
+ <button onclick="closeAll()">Cancel</button>
 </div>
 </div>
 
@@ -103,10 +99,14 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 </div>
 </div>
 
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
 const API="https://shopbacked-vmhs.onrender.com";
 const TOKEN=localStorage.getItem("token");
 let selectedProduct=null;
+
+/* SOCKET.IO */
+const socket = io(API);
 
 /* LOAD PRODUCTS */
 async function loadProducts(){
@@ -118,12 +118,17 @@ async function loadProducts(){
  });
  const data=await res.json();
 
- products.innerHTML=(data.products||[]).map(p=>`
+ if(!data.success || !data.products.length){
+  products.innerHTML="No products found";
+  return;
+ }
+
+ products.innerHTML=data.products.map(p=>`
   <div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
    <img src="${p.image}">
    <h4>${p.productName}</h4>
    <div class="price">₹${p.price}</div>
-  </div>`).join("") || "No products";
+  </div>`).join("");
 }
 
 /* SHOW DETAIL */
@@ -132,7 +137,7 @@ function showDetail(p){
  dName.innerText=p.productName;
  dImg.src=p.image;
  dPrice.innerText="₹"+p.price;
- dDetail.innerText=p.detail||"";
+ dDetail.innerText=p.detail;
  dShop.innerText=p.shopName;
  dMobile.innerText=p.mobile;
  dAddress.innerText=p.address;
@@ -141,13 +146,15 @@ function showDetail(p){
 
 /* OPEN PAYMENT */
 function openPayment(){
- detailModal.style.display="none";
+ pShop.innerText=selectedProduct.shopName;
+ pMobile.innerText=selectedProduct.mobile;
+ pImg.src=selectedProduct.image;
  payModal.style.display="flex";
 }
 
 /* SUBMIT ORDER */
 async function submitOrder(){
- if(!rName.value||!rMobile.value||!vehicle.value||!txn.value||!proof.files[0]){
+ if(!rName.value||!rMobile.value||!txn.value||!proof.files[0]){
   alert("All fields required"); return;
  }
 
@@ -161,7 +168,6 @@ async function submitOrder(){
    productImg:selectedProduct.image,
    retailerName:rName.value,
    retailerMobile:rMobile.value,
-   vehicleType:vehicle.value,
    txnId:txn.value,
    proofImg:reader.result
   };
@@ -177,7 +183,7 @@ async function submitOrder(){
 
   const data=await res.json();
   if(data.success){
-   alert("Order placed successfully ✅");
+   alert("Order placed (Pending) ✅");
    closeAll();
   }else alert("Order failed");
  };
@@ -193,51 +199,39 @@ async function openOrders(){
  const res=await fetch(`${API}/api/orders/retailer/${mobile}`);
  const data=await res.json();
 
- myOrders.innerHTML=(data.orders||[]).map(o=>`
+ myOrders.innerHTML = data.orders.map(o=>{
+  let pickupCodeInput = '';
+  if(o.status === 'delivered' && o.autoCode){
+    pickupCodeInput = `<div class="code-box">
+      <input readonly value="${o.autoCode}" />
+    </div>`;
+  }
+  return `
   <div class="order-status">
    <b>${o.productName}</b> ₹${o.price}
-
-   <div class="step ${o.status==="pending"?"active":""}">Pending</div>
-   <div class="step ${o.status==="confirmed"?"active":""}">Confirmed</div>
-   <div class="step ${o.status==="delivery_accepted"?"active":""}">Delivery Boy</div>
-   <div class="step ${o.status==="picked_up"?"active":""}">Picked Up</div>
-   <div class="step ${o.status==="delivered"?"active":""}">Delivered</div>
-
-   ${o.deliveryBoyName?`
-    <div class="delivery-info">
-     🚚 ${o.deliveryBoyName} | 📞 ${o.deliveryBoyMobile}
-    </div>`:""}
-
-   ${o.status==="picked_up"?`
-    <div class="otp-box">
-     <input placeholder="Enter Delivery OTP" id="otp-${o._id}">
-     <button class="primary" onclick="confirmDelivery('${o._id}')">Confirm Delivered</button>
-    </div>`:""}
+   <div class="step ${o.status==="pending"?"active":""}">● Pending</div>
+   <div class="step ${o.status==="confirmed_by_wholesaler"?"active":""}">● Confirmed</div>
+   <div class="step ${o.status==="delivery_accepted"?"active":""}">● Delivery Accepted</div>
+   <div class="step ${o.status==="pickup"?"active":""}">● Pickup</div>
+   <div class="step ${o.status==="delivered"?"active":""}">● Delivered</div>
+   ${pickupCodeInput}
   </div>
- `).join("") || "No orders";
+  `;
+ }).join("") || "No orders";
 }
 
-/* CONFIRM DELIVERY */
-async function confirmDelivery(id){
- const otp=document.getElementById("otp-"+id).value.trim();
- if(!otp) return alert("Enter OTP");
-
- const res=await fetch(`${API}/api/orders/${id}/delivered`,{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({otp})
- });
-
- const data=await res.json();
- if(data.success){
-  alert("Order Delivered ✅");
-  openOrders();
- }else alert("Invalid OTP ❌");
-}
-
+/* CLOSE MODALS */
 function closeAll(){
  document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
 }
+
+/* SOCKET: Receive auto-generated code from delivery boy */
+socket.on("orderPicked", data=>{
+ if(data.retailerMobile === rMobile.value){
+   alert(`Your order ${data.productName} picked by Delivery Boy. Use Code: ${data.code}`);
+   openOrders();
+ }
+});
 </script>
 </body>
 </html>
