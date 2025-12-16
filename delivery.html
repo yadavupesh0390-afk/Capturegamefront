@@ -20,6 +20,8 @@ body{margin:0;background:#f3f6fb}
 button.primary{background:#16a34a;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
 button.warn{background:#f59e0b;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
 button.done{background:#2563eb;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;margin-top:5px}
+input{width:100%;padding:7px;border-radius:6px;border:1px solid #ccc;margin-top:5px}
+.small{font-size:12px;color:#555}
 </style>
 </head>
 
@@ -44,84 +46,108 @@ button.done{background:#2563eb;color:#fff;border:none;padding:7px 12px;border-ra
 </div>
 
 <script>
-const API = "https://shopbacked-vmhs.onrender.com";
-const deliveryBoyId = localStorage.getItem("userId");
-const role = localStorage.getItem("role");
-const TOKEN = localStorage.getItem("token");
+const API="https://shopbacked-vmhs.onrender.com";
+const TOKEN=localStorage.getItem("token");
+const deliveryBoyId=localStorage.getItem("userId");
+const role=localStorage.getItem("role");
 
 if(!deliveryBoyId || role!=="delivery"){
  alert("Login again");
  location.href="index.html";
 }
 
-dbId.innerText = deliveryBoyId.substring(0,8).toUpperCase();
+dbId.innerText=deliveryBoyId.substring(0,8).toUpperCase();
+let myLocation=null;
 
-/* ===== LIVE LOCATION TO SERVER ===== */
+/* ===== LOCATION ===== */
 function updateLocation(){
  navigator.geolocation.getCurrentPosition(async pos=>{
-  const body={
-   deliveryBoyId,
+  myLocation={
    lat:pos.coords.latitude,
    lng:pos.coords.longitude
   };
   await fetch(API+"/api/delivery/location",{
    method:"POST",
    headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-   body:JSON.stringify(body)
+   body:JSON.stringify({deliveryBoyId,...myLocation})
   });
-  locText.innerText=`📍 ${body.lat.toFixed(4)}, ${body.lng.toFixed(4)}`;
+  locText.innerText=`📍 ${myLocation.lat.toFixed(4)}, ${myLocation.lng.toFixed(4)}`;
   alert("Location updated");
  });
 }
 
-/* ===== LOAD ASSIGNED / AVAILABLE ORDERS ===== */
-async function loadOrders(){
- const res = await fetch(API+"/api/orders/delivery/available",{
-  headers:{ "Authorization":"Bearer "+TOKEN }
- });
- const data = await res.json();
+/* ===== DISTANCE ===== */
+function distance(lat1,lon1,lat2,lon2){
+ const R=6371;
+ const dLat=(lat2-lat1)*Math.PI/180;
+ const dLon=(lon2-lon1)*Math.PI/180;
+ const a=Math.sin(dLat/2)**2+
+ Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+ Math.sin(dLon/2)**2;
+ return (R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))).toFixed(2);
+}
 
- orders.innerHTML = data.orders.map(o=>`
+/* ===== LOAD ORDERS ===== */
+async function loadOrders(){
+ const r=await fetch(API+"/api/orders/delivery/available",{
+  headers:{Authorization:"Bearer "+TOKEN}
+ });
+ const d=await r.json();
+
+ orders.innerHTML=d.orders.map(o=>{
+  if(o.vehicleType && o.vehicleType!==d.myVehicle) return "";
+
+  const dist=myLocation && o.shopLat
+   ? distance(myLocation.lat,myLocation.lng,o.shopLat,o.shopLng)+" km"
+   : "N/A";
+
+  return `
   <div class="order-card">
    <img src="${o.productImg}">
    <div style="flex:1">
-    <b>${o.productName}</b><br>
-    ₹${o.price}<br>
+    <b>${o.productName}</b> ₹${o.price}<br>
     🏪 ${o.shopName}<br>
-    🏬 ${o.retailerName}<br>
-    📞 ${o.retailerMobile}<br>
+    📍 ${o.shopAddress}<br>
+    📞 ${o.shopMobile}<br>
+    🚗 Required: <b>${o.vehicleType}</b><br>
+    📏 Distance: <b>${dist}</b>
 
-    ${o.status==="delivery_assigned" ? `
-      <button class="primary" onclick="acceptOrder('${o._id}')">Accept Delivery</button>
-    `:""}
+    ${o.status==="assigned_to_delivery"?`
+     <button class="primary" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
 
-    ${o.status==="delivery_accepted" ? `
-      <button class="warn" onclick="pickupOrder('${o._id}')">Picked Up</button>
-    `:""}
+    ${o.status==="delivery_accepted"?`
+     <button class="warn" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
 
-    ${o.status==="pickup" ? `
-      <button class="done" onclick="deliverOrder('${o._id}')">Delivered</button>
-    `:""}
+    ${o.status==="picked_up"?`
+     <input placeholder="Enter OTP" id="otp_${o._id}">
+     <button class="done" onclick="deliverOrder('${o._id}')">Submit</button>`:""}
 
-    <div><small>Status: <b>${o.status}</b></small></div>
+    <div class="small">Status: <b>${o.status}</b></div>
    </div>
-  </div>
- `).join("") || "<p>No orders</p>";
+  </div>`;
+ }).join("") || "<p>No orders</p>";
 }
 
 /* ===== ACTIONS ===== */
 async function acceptOrder(id){
- await fetch(API+"/api/orders/"+id+"/accept",{method:"POST"});
+ await fetch(API+"/api/orders/"+id+"/delivery-accept",{method:"POST"});
  loadOrders();
 }
 
 async function pickupOrder(id){
  await fetch(API+"/api/orders/"+id+"/pickup",{method:"POST"});
+ alert("OTP sent to retailer");
  loadOrders();
 }
 
 async function deliverOrder(id){
- await fetch(API+"/api/orders/"+id+"/delivered",{method:"POST"});
+ const otp=document.getElementById("otp_"+id).value;
+ if(!otp) return alert("Enter OTP");
+ await fetch(API+"/api/orders/"+id+"/delivered",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({otp})
+ });
  loadOrders();
 }
 
