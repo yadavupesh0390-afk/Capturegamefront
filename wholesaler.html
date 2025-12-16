@@ -1,218 +1,168 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Wholesaler Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-<style>
-*{box-sizing:border-box;font-family:Poppins,sans-serif}
-body{margin:0;background:#f3f6fb}
-.main{padding:20px;max-width:900px;margin:auto}
-.icon-bar{display:flex;justify-content:center;gap:20px;background:#0f172a;padding:12px;border-radius:14px;max-width:650px;margin:auto}
-.icon-btn{background:#2563eb;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer}
-.header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.1)}
-.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
-.product-card{background:#fff;padding:5px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}
-.product-card img{width:100%;height:80px;object-fit:cover;border-radius:8px}
-.product-card h4{font-size:12px;margin:5px 0}
-.price{color:#2563eb;font-weight:600;font-size:12px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
-.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
-input,textarea,select{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
-button.primary{background:#2563eb;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
-button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:6px}
-.card{background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:12px}
-.status{font-size:12px;margin-top:4px}
-</style>
-</head>
-
-<body>
-<div class="main">
-
-  <div class="icon-bar">
-    <button class="icon-btn" onclick="openProfile()"><i class="bi bi-shop"></i></button>
-    <button class="icon-btn" onclick="openProduct()"><i class="bi bi-plus"></i></button>
-    <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>
-  </div>
-
-  <div class="header">
-    <h3>Wholesaler Dashboard</h3>
-    <small>ID: <b id="widText"></b></small>
-  </div>
-
-  <div class="products-grid" id="products"></div>
-</div>
-
-<!-- PROFILE -->
-<div class="modal" id="profileModal">
- <div class="modal-content">
-  <h3>Shop Profile</h3>
-  <input id="shopName" placeholder="Shop Name">
-  <input id="shopMobile" placeholder="UPI / Mobile Number">
-  <textarea id="shopAddress" placeholder="Shop Address"></textarea>
-  <button class="primary" onclick="saveProfile()">Save</button>
-  <button onclick="closeAll()">Cancel</button>
- </div>
-</div>
-
-<!-- PRODUCT -->
-<div class="modal" id="productModal">
- <div class="modal-content">
-  <h3>Add Product</h3>
-  <input id="pname" placeholder="Product Name">
-  <input id="pprice" type="number" placeholder="Price">
-  <textarea id="pdetail" placeholder="Detail"></textarea>
-  <input id="pimg" type="file" accept="image/*">
-  <button class="primary" onclick="addProduct()">Save</button>
-  <button onclick="closeAll()">Cancel</button>
- </div>
-</div>
-
-<!-- ORDERS -->
-<div class="modal" id="orderModal">
- <div class="modal-content">
-  <h3>Orders</h3>
-  <div id="orders"></div>
-  <button onclick="closeAll()">Close</button>
- </div>
-</div>
-
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script>
-const API="https://shopbacked-vmhs.onrender.com";
-const TOKEN=localStorage.getItem("token");
-const WID=localStorage.getItem("userId");
-const ROLE=localStorage.getItem("role");
-
-if(!TOKEN||!WID||ROLE!=="wholesaler"){
-  alert("Login again"); location.href="index.html";
-}
-widText.innerText=WID.substring(0,8).toUpperCase();
-
-/* SOCKET.IO */
-const socket = io(API);
-socket.emit("joinWholesaler", WID);
-
-function openProduct(){productModal.style.display="flex";}
-function openOrders(){orderModal.style.display="flex";loadOrders();}
-function openProfile(){
- profileModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
- shopName.value=p.shopName||"";
- shopMobile.value=p.mobile||"";
- shopAddress.value=p.address||"";
-}
-function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}
-
-function saveProfile(){
- const p={shopName:shopName.value,mobile:shopMobile.value,address:shopAddress.value};
- localStorage.setItem("wholesalerProfile_"+WID,JSON.stringify(p));
- alert("Profile saved"); closeAll();
-}
-
-/* ADD PRODUCT */
-async function addProduct(){
- const img=pimg.files[0]; if(!img) return alert("Image required");
- const prof=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
- const r=new FileReader();
- r.onload=async()=>{
-  const res=await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-  body:JSON.stringify({
-    wholesalerId:WID,
-    productName:pname.value,
-    price:pprice.value,
-    detail:pdetail.value,
-    image:r.result,
-    shopName:prof.shopName,
-    mobile:prof.mobile,
-    address:prof.address
-  })});
-  const d=await res.json();
-  if(d.success){alert("Product added");closeAll();loadProducts();}
- };
- r.readAsDataURL(img);
-}
-
-/* LOAD PRODUCTS */
-async function loadProducts(){
- const r=await fetch(API+"/api/products/wholesaler/"+WID);
- const d=await r.json();
- products.innerHTML=d.products.map(p=>`
-  <div class="product-card">
-    <img src="${p.image}">
-    <h4>${p.productName}</h4>
-    <div class="price">₹${p.price}</div>
-  </div>`).join("");
-}
-
-/* CONFIRM ORDER WITH VEHICLE TYPE */
-async function confirmOrder(id){
- const vehicle = prompt("Enter Vehicle Type: two_wheeler / three_wheeler / four_wheeler");
- if(!vehicle) return alert("Vehicle type required");
-
- const res = await fetch(API+"/api/orders/"+id+"/confirm",{
-   method:"POST",
-   headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-   body:JSON.stringify({vehicle})
- });
- const data = await res.json();
- if(data.success){
-   alert("Order confirmed ✅");
-   loadOrders();
-
-   // Notify delivery boy
-   socket.emit("newOrder", { orderId: id, vehicle });
- }
-}
-
-/* LOAD ORDERS */
-asyncasync function loadOrders(){
- const r = await fetch(API+"/api/orders/wholesaler/"+WID);
- const d = await r.json();
-
- orders.innerHTML = d.orders.map(o=>`
-  <div class="card">
-   <b>${o.productName}</b> ₹${o.price}<br>
-
-   🏪 <b>${o.wholesalerName}</b> | 📞 ${o.wholesalerMobile}<br>
-   📍 ${o.wholesalerAddress}<br>
-
-   🏬 <b>${o.retailerName}</b> | 📞 ${o.retailerMobile}<br>
-   📍 ${o.retailerAddress}<br>
-
-   🚚 Vehicle: <b>${o.vehicleType || "Not selected"}</b><br>
-
-   <div class="status">
-     Status:
-     <b>${o.status}</b>
-   </div>
-
-   ${
-     o.status === "pending"
-     ? `
-     <button class="success"
-       onclick="confirmOrder('${o._id}')"
-       style="
-        display:flex;
-        align-items:center;
-        gap:8px;
-        font-weight:600;
-       ">
-       <i class="bi bi-check-circle-fill"></i>
-       Confirm Order
-     </button>
-     `
-     : ""
-   }
-  </div>
- `).join("") || "<p>No orders found</p>";
-}
-
-loadProducts();
-</script>
-</body>
-</html>
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<title>Wholesaler Dashboard</title>  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">  
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">  <style>  
+*{box-sizing:border-box;font-family:Poppins,sans-serif}  
+body{margin:0;background:#f3f6fb}  
+.main{padding:20px;max-width:900px;margin:auto}  
+.icon-bar{display:flex;justify-content:center;gap:20px;background:#0f172a;padding:12px;border-radius:14px;max-width:650px;margin:auto}  
+.icon-btn{background:#2563eb;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer}  
+.header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.1)}  
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}  
+.product-card{background:#fff;padding:5px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}  
+.product-card img{width:100%;height:80px;object-fit:cover;border-radius:8px}  
+.product-card h4{font-size:12px;margin:5px 0}  
+.price{color:#2563eb;font-weight:600;font-size:12px}  
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}  
+.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}  
+input,textarea,select{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}  
+button.primary{background:#2563eb;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}  
+button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:6px}  
+.card{background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:12px}  
+.status{font-size:12px;margin-top:4px}  
+</style>  </head>  <body>  
+<div class="main">    <div class="icon-bar">  
+    <button class="icon-btn" onclick="openProfile()"><i class="bi bi-shop"></i></button>  
+    <button class="icon-btn" onclick="openProduct()"><i class="bi bi-plus"></i></button>  
+    <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>  
+  </div>    <div class="header">  
+    <h3>Wholesaler Dashboard</h3>  
+    <small>ID: <b id="widText"></b></small>  
+  </div>    <div class="products-grid" id="products"></div>  
+</div>  <!-- PROFILE -->  <div class="modal" id="profileModal">  
+ <div class="modal-content">  
+  <h3>Shop Profile</h3>  
+  <input id="shopName" placeholder="Shop Name">  
+  <input id="shopMobile" placeholder="UPI / Mobile Number">  
+  <textarea id="shopAddress" placeholder="Shop Address"></textarea>  
+  <button class="primary" onclick="saveProfile()">Save</button>  
+  <button onclick="closeAll()">Cancel</button>  
+ </div>  
+</div>  <!-- PRODUCT -->  <div class="modal" id="productModal">  
+ <div class="modal-content">  
+  <h3>Add Product</h3>  
+  <input id="pname" placeholder="Product Name">  
+  <input id="pprice" type="number" placeholder="Price">  
+  <textarea id="pdetail" placeholder="Detail"></textarea>  
+  <input id="pimg" type="file" accept="image/*">  
+  <button class="primary" onclick="addProduct()">Save</button>  
+  <button onclick="closeAll()">Cancel</button>  
+ </div>  
+</div>  <!-- ORDERS -->  <div class="modal" id="orderModal">  
+ <div class="modal-content">  
+  <h3>Orders</h3>  
+  <div id="orders"></div>  
+  <button onclick="closeAll()">Close</button>  
+ </div>  
+</div>  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  <script>  
+const API="https://shopbacked-vmhs.onrender.com";  
+const TOKEN=localStorage.getItem("token");  
+const WID=localStorage.getItem("userId");  
+const ROLE=localStorage.getItem("role");  
+  
+if(!TOKEN||!WID||ROLE!=="wholesaler"){  
+  alert("Login again"); location.href="index.html";  
+}  
+widText.innerText=WID.substring(0,8).toUpperCase();  
+  
+/* SOCKET.IO */  
+const socket = io(API);  
+socket.emit("joinWholesaler", WID);  
+  
+function openProduct(){productModal.style.display="flex";}  
+function openOrders(){orderModal.style.display="flex";loadOrders();}  
+function openProfile(){  
+ profileModal.style.display="flex";  
+ const p=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");  
+ shopName.value=p.shopName||"";  
+ shopMobile.value=p.mobile||"";  
+ shopAddress.value=p.address||"";  
+}  
+function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}  
+  
+function saveProfile(){  
+ const p={shopName:shopName.value,mobile:shopMobile.value,address:shopAddress.value};  
+ localStorage.setItem("wholesalerProfile_"+WID,JSON.stringify(p));  
+ alert("Profile saved"); closeAll();  
+}  
+  
+/* ADD PRODUCT */  
+async function addProduct(){  
+ const img=pimg.files[0]; if(!img) return alert("Image required");  
+ const prof=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");  
+ const r=new FileReader();  
+ r.onload=async()=>{  
+  const res=await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},  
+  body:JSON.stringify({  
+    wholesalerId:WID,  
+    productName:pname.value,  
+    price:pprice.value,  
+    detail:pdetail.value,  
+    image:r.result,  
+    shopName:prof.shopName,  
+    mobile:prof.mobile,  
+    address:prof.address  
+  })});  
+  const d=await res.json();  
+  if(d.success){alert("Product added");closeAll();loadProducts();}  
+ };  
+ r.readAsDataURL(img);  
+}  
+  
+/* LOAD PRODUCTS */  
+async function loadProducts(){  
+ const r=await fetch(API+"/api/products/wholesaler/"+WID);  
+ const d=await r.json();  
+ products.innerHTML=d.products.map(p=>`  
+  <div class="product-card">  
+    <img src="${p.image}">  
+    <h4>${p.productName}</h4>  
+    <div class="price">₹${p.price}</div>  
+  </div>`).join("");  
+}  
+  
+/* CONFIRM ORDER WITH VEHICLE TYPE */  
+async function confirmOrder(id){  
+ const vehicle = prompt("Enter Vehicle Type: two_wheeler / three_wheeler / four_wheeler");  
+ if(!vehicle) return alert("Vehicle type required");  
+  
+ const res = await fetch(API+"/api/orders/"+id+"/confirm",{  
+   method:"POST",  
+   headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},  
+   body:JSON.stringify({vehicle})  
+ });  
+ const data = await res.json();  
+ if(data.success){  
+   alert("Order confirmed ✅");  
+   loadOrders();  
+  
+   // Notify delivery boy  
+   socket.emit("newOrder", { orderId: id, vehicle });  
+ }  
+}  
+  
+/* LOAD ORDERS */  
+async function loadOrders(){  
+ const r=await fetch(API+"/api/orders/wholesaler/"+WID);  
+ const d=await r.json();  
+ orders.innerHTML=d.orders.map(o=>`  
+  <div class="card">  
+   <b>${o.productName}</b> ₹${o.price}<br>  
+   🏪 ${o.wholesalerName} | 📞 ${o.wholesalerMobile}<br>  
+   📍 ${o.wholesalerAddress}<br>  
+   🏬 ${o.retailerName} | 📞 ${o.retailerMobile}<br>  
+   📍 ${o.retailerAddress}<br>  
+   Vehicle: ${o.vehicleType}<br>  
+   <div class="status">Status: <b>${o.status}</b></div>  
+   ${o.status==="pending"?`<button class="success" onclick="confirmOrder('${o._id}')" style="display:flex;align-items:center;gap:6px"><i class="bi bi-check-circle-fill"></i>
+  Confirm Order
+</button>`:""}
+  </div>  
+ `).join("") || "No orders";  
+}  
+  
+loadProducts();  
+</script>  </body>  
+</html>  
