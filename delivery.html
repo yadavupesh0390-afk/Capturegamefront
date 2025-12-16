@@ -114,14 +114,14 @@ function renderOrders(){
    <img src="${o.productImg}">
    <div style="flex:1">
      <b>${o.productName}</b> ₹${o.price}<br>
-     🏪 ${o.shopName} | 📞 ${o.shopMobile}<br>
-     🏬 ${o.retailerName} | 📞 ${o.retailerMobile}<br>
-     Vehicle: ${o.vehicle}<br>
+     🏪 ${o.wholesalerName} | 📞 ${o.wholesalerMobile} | 🏠 ${o.wholesalerAddress}<br>
+     🏬 ${o.retailerName} | 📞 ${o.retailerMobile} | 🏠 ${o.retailerAddress}<br>
+     Vehicle: ${o.vehicleType}<br>
      <div>Status: <b>${o.status}</b></div>
 
-     ${o.status==="delivery_assigned"?`<button class="primary" onclick="acceptOrder('${o._id}')">Accept Delivery</button>`:""}
+     ${o.status==="assigned_to_delivery"?`<button class="primary" onclick="acceptOrder('${o._id}')">Accept Delivery</button>`:""}
      ${o.status==="delivery_accepted"?`<button class="warn" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
-     ${o.status==="pickup"?`
+     ${o.status==="picked_up"?`
        <div class="submit-code">
          <input placeholder="Enter code from Retailer" id="code_${o._id}">
          <button onclick="submitDelivered('${o._id}')">Submit</button>
@@ -132,20 +132,19 @@ function renderOrders(){
 
 /* ===== SOCKET NOTIFICATION ===== */
 socket.on("newOrder", order=>{
-  ordersList.unshift(order); // newest on top
+  ordersList.unshift(order);
   renderOrders();
   alert("New Order Assigned!");
 });
 
 /* ===== ACTIONS ===== */
 async function acceptOrder(id){
- await fetch(`${API}/api/orders/${id}/accept`,{method:"POST", headers:{"Authorization":"Bearer "+TOKEN}});
+ await fetch(`${API}/api/orders/${id}/delivery-accept`,{method:"POST", headers:{"Authorization":"Bearer "+TOKEN}});
  ordersList = ordersList.map(o=>o._id===id?{...o,status:"delivery_accepted"}:o);
  renderOrders();
 }
 
 async function pickupOrder(id){
- // Generate auto code for retailer
  const code = Math.floor(100000 + Math.random()*900000);
  const order = ordersList.find(o=>o._id===id);
  const deliveryProfile = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
@@ -158,11 +157,10 @@ async function pickupOrder(id){
      deliveryBoyMobile: deliveryProfile.mobile
    })
  });
- ordersList = ordersList.map(o=>o._id===id?{...o,status:"pickup"}:o);
+ ordersList = ordersList.map(o=>o._id===id?{...o,status:"picked_up"}:o);
  renderOrders();
 }
 
-/* ===== SUBMIT DELIVERED ===== */
 async function submitDelivered(id){
  const input = document.getElementById(`code_${id}`);
  if(!input.value) return alert("Enter code");
