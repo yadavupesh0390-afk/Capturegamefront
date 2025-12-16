@@ -2,198 +2,204 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Delivery Boy Dashboard</title>
+<title>Delivery Partner Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- GOOGLE FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
-<!-- BOOTSTRAP ICONS (IMPORTANT) -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box;font-family:Poppins,sans-serif}
-body{margin:0;background:#f3f6fb}
-.main{padding:15px;max-width:900px;margin:auto}
+*{font-family:Poppins,sans-serif;box-sizing:border-box}
+body{margin:0;background:#eef2f7}
+.main{max-width:900px;margin:auto;padding:14px}
 
-.top-bar{
+.top{
+ background:#0f172a;color:#fff;
  display:flex;justify-content:space-between;align-items:center;
- background:#0f172a;color:#fff;padding:12px 16px;border-radius:14px
+ padding:14px;border-radius:16px
 }
 .icon-btn{
  background:#2563eb;border:none;color:#fff;
- width:42px;height:42px;border-radius:50%;
+ width:44px;height:44px;border-radius:50%;
  font-size:20px;cursor:pointer
 }
 
-.status-box,.order-card{
- background:#fff;margin-top:12px;padding:12px;
- border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)
+.card{
+ background:#fff;margin-top:14px;padding:14px;
+ border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.08)
 }
 
-.order-card{display:flex;gap:10px}
-.order-card img{
- width:80px;height:70px;object-fit:cover;border-radius:8px
+.order{
+ display:flex;gap:12px;margin-top:12px
+}
+.order img{
+ width:90px;height:80px;object-fit:cover;border-radius:10px
 }
 
-.action-btn{
+.badge{padding:4px 10px;border-radius:20px;font-size:12px}
+.green{background:#dcfce7;color:#166534}
+.orange{background:#fff7ed;color:#9a3412}
+.blue{background:#e0f2fe;color:#075985}
+
+.btn{
  display:inline-flex;align-items:center;gap:6px;
- border:none;padding:7px 12px;border-radius:8px;
- cursor:pointer;margin-top:6px;font-size:13px
+ padding:8px 14px;border:none;border-radius:10px;
+ cursor:pointer;margin-top:8px;font-size:13px
 }
 .accept{background:#16a34a;color:#fff}
 .pickup{background:#f59e0b;color:#fff}
-.submit{background:#2563eb;color:#fff}
+.done{background:#2563eb;color:#fff}
 
-.submit-code{
- display:flex;gap:6px;margin-top:6px
-}
-.submit-code input{
- flex:1;padding:6px;border-radius:6px;border:1px solid #ccc
-}
-
-/* MODAL */
 .modal{
- position:fixed;inset:0;background:rgba(0,0,0,.5);
- display:none;align-items:center;justify-content:center;z-index:50
+ position:fixed;inset:0;background:rgba(0,0,0,.45);
+ display:none;align-items:center;justify-content:center;z-index:99
 }
-.modal-content{
- background:#fff;padding:20px;border-radius:14px;
- width:90%;max-width:400px
+.modal-box{
+ background:#fff;width:92%;max-width:420px;
+ border-radius:16px;padding:20px
 }
-input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+input,select{
+ width:100%;padding:10px;margin-top:8px;
+ border-radius:10px;border:1px solid #ccc
+}
+
+.notify{
+ position:fixed;top:15px;right:15px;
+ background:#0f172a;color:#fff;
+ padding:12px 18px;border-radius:14px;
+ display:none;align-items:center;gap:10px
+}
 </style>
 </head>
 
 <body>
-<div class="main">
+<div class="notify" id="notify">
+ <i class="bi bi-bell-fill"></i>
+ <span id="notifyText"></span>
+</div>
 
-<div class="top-bar">
- <h3>🚚 Delivery Dashboard</h3>
+<div class="main">
+<div class="top">
+ <h3>🚚 Delivery Partner</h3>
  <div>
-  <button class="icon-btn" onclick="updateLocation()">
-   <i class="bi bi-geo-alt-fill"></i>
-  </button>
-  <button class="icon-btn" onclick="openProfile()">
-   <i class="bi bi-person-circle"></i>
-  </button>
+  <button class="icon-btn" onclick="openProfile()"><i class="bi bi-person-circle"></i></button>
  </div>
 </div>
 
-<div class="status-box">
+<div class="card">
  <b>ID:</b> <span id="dbId"></span><br>
- <b>Status:</b> 🟢 ACTIVE<br>
- <small id="locText">📍 Location not set</small>
+ <span class="badge green">ACTIVE</span>
 </div>
 
 <div id="orders"></div>
 </div>
 
-<!-- PROFILE MODAL -->
+<!-- PROFILE -->
 <div class="modal" id="profileModal">
- <div class="modal-content">
+ <div class="modal-box">
   <h3>Delivery Profile</h3>
-  <input id="dbName" placeholder="Full Name">
-  <input id="dbMobile" placeholder="Mobile Number">
-  <button class="action-btn accept" onclick="saveProfile()">
-   <i class="bi bi-save"></i> Save
+  <input id="pName" placeholder="Full Name">
+  <input id="pMobile" placeholder="Mobile">
+  <select id="pVehicle">
+   <option value="">Vehicle Type</option>
+   <option>Two Wheeler</option>
+   <option>Three Wheeler</option>
+   <option>Four Wheeler</option>
+  </select>
+  <input id="pVehicleNo" placeholder="Vehicle Number">
+  <input id="pCity" placeholder="City">
+  <button class="btn accept" onclick="saveProfile()">
+   <i class="bi bi-save"></i> Save Profile
   </button>
  </div>
 </div>
 
 <script>
 const API="https://shopbacked-vmhs.onrender.com";
-const TOKEN=localStorage.getItem("token");
 const DBID=localStorage.getItem("userId");
-const ROLE=localStorage.getItem("role");
-
-if(!DBID||ROLE!=="delivery"){
- alert("Login again");location.href="index.html";
-}
-
-dbId.innerText=DBID.substring(0,8).toUpperCase();
+dbId.innerText=DBID?.slice(0,8).toUpperCase();
 
 /* PROFILE */
 function openProfile(){
  profileModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
- dbName.value=p.name||"";
- dbMobile.value=p.mobile||"";
+ const p=JSON.parse(localStorage.getItem("deliveryProfile")||"{}");
+ pName.value=p.name||"";
+ pMobile.value=p.mobile||"";
+ pVehicle.value=p.vehicle||"";
+ pVehicleNo.value=p.vehicleNo||"";
+ pCity.value=p.city||"";
 }
 function saveProfile(){
- localStorage.setItem(
-  "deliveryProfile_"+DBID,
-  JSON.stringify({name:dbName.value,mobile:dbMobile.value})
- );
+ localStorage.setItem("deliveryProfile",JSON.stringify({
+  name:pName.value,
+  mobile:pMobile.value,
+  vehicle:pVehicle.value,
+  vehicleNo:pVehicleNo.value,
+  city:pCity.value
+ }));
  alert("Profile Saved");
  profileModal.style.display="none";
 }
 
-/* LOCATION */
-function updateLocation(){
- navigator.geolocation.getCurrentPosition(pos=>{
-  locText.innerText=`📍 ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
- });
+/* NOTIFICATION */
+function notify(msg){
+ notifyText.innerText=msg;
+ notify.style.display="flex";
+ setTimeout(()=>notify.style.display="none",3000);
 }
 
 /* LOAD ORDERS */
 async function loadOrders(){
- const res=await fetch(API+"/api/orders/delivery/available",{
-  headers:{Authorization:"Bearer "+TOKEN}
- });
+ const res=await fetch(API+"/api/orders/delivery/available");
  const data=await res.json();
  renderOrders(data.orders||[]);
 }
 
 function renderOrders(list){
  orders.innerHTML=list.map(o=>`
- <div class="order-card">
+ <div class="card order">
   <img src="${o.productImg}">
   <div style="flex:1">
-   <b>${o.productName}</b> ₹${o.price}<br>
-   🏪 ${o.wholesalerName}<br>
-   🏬 ${o.retailerName}<br>
+   <b>${o.productName}</b> ₹${o.price}<br><br>
+
+   🏪 <b>${o.wholesalerName}</b><br>
+   📞 ${o.wholesalerMobile}<br>
+   🏠 ${o.wholesalerAddress}<br><br>
+
+   🏬 <b>${o.retailerName}</b><br>
+   📞 ${o.retailerMobile}<br>
+   🏠 ${o.retailerAddress}<br><br>
+
    🚚 Vehicle: ${o.vehicleType}<br>
-   <b>Status:</b> ${o.status}<br>
+   <span class="badge blue">${o.status}</span><br>
 
    ${o.status==="confirmed_by_wholesaler"?`
-    <button class="action-btn accept" onclick="acceptOrder('${o._id}')">
+    <button class="btn accept" onclick="accept('${o._id}')">
      <i class="bi bi-check-circle-fill"></i> Accept
     </button>`:""}
 
    ${o.status==="delivery_accepted"?`
-    <button class="action-btn pickup" onclick="pickupOrder('${o._id}')">
+    <button class="btn pickup" onclick="pickup('${o._id}')">
      <i class="bi bi-box-seam-fill"></i> Pickup
     </button>`:""}
 
    ${o.status==="picked_up"?`
-    <div class="submit-code">
-     <input id="code_${o._id}" placeholder="Delivery Code">
-     <button class="action-btn submit" onclick="deliver('${o._id}')">
-      <i class="bi bi-check2-circle"></i>
-     </button>
-    </div>`:""}
+    <button class="btn done">
+     <i class="bi bi-check2-circle"></i> Delivered
+    </button>`:""}
   </div>
  </div>
- `).join("") || "<p>No Orders</p>";
+ `).join("")||"<p>No Orders</p>";
 }
 
-/* ACTIONS */
-async function acceptOrder(id){
+async function accept(id){
  await fetch(API+"/api/orders/"+id+"/delivery-accept",{method:"POST"});
+ notify("Order Accepted");
  loadOrders();
 }
-async function pickupOrder(id){
+async function pickup(id){
  await fetch(API+"/api/orders/"+id+"/pickup",{method:"POST"});
- loadOrders();
-}
-async function deliver(id){
- const code=document.getElementById("code_"+id).value;
- await fetch(API+"/api/orders/"+id+"/delivered",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({code})
- });
+ notify("Order Picked Up");
  loadOrders();
 }
 
