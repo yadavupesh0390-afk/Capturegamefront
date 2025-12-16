@@ -170,21 +170,46 @@ async function confirmOrder(id){
 }
 
 /* LOAD ORDERS */
-async function loadOrders(){
- const r=await fetch(API+"/api/orders/wholesaler/"+WID);
- const d=await r.json();
- orders.innerHTML=d.orders.map(o=>`
+asyncasync function loadOrders(){
+ const r = await fetch(API+"/api/orders/wholesaler/"+WID);
+ const d = await r.json();
+
+ orders.innerHTML = d.orders.map(o=>`
   <div class="card">
    <b>${o.productName}</b> ₹${o.price}<br>
-   🏪 ${o.wholesalerName} | 📞 ${o.wholesalerMobile}<br>
+
+   🏪 <b>${o.wholesalerName}</b> | 📞 ${o.wholesalerMobile}<br>
    📍 ${o.wholesalerAddress}<br>
-   🏬 ${o.retailerName} | 📞 ${o.retailerMobile}<br>
+
+   🏬 <b>${o.retailerName}</b> | 📞 ${o.retailerMobile}<br>
    📍 ${o.retailerAddress}<br>
-   Vehicle: ${o.vehicleType}<br>
-   <div class="status">Status: <b>${o.status}</b></div>
-   ${o.status==="pending"?`<button class="success" onclick="confirmOrder('${o._id}')">Confirm Order</button>`:""}
+
+   🚚 Vehicle: <b>${o.vehicleType || "Not selected"}</b><br>
+
+   <div class="status">
+     Status:
+     <b>${o.status}</b>
+   </div>
+
+   ${
+     o.status === "pending"
+     ? `
+     <button class="success"
+       onclick="confirmOrder('${o._id}')"
+       style="
+        display:flex;
+        align-items:center;
+        gap:8px;
+        font-weight:600;
+       ">
+       <i class="bi bi-check-circle-fill"></i>
+       Confirm Order
+     </button>
+     `
+     : ""
+   }
   </div>
- `).join("") || "No orders";
+ `).join("") || "<p>No orders found</p>";
 }
 
 loadProducts();
