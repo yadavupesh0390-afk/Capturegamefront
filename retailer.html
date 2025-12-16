@@ -90,7 +90,9 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
  <input id="txn" placeholder="Transaction ID">
  <input id="proof" type="file" accept="image/*">
 
- <button class="primary" onclick="submitOrder()">Submit Order</button>
+ <button class="primary" onclick="submitOrder()" type="button">
+ Submit Order
+</button>
  <button onclick="closeAll()">Cancel</button>
 </div>
 </div>
@@ -147,11 +149,16 @@ function showDetail(p){
 
 /* OPEN PAYMENT */
 function openPayment(){
- pShop.innerText=selectedProduct.shopName;
- pAddress.innerText=selectedProduct.address;
- pMobile.innerText=selectedProduct.mobile;
- pImg.src=selectedProduct.image;
- payModal.style.display="flex";
+ // 🔴 पहले product detail modal बंद करो
+ detailModal.style.display = "none";
+
+ // 🟢 फिर payment modal खोलो
+ pShop.innerText = selectedProduct.shopName;
+ pAddress.innerText = selectedProduct.address;
+ pMobile.innerText = selectedProduct.mobile;
+ pImg.src = selectedProduct.image;
+
+ payModal.style.display = "flex";
 }
 
 /* SUBMIT ORDER */
