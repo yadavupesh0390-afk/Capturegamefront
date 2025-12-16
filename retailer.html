@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Retailer Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
@@ -14,22 +15,14 @@ body{margin:0;background:#f3f6fb}
 .icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:600px;margin:auto}
 .icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.08)}
-.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px;max-height:70vh;overflow-y:auto}
-.product-card{background:#fff;padding:5px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}
-.product-card img{width:100%;height:80px;object-fit:cover;border-radius:8px}
-.product-card h4{font-size:12px;margin:5px 0}
-.price{font-size:12px;color:#16a34a;font-weight:600}
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.product-card{background:#fff;padding:6px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+.product-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}
+.price{color:#16a34a;font-weight:600;font-size:13px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
-.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto;position:relative}
-.close-btn,.buy-btn{position:absolute;top:10px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}
-.close-btn{right:10px;background:#ef4444}
-.buy-btn{right:55px;background:#2563eb}
-input, select, textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
+input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
 button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
-img.full{width:100%;border-radius:10px;margin:10px 0}
-.order-status{background:#f8fafc;padding:10px;border-radius:10px;margin-top:10px}
-.step{font-size:12px;color:#999}
-.step.active{color:#16a34a;font-weight:600}
 </style>
 </head>
 
@@ -46,7 +39,7 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 </div>
 
 <div class="header">
- <input id="wid" placeholder="Enter Wholesaler ID (short / full)">
+ <input id="wid" placeholder="Enter Wholesaler ID">
  <button class="primary" onclick="loadProducts()">Search</button>
 </div>
 
@@ -55,175 +48,168 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 
 <!-- PRODUCT DETAIL -->
 <div class="modal" id="detailModal">
-<div class="modal-content">
- <div class="close-btn" onclick="closeAll()">✕</div>
- <div class="buy-btn" onclick="openPayment()"><i class="bi bi-cart-plus"></i></div>
- <h3 id="dName"></h3>
- <img id="dImg" class="full">
- <p id="dPrice" class="price"></p>
- <p id="dDetail"></p>
- <hr>
- <p><b>Shop:</b> <span id="dShop"></span></p>
- <p><b>Address:</b> <span id="dAddress"></span></p>
- <p><b>Mobile / UPI:</b> <span id="dMobile"></span></p>
-</div>
+ <div class="modal-content">
+  <h3 id="dName"></h3>
+  <img id="dImg" style="width:100%;border-radius:10px">
+  <p id="dPrice"></p>
+  <p id="dDetail"></p>
+  <p><b>Shop:</b> <span id="dShop"></span></p>
+  <p><b>Address:</b> <span id="dAddress"></span></p>
+  <p><b>Mobile:</b> <span id="dMobile"></span></p>
+  <button class="primary" onclick="openPayment()">Buy</button>
+  <button onclick="closeAll()">Close</button>
+ </div>
 </div>
 
 <!-- PAYMENT -->
 <div class="modal" id="payModal">
-<div class="modal-content">
- <h3>Payment & Proof</h3>
- <p><b>Shop:</b> <span id="pShop"></span></p>
- <p><b>Address:</b> <span id="pAddress"></span></p>
- <p><b>UPI:</b> <span id="pMobile"></span></p>
- <img id="pImg" class="full">
+ <div class="modal-content">
+  <h3>Place Order</h3>
 
- <input id="rName" placeholder="Retailer Name">
- <input id="rMobile" placeholder="Retailer Mobile">
- <input id="rAddress" placeholder="Retailer Address">
- <select id="vehicleType">
-   <option value="">Select Vehicle</option>
-   <option value="two_wheeler">Two Wheeler</option>
-   <option value="three_wheeler">Three Wheeler</option>
-   <option value="four_wheeler">Four Wheeler</option>
- </select>
- <input id="txn" placeholder="Transaction ID">
- <input id="proof" type="file" accept="image/*">
+  <input id="rName" placeholder="Retailer Name">
+  <input id="rMobile" placeholder="Retailer Mobile">
+  <textarea id="rAddress" placeholder="Retailer Address"></textarea>
 
- <button class="primary" onclick="submitOrder()" type="button">
- Submit Order
-</button>
- <button onclick="closeAll()">Cancel</button>
-</div>
+  <select id="vehicleType">
+    <option value="">Select Vehicle</option>
+    <option value="two_wheeler">Two Wheeler</option>
+    <option value="three_wheeler">Three Wheeler</option>
+    <option value="four_wheeler">Four Wheeler</option>
+  </select>
+
+  <input id="txn" placeholder="Transaction ID">
+  <input id="proof" type="file" accept="image/*">
+
+  <button class="primary" onclick="submitOrder()">Submit Order</button>
+  <button onclick="closeAll()">Cancel</button>
+ </div>
 </div>
 
 <!-- ORDERS -->
 <div class="modal" id="ordersModal">
-<div class="modal-content">
- <div class="close-btn" onclick="closeAll()">✕</div>
- <h3>My Orders</h3>
- <div id="myOrders"></div>
-</div>
+ <div class="modal-content">
+  <h3>My Orders</h3>
+  <div id="myOrders"></div>
+  <button onclick="closeAll()">Close</button>
+ </div>
 </div>
 
 <script>
-const API="https://shopbacked-vmhs.onrender.com";
-const TOKEN=localStorage.getItem("token");
-let selectedProduct=null;
+const API = "https://shopbacked-vmhs.onrender.com";
+const TOKEN = localStorage.getItem("token");
+const ROLE = localStorage.getItem("role");
+
+if(!TOKEN || ROLE !== "retailer"){
+ alert("Login as Retailer");
+ location.href = "index.html";
+}
+
+let selectedProduct = null;
 
 /* LOAD PRODUCTS */
 async function loadProducts(){
- const id=wid.value.trim();
+ const id = wid.value.trim();
  if(!id) return alert("Enter Wholesaler ID");
 
- const res=await fetch(`${API}/api/products/wholesaler/${id}`,{
-  headers:{Authorization:"Bearer "+TOKEN}
+ const res = await fetch(API + "/api/products/wholesaler/" + id, {
+  headers:{ Authorization:"Bearer "+TOKEN }
  });
- const data=await res.json();
+ const data = await res.json();
 
- if(!data.success || !data.products.length){
-  products.innerHTML="No products found";
-  return;
- }
-
- products.innerHTML=data.products.map(p=>`
+ products.innerHTML = data.products.map(p=>`
   <div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
    <img src="${p.image}">
-   <h4>${p.productName}</h4>
+   <div>${p.productName}</div>
    <div class="price">₹${p.price}</div>
-  </div>`).join("");
+  </div>`).join("") || "No products";
 }
 
 /* SHOW DETAIL */
 function showDetail(p){
- selectedProduct=p;
- dName.innerText=p.productName;
- dImg.src=p.image;
- dPrice.innerText="₹"+p.price;
- dDetail.innerText=p.detail;
- dShop.innerText=p.shopName;
- dMobile.innerText=p.mobile;
- dAddress.innerText=p.address;
+ selectedProduct = p;
+ dName.innerText = p.productName;
+ dImg.src = p.image;
+ dPrice.innerText = "₹"+p.price;
+ dDetail.innerText = p.detail;
+ dShop.innerText = p.shopName;
+ dMobile.innerText = p.mobile;
+ dAddress.innerText = p.address;
  detailModal.style.display="flex";
 }
 
 /* OPEN PAYMENT */
 function openPayment(){
- // 🔴 पहले product detail modal बंद करो
- detailModal.style.display = "none";
-
- // 🟢 फिर payment modal खोलो
- pShop.innerText = selectedProduct.shopName;
- pAddress.innerText = selectedProduct.address;
- pMobile.innerText = selectedProduct.mobile;
- pImg.src = selectedProduct.image;
-
- payModal.style.display = "flex";
+ detailModal.style.display="none";
+ payModal.style.display="flex";
 }
 
 /* SUBMIT ORDER */
 async function submitOrder(){
- const selectedVehicle = document.getElementById("vehicleType").value;
- if(!rName.value || !rMobile.value || !rAddress.value || !txn.value || !proof.files[0] || !selectedVehicle){
+ if(!rName.value || !rMobile.value || !rAddress.value || !vehicleType.value || !txn.value || !proof.files[0]){
   alert("All fields required"); return;
  }
 
  const reader = new FileReader();
  reader.onload = async () => {
+
   const body = {
    wholesalerId: selectedProduct.wholesalerId,
    wholesalerName: selectedProduct.shopName,
    wholesalerMobile: selectedProduct.mobile,
    wholesalerAddress: selectedProduct.address,
+
    productId: selectedProduct._id,
    productName: selectedProduct.productName,
    price: selectedProduct.price,
    productImg: selectedProduct.image,
+
    retailerName: rName.value,
    retailerMobile: rMobile.value,
    retailerAddress: rAddress.value,
-   vehicleType: selectedVehicle,
+
+   vehicle: vehicleType.value,
+   vehicleType: vehicleType.value,
+
    txnId: txn.value,
    proofImg: reader.result
   };
 
   const res = await fetch(API + "/api/orders", {
-   method: "POST",
-   headers: {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer " + TOKEN
+   method:"POST",
+   headers:{
+    "Content-Type":"application/json",
+    "Authorization":"Bearer "+TOKEN
    },
    body: JSON.stringify(body)
   });
 
   const data = await res.json();
+  console.log(data);
+
   if(data.success){
-   alert("Order placed (Pending) ✅");
+   alert("Order placed successfully ✅");
    closeAll();
-  } else {
+  }else{
    alert("Order failed");
   }
  };
+
  reader.readAsDataURL(proof.files[0]);
 }
 
 /* MY ORDERS */
 async function openOrders(){
  ordersModal.style.display="flex";
- const mobile=prompt("Enter your mobile number");
+ const mobile = prompt("Enter your mobile");
  if(!mobile) return;
 
- const res=await fetch(`${API}/api/orders/retailer/${mobile}`);
- const data=await res.json();
+ const res = await fetch(API + "/api/orders/retailer/" + mobile);
+ const data = await res.json();
 
- myOrders.innerHTML=data.orders.map(o=>`
-  <div class="order-status">
-   <b>${o.productName}</b> ₹${o.price}
-   <div class="step ${o.status==="pending"?"active":""}">● Pending</div>
-   <div class="step ${o.status==="confirmed_by_wholesaler"?"active":""}">● Confirmed</div>
-   <div class="step ${o.status==="assigned_to_delivery"?"active":""}">● Delivery Assigned</div>
-   <div class="step ${o.status==="picked_up"?"active":""}">● Pickup</div>
-   <div class="step ${o.status==="delivered"?"active":""}">● Delivered</div>
+ myOrders.innerHTML = data.orders.map(o=>`
+  <div style="background:#f8fafc;padding:10px;margin-bottom:8px;border-radius:10px">
+   <b>${o.productName}</b> ₹${o.price}<br>
+   Status: <b>${o.status}</b>
   </div>
  `).join("") || "No orders";
 }
