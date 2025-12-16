@@ -24,7 +24,7 @@ body{margin:0;background:#f3f6fb}
 .close-btn,.buy-btn{position:absolute;top:10px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer}
 .close-btn{right:10px;background:#ef4444}
 .buy-btn{right:55px;background:#2563eb}
-input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+input, select, textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
 button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
 img.full{width:100%;border-radius:10px;margin:10px 0}
 .order-status{background:#f8fafc;padding:10px;border-radius:10px;margin-top:10px}
@@ -74,11 +74,19 @@ img.full{width:100%;border-radius:10px;margin:10px 0}
 <div class="modal-content">
  <h3>Payment & Proof</h3>
  <p><b>Shop:</b> <span id="pShop"></span></p>
+ <p><b>Address:</b> <span id="pAddress"></span></p>
  <p><b>UPI:</b> <span id="pMobile"></span></p>
  <img id="pImg" class="full">
 
  <input id="rName" placeholder="Retailer Name">
  <input id="rMobile" placeholder="Retailer Mobile">
+ <input id="rAddress" placeholder="Retailer Address">
+ <select id="vehicleType">
+   <option value="">Select Vehicle</option>
+   <option value="two_wheeler">Two Wheeler</option>
+   <option value="three_wheeler">Three Wheeler</option>
+   <option value="four_wheeler">Four Wheeler</option>
+ </select>
  <input id="txn" placeholder="Transaction ID">
  <input id="proof" type="file" accept="image/*">
 
@@ -140,6 +148,7 @@ function showDetail(p){
 /* OPEN PAYMENT */
 function openPayment(){
  pShop.innerText=selectedProduct.shopName;
+ pAddress.innerText=selectedProduct.address;
  pMobile.innerText=selectedProduct.mobile;
  pImg.src=selectedProduct.image;
  payModal.style.display="flex";
@@ -147,38 +156,46 @@ function openPayment(){
 
 /* SUBMIT ORDER */
 async function submitOrder(){
- if(!rName.value||!rMobile.value||!txn.value||!proof.files[0]){
+ const selectedVehicle = document.getElementById("vehicleType").value;
+ if(!rName.value || !rMobile.value || !rAddress.value || !txn.value || !proof.files[0] || !selectedVehicle){
   alert("All fields required"); return;
  }
 
- const reader=new FileReader();
- reader.onload=async()=>{
-  const body={
-   wholesalerId:selectedProduct.wholesalerId,
-   productId:selectedProduct._id,
-   productName:selectedProduct.productName,
-   price:selectedProduct.price,
-   productImg:selectedProduct.image,
-   retailerName:rName.value,
-   retailerMobile:rMobile.value,
-   txnId:txn.value,
-   proofImg:reader.result
+ const reader = new FileReader();
+ reader.onload = async () => {
+  const body = {
+   wholesalerId: selectedProduct.wholesalerId,
+   wholesalerName: selectedProduct.shopName,
+   wholesalerMobile: selectedProduct.mobile,
+   wholesalerAddress: selectedProduct.address,
+   productId: selectedProduct._id,
+   productName: selectedProduct.productName,
+   price: selectedProduct.price,
+   productImg: selectedProduct.image,
+   retailerName: rName.value,
+   retailerMobile: rMobile.value,
+   retailerAddress: rAddress.value,
+   vehicleType: selectedVehicle,
+   txnId: txn.value,
+   proofImg: reader.result
   };
 
-  const res=await fetch(API+"/api/orders",{
-   method:"POST",
-   headers:{
-    "Content-Type":"application/json",
-    "Authorization":"Bearer "+TOKEN
+  const res = await fetch(API + "/api/orders", {
+   method: "POST",
+   headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + TOKEN
    },
-   body:JSON.stringify(body)
+   body: JSON.stringify(body)
   });
 
-  const data=await res.json();
+  const data = await res.json();
   if(data.success){
    alert("Order placed (Pending) ✅");
    closeAll();
-  }else alert("Order failed");
+  } else {
+   alert("Order failed");
+  }
  };
  reader.readAsDataURL(proof.files[0]);
 }
@@ -198,7 +215,6 @@ async function openOrders(){
    <div class="step ${o.status==="pending"?"active":""}">● Pending</div>
    <div class="step ${o.status==="confirmed_by_wholesaler"?"active":""}">● Confirmed</div>
    <div class="step ${o.status==="assigned_to_delivery"?"active":""}">● Delivery Assigned</div>
-   <div class="step ${o.status==="delivery_accepted"?"active":""}">● Delivery Accepted</div>
    <div class="step ${o.status==="picked_up"?"active":""}">● Pickup</div>
    <div class="step ${o.status==="delivered"?"active":""}">● Delivered</div>
   </div>
