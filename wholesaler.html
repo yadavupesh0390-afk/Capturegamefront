@@ -22,7 +22,7 @@ body{margin:0;background:#f3f6fb}
 .price{color:#2563eb;font-weight:600;font-size:12px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
 .modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
-input,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+input,textarea,select{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
 button.primary{background:#2563eb;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
 button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:6px}
 .card{background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:12px}
@@ -88,8 +88,10 @@ const WID=localStorage.getItem("userId");
 const ROLE=localStorage.getItem("role");
 
 if(!TOKEN||!WID||ROLE!=="wholesaler"){
-  alert("Login again"); location.href="index.html";
+  alert("Login again");
+  location.href="index.html";
 }
+
 widText.innerText=WID.substring(0,8).toUpperCase();
 
 function openProduct(){productModal.style.display="flex";}
@@ -106,27 +108,35 @@ function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.displ
 function saveProfile(){
  const p={shopName:shopName.value,mobile:shopMobile.value,address:shopAddress.value};
  localStorage.setItem("wholesalerProfile_"+WID,JSON.stringify(p));
- alert("Profile saved"); closeAll();
+ alert("Profile saved");
+ closeAll();
 }
 
 async function addProduct(){
- const img=pimg.files[0]; if(!img) return alert("Image required");
+ const img=pimg.files[0];
+ if(!img) return alert("Image required");
+
  const prof=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
  const r=new FileReader();
+
  r.onload=async()=>{
-  const res=await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-  body:JSON.stringify({
-    wholesalerId:WID,
-    productName:pname.value,
-    price:pprice.value,
-    detail:pdetail.value,
-    image:r.result,
-    shopName:prof.shopName,
-    mobile:prof.mobile,
-    address:prof.address
-  })});
-  const d=await res.json();
-  if(d.success){alert("Product added");closeAll();loadProducts();}
+  await fetch(API+"/api/products",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      wholesalerId:WID,
+      productName:pname.value,
+      price:pprice.value,
+      detail:pdetail.value,
+      image:r.result,
+      shopName:prof.shopName,
+      mobile:prof.mobile,
+      address:prof.address
+    })
+  });
+  alert("Product added");
+  closeAll();
+  loadProducts();
  };
  r.readAsDataURL(img);
 }
@@ -143,20 +153,42 @@ async function loadProducts(){
 }
 
 async function confirmOrder(id){
- if(!confirm("Confirm this order?"))return;
- await fetch(API+"/api/orders/"+id+"/confirm",{method:"POST"});
+ const vehicle=document.getElementById("vehicle_"+id).value;
+ if(!vehicle) return alert("Select wheeler type");
+
+ if(!confirm("Confirm order with "+vehicle+" wheeler?")) return;
+
+ await fetch(API+"/api/orders/"+id+"/confirm",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({vehicleType:vehicle})
+ });
+
  loadOrders();
 }
 
 async function loadOrders(){
  const r=await fetch(API+"/api/orders/wholesaler/"+WID);
  const d=await r.json();
+
  orders.innerHTML=d.orders.map(o=>`
   <div class="card">
    <b>${o.productName}</b> ₹${o.price}<br>
    <div class="status">Status: <b>${o.status}</b></div>
-   ${o.status==="pending"?`<button class="success" onclick="confirmOrder('${o._id}')">Confirm Order</button>`:""}
-  </div>`).join("") || "No orders";
+
+   ${o.status==="pending"?`
+    <select id="vehicle_${o._id}">
+      <option value="">Select Wheeler</option>
+      <option value="two">Two Wheeler</option>
+      <option value="three">Three Wheeler</option>
+      <option value="four">Four Wheeler</option>
+    </select>
+    <button class="success" onclick="confirmOrder('${o._id}')">
+      Confirm Order
+    </button>
+   `:""}
+  </div>
+ `).join("") || "No orders";
 }
 
 loadProducts();
