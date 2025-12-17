@@ -150,9 +150,13 @@ function notify(msg){
 
 /* LOAD ORDERS */
 async function loadOrders(){
- const res=await fetch(API+"/api/orders/delivery/available");
- const data=await res.json();
- renderOrders(data.orders||[]);
+  const res = await fetch(
+    `${API}/api/orders/delivery/${DBID}`,
+    { headers:{Authorization:"Bearer "+TOKEN} }
+  );
+  const data = await res.json();
+  ordersList = data.orders;
+  renderOrders();
 }
 
 function renderOrders(list){
@@ -192,10 +196,25 @@ function renderOrders(list){
  `).join("")||"<p>No Orders</p>";
 }
 
-async function accept(id){
- await fetch(API+"/api/orders/"+id+"/delivery-accept",{method:"POST"});
- notify("Order Accepted");
- loadOrders();
+async function acceptOrder(id){
+  const profile = JSON.parse(
+    localStorage.getItem("deliveryProfile_"+DBID) || "{}"
+  );
+
+  await fetch(`${API}/api/orders/${id}/delivery-accept`,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+TOKEN
+    },
+    body:JSON.stringify({
+      deliveryBoyId: DBID,
+      deliveryBoyName: profile.name,
+      deliveryBoyMobile: profile.mobile
+    })
+  });
+
+  loadOrders(); // refresh
 }
 async function pickup(id){
  await fetch(API+"/api/orders/"+id+"/pickup",{method:"POST"});
