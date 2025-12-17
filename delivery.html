@@ -193,6 +193,22 @@ app.post("/api/orders/verify-delivery-code/:orderId", async (req,res)=>{
 
   res.json({ success:false, message:"Invalid Code" });
 });
+
+ async function markDelivered(orderId){
+  const code = prompt("Enter delivery code from retailer");
+  if(!code) return;
+
+  const res = await fetch(`${API}/api/orders/verify-delivery-code/${orderId}`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({ code })
+  });
+
+  const data = await res.json();
+  data.success
+    ? alert("Delivered Successfully ✅")
+    : alert("Wrong Code ❌");
+   }
  
 /* RENDER */
 function renderOrders(list){
