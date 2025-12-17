@@ -75,7 +75,9 @@ button.primary{
 <div class="main">
   <!-- ICON BAR -->
   <div class="icon-bar">
-    <button class="icon-btn" onclick="loadProducts()"><i class="bi bi-search"></i></button>
+    <!-- Profile icon instead of search -->
+    <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>
+    
     <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>
     <button class="icon-btn" onclick="openDeliveryInfo()">
       <i class="bi bi-truck"></i>
@@ -85,10 +87,6 @@ button.primary{
 
   <!-- HEADER -->
   <div class="header"><h3>🛒 Retailer Dashboard</h3></div>
-  <div class="header">
-    <input id="wid" placeholder="Enter Wholesaler ID">
-    <button class="primary" onclick="loadProducts()">Search</button>
-  </div>
 
   <!-- PRODUCTS GRID -->
   <div class="products-grid" id="products"></div>
@@ -147,6 +145,18 @@ button.primary{
  </div>
 </div>
 
+<!-- RETAILER PROFILE MODAL -->
+<div class="modal" id="profileModal">
+ <div class="modal-content">
+  <h3>🧑 Retailer Profile</h3>
+  <input id="profileName" placeholder="Retailer Name">
+  <input id="profileMobile" placeholder="Retailer Mobile">
+  <textarea id="profileAddress" placeholder="Retailer Address"></textarea>
+  <button class="primary" onclick="setProfile()">Save Profile</button>
+  <button onclick="closeAll()">Close</button>
+ </div>
+</div>
+
 <script>
 const API="https://shopbacked-vmhs.onrender.com";
 const TOKEN=localStorage.getItem("token");
@@ -156,10 +166,11 @@ let selectedProduct=null;
 
 /* LOAD PRODUCTS */
 async function loadProducts(){
- const id=wid.value.trim();
- if(!id) return alert("Enter Wholesaler ID");
- const res=await fetch(API+"/api/products/wholesaler/"+id);
- const data=await res.json();
+ const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ const id = profile.wholesalerId || prompt("Enter Wholesaler ID");
+ if(!id) return alert("Wholesaler ID required");
+ const res = await fetch(API+"/api/products/wholesaler/"+id);
+ const data = await res.json();
  products.innerHTML=data.products.map(p=>`
   <div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
    <img src="${p.image}">
@@ -219,7 +230,7 @@ async function submitOrder(){
 /* OPEN MY ORDERS */
 async function openOrders(){
  ordersModal.style.display="flex";
- const mobile=prompt("Enter your mobile");
+ const mobile=localStorage.getItem("retailerMobile") || prompt("Enter your mobile");
  if(!mobile) return;
  const res=await fetch(API+"/api/orders/retailer/"+mobile);
  const data=await res.json();
@@ -268,6 +279,28 @@ async function checkDeliveryNotify(){
  deliveryDot.style.display = hasDelivery ? "block" : "none";
 }
 setInterval(checkDeliveryNotify,8000);
+
+/* OPEN RETAILER PROFILE MODAL */
+function openRetailerProfile(){
+  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+  profileName.value = profile.name || "";
+  profileMobile.value = profile.mobile || "";
+  profileAddress.value = profile.address || "";
+  profileModal.style.display = "flex";
+}
+
+/* SAVE/SET PROFILE FUNCTION */
+function setProfile(){
+  const profile = {
+    name: profileName.value,
+    mobile: profileMobile.value,
+    address: profileAddress.value
+  };
+  localStorage.setItem("retailerProfile", JSON.stringify(profile));
+  localStorage.setItem("retailerMobile", profile.mobile); // update mobile for orders & delivery notifications
+  alert("Profile Updated ✅");
+  closeAll();
+}
 
 /* CLOSE MODALS */
 function closeAll(){document.querySelectorAll('.modal').forEach(m=>m.style.display='none')}
