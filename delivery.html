@@ -199,15 +199,15 @@ function renderOrders(list){
      : ""
    }
 
-   ${o.status==="picked_up"
- ? `<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`
- : ""
-} 
-
-   ${(o.status==="picked_up")
-     ? `<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`
+   ${o.status==="delivery_accepted"
+     ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`
      : ""
    }
+
+   ${o.status==="picked_up"
+     ? `<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`
+     : ""
+  }
   </div>
  </div>
  `).join("");
