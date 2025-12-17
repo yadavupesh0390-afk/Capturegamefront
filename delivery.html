@@ -170,23 +170,48 @@ function renderOrders(list){
   orders.innerHTML="<p style='text-align:center'>No Orders</p>";
   return;
  }
- orders.innerHTML=list.map(o=>`
+
+ orders.innerHTML = list.map(o=>`
  <div class="card order">
   <img src="${o.productImg}">
   <div style="flex:1">
    <b>${o.productName}</b> ₹${o.price}<br><br>
-   🏪 <b>${o.wholesalerName}</b><br>
-   📞 ${o.wholesalerMobile||"N/A"}<br><br>
-   🏬 <b>${o.retailerName}</b><br>
-   📞 ${o.retailerMobile||"N/A"}<br><br>
-   <span class="badge blue">${o.status}</span><br>
-   ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
-   ${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
-   ${(o.status==="picked_up"||o.status==="delivery_code_generated")?`<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`:""}
-  </div>
- </div>`).join("");
-}
 
+   🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>
+   📍 ${o.wholesalerAddress || "Address not available"}<br>
+   📞 ${o.wholesalerMobile || "N/A"}<br><br>
+
+   🏬 <b>Retailer:</b> ${o.retailerName}<br>
+   📍 ${o.retailerAddress || "Address not available"}<br>
+   📞 ${o.retailerMobile || "N/A"}<br><br>
+
+   🚗 <b>Vehicle:</b> ${
+     o.vehicleType === "two_wheeler" ? "Two Wheeler" :
+     o.vehicleType === "three_wheeler" ? "Three Wheeler" :
+     o.vehicleType === "four_wheeler" ? "Four Wheeler" :
+     "Not specified"
+   }<br><br>
+
+   <span class="badge blue">${o.status}</span><br>
+
+   ${o.status==="confirmed_by_wholesaler"
+     ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`
+     : ""
+   }
+
+   ${o.status==="delivery_accepted"
+     ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`
+     : ""
+   }
+
+   ${(o.status==="picked_up")
+     ? `<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`
+     : ""
+   }
+  </div>
+ </div>
+ `).join("");
+}
 /* ACTIONS */
 async function acceptOrder(id){
  const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
