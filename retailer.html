@@ -73,11 +73,13 @@ button.primary{
 <body>
 
 <div class="main">
-  <!-- ICON BAR -->
+
+  <!-- ICON BAR: Profile, Orders, Delivery -->
   <div class="icon-bar">
-    <!-- Profile icon instead of search -->
-    <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>
-    
+    <button class="icon-btn" onclick="openRetailerProfile()">
+      <i class="bi bi-person-circle"></i>
+    </button>
+
     <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>
     <button class="icon-btn" onclick="openDeliveryInfo()">
       <i class="bi bi-truck"></i>
@@ -88,8 +90,15 @@ button.primary{
   <!-- HEADER -->
   <div class="header"><h3>🛒 Retailer Dashboard</h3></div>
 
+  <!-- Wholesaler ID INPUT + SEARCH BUTTON -->
+  <div class="header">
+    <input id="wid" placeholder="Enter Wholesaler ID">
+    <button class="primary" onclick="loadProducts()">Search</button>
+  </div>
+
   <!-- PRODUCTS GRID -->
   <div class="products-grid" id="products"></div>
+
 </div>
 
 <!-- PRODUCT DETAIL MODAL -->
