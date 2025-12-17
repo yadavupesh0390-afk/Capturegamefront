@@ -23,18 +23,28 @@ body{margin:0;background:#eef2f7}
  width:44px;height:44px;border-radius:50%;
  font-size:20px;cursor:pointer
 }
+
 .card{
  background:#fff;margin-top:14px;padding:14px;
  border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.08)
 }
-.order{display:flex;gap:12px;margin-top:12px}
-.order img{width:90px;height:80px;object-fit:cover;border-radius:10px}
 
-.badge{padding:4px 10px;border-radius:20px;font-size:12px}
+.order{
+ display:flex;gap:12px;margin-top:12px
+}
+.order img{
+ width:90px;height:80px;object-fit:cover;border-radius:10px
+}
+
+.badge{
+ padding:4px 10px;border-radius:20px;
+ font-size:12px;display:inline-block
+}
 .green{background:#dcfce7;color:#166534}
 .blue{background:#e0f2fe;color:#075985}
 
 .btn{
+ display:inline-flex;align-items:center;gap:6px;
  padding:8px 14px;border:none;border-radius:10px;
  cursor:pointer;margin-top:8px;font-size:13px
 }
@@ -44,28 +54,30 @@ body{margin:0;background:#eef2f7}
 
 /* MODAL */
 .modal{
- position:fixed;inset:0;background:rgba(0,0,0,.5);
- display:none;align-items:center;justify-content:center;z-index:50
+ position:fixed;inset:0;
+ background:rgba(0,0,0,.5);
+ display:none;align-items:center;justify-content:center;
+ z-index:50
 }
 .modal-box{
- background:#fff;width:92%;max-width:400px;
+ background:#fff;width:90%;max-width:360px;
  border-radius:16px;padding:20px
 }
 .modal-box input{
- width:100%;padding:10px;margin:10px 0;
+ width:100%;padding:10px;margin-top:10px;
  border-radius:10px;border:1px solid #ccc
 }
 </style>
 </head>
 
 <body>
+
 <div class="main">
 
+<!-- HEADER -->
 <div class="top">
  <h3>🚚 Delivery Partner</h3>
- <button class="icon-btn" onclick="openProfile()">
-  <i class="bi bi-person-circle"></i>
- </button>
+ <button class="icon-btn"><i class="bi bi-person-circle"></i></button>
 </div>
 
 <div class="card">
@@ -74,23 +86,10 @@ body{margin:0;background:#eef2f7}
 </div>
 
 <div id="orders"></div>
+
 </div>
 
-<!-- PROFILE MODAL -->
-<div class="modal" id="profileModal">
- <div class="modal-box">
-  <h3>👤 Delivery Profile</h3>
-  <input id="pName" placeholder="Full Name">
-  <input id="pMobile" placeholder="Mobile Number">
-  <input id="pVehicle" placeholder="Vehicle Type">
-  <input id="pVehicleNo" placeholder="Vehicle Number">
-  <input id="pCity" placeholder="City">
-  <button class="btn accept" onclick="saveProfile()">Save</button>
-  <button class="btn" onclick="closeProfile()">Close</button>
- </div>
-</div>
-
-<!-- DELIVERY CODE MODAL -->
+<!-- DELIVERY CODE POPUP -->
 <div class="modal" id="codeModal">
  <div class="modal-box">
   <h3>🔐 Enter Delivery Code</h3>
@@ -104,26 +103,10 @@ body{margin:0;background:#eef2f7}
 const API="https://shopbacked-vmhs.onrender.com";
 const DBID=localStorage.getItem("userId");
 const TOKEN=localStorage.getItem("token");
+
 let CURRENT_ORDER_ID=null;
 
-dbId.innerText=DBID?DBID.slice(0,8).toUpperCase():"N/A";
-
-/* PROFILE */
-function openProfile(){
- profileModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
- pName.value=p.name||"";pMobile.value=p.mobile||"";
- pVehicle.value=p.vehicle||"";pVehicleNo.value=p.vehicleNo||"";
- pCity.value=p.city||"";
-}
-function saveProfile(){
- localStorage.setItem("deliveryProfile_"+DBID,JSON.stringify({
-  name:pName.value,mobile:pMobile.value,
-  vehicle:pVehicle.value,vehicleNo:pVehicleNo.value,city:pCity.value
- }));
- alert("Profile Saved ✅");closeProfile();
-}
-function closeProfile(){profileModal.style.display="none";}
+dbId.innerText = DBID ? DBID.slice(0,8).toUpperCase() : "N/A";
 
 /* LOAD ORDERS */
 async function loadOrders(){
@@ -140,72 +123,94 @@ function renderOrders(list){
   orders.innerHTML="<p style='text-align:center'>No Orders</p>";
   return;
  }
+
  orders.innerHTML=list.map(o=>`
  <div class="card order">
   <img src="${o.productImg}">
   <div style="flex:1">
    <b>${o.productName}</b> ₹${o.price}<br><br>
 
-   🏪 <b>${o.wholesalerName||"N/A"}</b><br>
-   📞 ${o.wholesalerMobile||"N/A"}<br>
-   🏠 ${o.wholesalerAddress||"Address not available"}<br><br>
+   🏪 <b>${o.wholesalerName}</b><br>
+   📞 ${o.wholesalerMobile || "N/A"}<br>
+   🏠 ${o.wholesalerAddress || "Address not available"}<br><br>
 
-   🏬 <b>${o.retailerName||"N/A"}</b><br>
-   📞 ${o.retailerMobile||"N/A"}<br>
-   🏠 ${o.retailerAddress||"Address not available"}<br><br>
+   🏬 <b>${o.retailerName}</b><br>
+   📞 ${o.retailerMobile || "N/A"}<br>
+   🏠 ${o.retailerAddress || "Address not available"}<br><br>
 
+   🚚 Vehicle: ${o.vehicleType}<br>
    <span class="badge blue">${o.status}</span><br>
 
    ${o.status==="confirmed_by_wholesaler"
-    ?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
+    ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
 
    ${o.status==="delivery_accepted"
-    ?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
+    ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
 
-   ${(o.status==="picked_up"||o.status==="delivery_code_generated")
-    ?`<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`:""}
+   ${(o.status==="picked_up" || o.deliveryCode)
+    ? `<button class="btn done"
+        onclick="deliverFlow('${o._id}', ${o.deliveryCode ? true : false})">
+        Delivered
+       </button>`:""}
   </div>
- </div>`).join("");
+ </div>
+ `).join("");
 }
 
 /* ACTIONS */
 async function acceptOrder(id){
- await fetch(`${API}/api/orders/${id}/delivery-accept`,{method:"POST"});
+ await fetch(`${API}/api/orders/${id}/delivery-accept`,{
+  method:"POST",
+  headers:{Authorization:"Bearer "+TOKEN}
+ });
  loadOrders();
 }
+
 async function pickupOrder(id){
  await fetch(`${API}/api/orders/${id}/pickup`,{method:"POST"});
  loadOrders();
 }
 
-/* DELIVERY FLOW */
-async function deliverFlow(orderId,status){
- if(status==="picked_up"){
-  await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{method:"POST"});
+/* DELIVERY FLOW (FINAL FIX) */
+async function deliverFlow(orderId, hasCode){
+
+ // FIRST CLICK → GENERATE CODE
+ if(!hasCode){
+  await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
+   method:"POST"
+  });
   alert("Delivery code generated. Ask retailer for code.");
-  loadOrders();return;
+  loadOrders();
+  return;
  }
- if(status==="delivery_code_generated"){
-  CURRENT_ORDER_ID=orderId;
-  deliveryCodeInput.value="";
-  codeModal.style.display="flex";
- }
+
+ // SECOND CLICK → OPEN POPUP
+ CURRENT_ORDER_ID = orderId;
+ deliveryCodeInput.value="";
+ codeModal.style.display="flex";
 }
+
+/* SUBMIT CODE */
 async function submitDeliveryCode(){
  const code=deliveryCodeInput.value.trim();
- if(!code) return alert("Enter delivery code");
+ if(!code) return alert("Enter code");
 
  const res=await fetch(`${API}/api/orders/verify-delivery-code/${CURRENT_ORDER_ID}`,{
   method:"POST",
   headers:{"Content-Type":"application/json"},
   body:JSON.stringify({code})
  });
+
  const data=await res.json();
  if(data.success){
-  alert("Order Delivered ✅");
-  closeCodeModal();loadOrders();
- }else alert("Invalid Code ❌");
+  alert("Delivered Successfully ✅");
+  closeCodeModal();
+  loadOrders();
+ }else{
+  alert("Wrong Code ❌");
+ }
 }
+
 function closeCodeModal(){
  codeModal.style.display="none";
  CURRENT_ORDER_ID=null;
@@ -214,5 +219,6 @@ function closeCodeModal(){
 loadOrders();
 setInterval(loadOrders,8000);
 </script>
+
 </body>
 </html>
