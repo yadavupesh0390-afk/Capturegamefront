@@ -52,7 +52,7 @@ body{margin:0;background:#eef2f7}
 .pickup{background:#f59e0b;color:#fff}
 .done{background:#2563eb;color:#fff}
 
-/* PROFILE MODAL */
+/* MODALS */
 .modal{
  position:fixed;inset:0;background:rgba(0,0,0,.5);
  display:none;align-items:center;justify-content:center;z-index:20
@@ -67,10 +67,11 @@ body{margin:0;background:#eef2f7}
 }
 </style>
 </head>
+
 <body>
 
 <div class="main">
-  <!-- HEADER -->
+
   <div class="top">
     <h3>🚚 Delivery Partner</h3>
     <button class="icon-btn" onclick="openProfile()">
@@ -78,13 +79,11 @@ body{margin:0;background:#eef2f7}
     </button>
   </div>
 
-  <!-- INFO -->
   <div class="card">
     <b>ID:</b> <span id="dbId"></span><br>
     <span class="badge green">ACTIVE</span>
   </div>
 
-  <!-- ORDERS -->
   <div id="orders"></div>
 </div>
 
@@ -107,14 +106,27 @@ body{margin:0;background:#eef2f7}
  </div>
 </div>
 
+<!-- DELIVERY CODE MODAL -->
+<div class="modal" id="codeModal">
+ <div class="modal-box">
+  <h3>🔐 Enter Delivery Code</h3>
+  <input id="deliveryCodeInput" placeholder="Enter delivery code">
+  <button class="btn done" onclick="submitDeliveryCode()">Submit</button>
+  <button class="btn" onclick="closeCodeModal()">Cancel</button>
+ </div>
+</div>
+
 <script>
 const API = "https://shopbacked-vmhs.onrender.com";
 const DBID = localStorage.getItem("userId");
 const TOKEN = localStorage.getItem("token");
 
+let lastOrders = [];
+let currentOrderId = null;
+
 dbId.innerText = DBID ? DBID.slice(0,8).toUpperCase() : "N/A";
 
-/* PROFILE FUNCTIONS */
+/* PROFILE */
 function openProfile(){
  const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID) || "{}");
  pName.value = p.name || "";
@@ -124,104 +136,114 @@ function openProfile(){
  pCity.value = p.city || "";
  profileModal.style.display = "flex";
 }
-
 function saveProfile(){
  const p = {
-  name: pName.value,
-  mobile: pMobile.value,
-  vehicle: pVehicle.value,
-  vehicleNo: pVehicleNo.value,
-  city: pCity.value
+  name:pName.value,
+  mobile:pMobile.value,
+  vehicle:pVehicle.value,
+  vehicleNo:pVehicleNo.value,
+  city:pCity.value
  };
  localStorage.setItem("deliveryProfile_"+DBID, JSON.stringify(p));
  alert("Profile Saved ✅");
  closeProfile();
 }
-
 function closeProfile(){ profileModal.style.display="none"; }
 
 /* LOAD ORDERS */
 async function loadOrders(){
- try {
-   const res = await fetch(`${API}/api/orders/delivery/${DBID}`, {
-     headers: { Authorization: "Bearer " + TOKEN }
-   });
-   const data = await res.json();
-   renderOrders(data.orders || []);
- } catch(err) {
-   console.error(err);
-   orders.innerHTML = "<p style='text-align:center;color:red'>Failed to load orders</p>";
+ try{
+  const res = await fetch(`${API}/api/orders/delivery/${DBID}`,{
+    headers:{ Authorization:"Bearer "+TOKEN }
+  });
+  const data = await res.json();
+  lastOrders = data.orders || [];
+  renderOrders(lastOrders);
+ }catch(err){
+  orders.innerHTML="<p style='text-align:center;color:red'>Failed to load orders</p>";
  }
 }
 
-/* RENDER ORDERS */
+/* RENDER */
 function renderOrders(list){
  if(!list.length){
-   orders.innerHTML = "<p style='text-align:center'>No Orders</p>";
-   return;
+  orders.innerHTML="<p style='text-align:center'>No Orders</p>";
+  return;
  }
-
- orders.innerHTML = list.map(o => `
+ orders.innerHTML=list.map(o=>`
  <div class="card order">
   <img src="${o.productImg}">
   <div style="flex:1">
    <b>${o.productName}</b> ₹${o.price}<br><br>
    🏪 <b>${o.wholesalerName}</b><br>
-   📞 ${o.wholesalerMobile || "N/A"}<br>
-   🏠 ${o.wholesalerAddress || "Address not available"}<br><br>
+   📞 ${o.wholesalerMobile||"N/A"}<br><br>
    🏬 <b>${o.retailerName}</b><br>
-   📞 ${o.retailerMobile || "N/A"}<br>
-   🏠 ${o.retailerAddress || "Address not available"}<br><br>
-   🚚 Vehicle: ${o.vehicleType || "N/A"}<br>
+   📞 ${o.retailerMobile||"N/A"}<br><br>
    <span class="badge blue">${o.status}</span><br>
    ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
    ${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
-   ${(o.status==="picked_up" || o.status==="delivery_code_generated")?`<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`:""}
+   ${(o.status==="picked_up"||o.status==="delivery_code_generated")?`<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`:""}
   </div>
- </div>
- `).join("");
+ </div>`).join("");
 }
 
 /* ACTIONS */
 async function acceptOrder(id){
- const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID) || "{}");
- await fetch(`${API}/api/orders/${id}/delivery-accept`, {
-   method:"POST",
-   headers: { "Content-Type":"application/json", "Authorization":"Bearer "+TOKEN },
-   body: JSON.stringify({ deliveryBoyId:DBID, deliveryBoyName: p.name||"Delivery Partner", deliveryBoyMobile: p.mobile||"" })
+ const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
+ await fetch(`${API}/api/orders/${id}/delivery-accept`,{
+  method:"POST",
+  headers:{ "Content-Type":"application/json","Authorization":"Bearer "+TOKEN },
+  body:JSON.stringify({ deliveryBoyId:DBID,deliveryBoyName:p.name||"Delivery Partner",deliveryBoyMobile:p.mobile||"" })
  });
  loadOrders();
 }
-
 async function pickupOrder(id){
- await fetch(`${API}/api/orders/${id}/pickup`, { method:"POST", headers:{ "Authorization":"Bearer "+TOKEN }});
+ await fetch(`${API}/api/orders/${id}/pickup`,{ method:"POST",headers:{ "Authorization":"Bearer "+TOKEN }});
  loadOrders();
 }
 
-/* DELIVERY FLOW */
+/* DELIVERY FLOW (FINAL SAFE LOGIC) */
 async function deliverFlow(orderId,status){
- if(status==="picked_up"){
-   await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`, { method:"POST", headers:{ "Authorization":"Bearer "+TOKEN }});
-   alert("Delivery code generated. Ask retailer for code.");
-   loadOrders(); return;
+ const order = lastOrders.find(o=>o._id===orderId);
+ if(!order) return;
+
+ if(!order.deliveryCode){
+  await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
+    method:"POST",
+    headers:{ "Authorization":"Bearer "+TOKEN }
+  });
+  alert("Delivery code generated & sent to retailer 📩");
+  loadOrders();
+  return;
  }
- if(status==="delivery_code_generated"){
-   const code = prompt("Enter Delivery Code");
-   if(!code) return;
-   const res = await fetch(`${API}/api/orders/verify-delivery-code/${orderId}`, {
-     method:"POST",
-     headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-     body: JSON.stringify({ code })
-   });
-   const data = await res.json();
-   alert(data.success ? "Delivered Successfully ✅" : "Wrong Code ❌");
-   loadOrders();
- }
+
+ currentOrderId = orderId;
+ deliveryCodeInput.value="";
+ codeModal.style.display="flex";
+}
+
+async function submitDeliveryCode(){
+ const code = deliveryCodeInput.value.trim();
+ if(!code) return alert("Enter delivery code");
+
+ const res = await fetch(`${API}/api/orders/verify-delivery-code/${currentOrderId}`,{
+  method:"POST",
+  headers:{ "Content-Type":"application/json","Authorization":"Bearer "+TOKEN },
+  body:JSON.stringify({ code })
+ });
+ const data = await res.json();
+ alert(data.success?"Delivered Successfully ✅":"Wrong Code ❌");
+ closeCodeModal();
+ loadOrders();
+}
+
+function closeCodeModal(){
+ codeModal.style.display="none";
 }
 
 /* INIT */
 loadOrders();
-setInterval(loadOrders, 8000);
+setInterval(loadOrders,8000);
 </script>
 
 </body>
