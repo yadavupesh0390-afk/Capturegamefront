@@ -282,30 +282,52 @@ async function openOrders(){
 
 /* OPEN DELIVERY INFO */
 async function openDeliveryInfo(){
- const mobile=localStorage.getItem("retailerMobile") || prompt("Enter your mobile");
- if(!mobile) return;
+  const mobile = localStorage.getItem("retailerMobile");
+  if(!mobile){
+    alert("Retailer mobile not found");
+    return;
+  }
 
- const res=await fetch(API+"/api/orders/retailer/"+mobile);
- const data=await res.json();
+  try{
+    const res = await fetch(`${API}/api/orders/retailer/${mobile}`);
+    const data = await res.json();
 
- const deliveryOrders = data.orders.filter(o => o.deliveryBoyName);
+    // sirf wahi orders jisme delivery boy assign ho
+    const deliveryOrders = data.orders.filter(o => o.deliveryBoyName);
 
- if(deliveryOrders.length === 0){
-  alert("No delivery assigned");
-  return;
- }
+    if(deliveryOrders.length === 0){
+      alert("No delivery assigned");
+      return;
+    }
 
- deliveryList.innerHTML = deliveryOrders.map(o=>`
-  <div class="order-card">
-   <b>${o.productName}</b> ₹${o.price}<br>
-   <span class="badge">${o.status}</span><br>
-   🚚 <b>${o.deliveryBoyName}</b><br>
-   📞 ${o.deliveryBoyMobile}
-  </div>
- `).join("");
+    deliveryList.innerHTML = deliveryOrders.map(o => `
+      <div class="order-card">
+        <b>${o.productName}</b> ₹${o.price}<br>
 
- deliveryDot.style.display="none";
- deliveryModal.style.display="flex";
+        <span class="badge">${o.status}</span><br>
+
+        🚚 <b>${o.deliveryBoyName}</b><br>
+        📞 ${o.deliveryBoyMobile}<br>
+
+        ${
+          o.deliveryCode
+          ? `
+            <hr>
+            🔐 Delivery Code: <b>${o.deliveryCode}</b><br>
+            🕒 ${new Date(o.deliveryCodeTime).toLocaleTimeString()}
+          `
+          : `<i>Waiting for delivery code</i>`
+        }
+      </div>
+    `).join("");
+
+    deliveryDot.style.display = "none";
+    deliveryModal.style.display = "flex";
+
+  }catch(err){
+    console.error(err);
+    alert("Failed to load delivery info");
+  }
 }
 
 /* DELIVERY NOTIFICATION DOT */
