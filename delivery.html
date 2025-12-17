@@ -111,14 +111,15 @@ dbId.innerText = DBID ? DBID.slice(0,8).toUpperCase() : "N/A";
 
 /* PROFILE */
 function openProfile(){
- profileModal.style.display="flex";
  const p=JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
  pName.value=p.name||"";
  pMobile.value=p.mobile||"";
  pVehicle.value=p.vehicle||"";
  pVehicleNo.value=p.vehicleNo||"";
  pCity.value=p.city||"";
+ profileModal.style.display="flex";
 }
+
 function saveProfile(){
  const p={
   name:pName.value,
@@ -128,49 +129,38 @@ function saveProfile(){
   city:pCity.value
  };
  localStorage.setItem("deliveryProfile_"+DBID,JSON.stringify(p));
- alert("Profile Saved");
+ alert("Profile Saved ✅");
  closeProfile();
 }
+
 function closeProfile(){profileModal.style.display="none";}
 
 /* LOAD ORDERS */
 async function loadOrders(){
- const res=await fetch(`${API}/api/orders/delivery/${DBID}`,{
-  headers:{Authorization:"Bearer "+TOKEN}
- });
- const data=await res.json();
- renderOrders(data.orders||[]);
+ try{
+   const res=await fetch(`${API}/api/orders/delivery/${DBID}`,{
+    headers:{Authorization:"Bearer "+TOKEN}
+   });
+   const data=await res.json();
+   renderOrders(data.orders||[]);
+ }catch(e){ console.error(e); orders.innerHTML="<p style='text-align:center;color:red'>Failed to load orders</p>"; }
 }
 
-/* RENDER */
+/* RENDER ORDERS */
 function renderOrders(list){
- if(!list.length){
-  orders.innerHTML="<p style='text-align:center'>No Orders</p>";
-  return;
- }
+ if(!list.length){ orders.innerHTML="<p style='text-align:center'>No Orders</p>"; return; }
 
  orders.innerHTML=list.map(o=>`
  <div class="card order">
   <img src="${o.productImg}">
   <div style="flex:1">
    <b>${o.productName}</b> ₹${o.price}<br><br>
-
    🏪 ${o.wholesalerName}<br>
    🏬 ${o.retailerName}<br><br>
-
    <span class="badge blue">${o.status}</span><br>
-
-   ${o.status==="confirmed_by_wholesaler"
-     ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
-
-   ${o.status==="delivery_accepted"
-     ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
-
-   ${(o.status==="picked_up" || o.status==="delivery_code_generated")
-     ? `<button class="btn done"
-         onclick="deliverFlow('${o._id}','${o.status}')">
-         Delivered
-       </button>`:""}
+   ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
+   ${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
+   ${(o.status==="picked_up" || o.status==="delivery_code_generated")?`<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`:""}
   </div>
  </div>`).join("");
 }
@@ -180,65 +170,41 @@ async function acceptOrder(id){
  const p=JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
  await fetch(`${API}/api/orders/${id}/delivery-accept`,{
   method:"POST",
-  headers:{
-   "Content-Type":"application/json",
-   "Authorization":"Bearer "+TOKEN
-  },
-  body:JSON.stringify({
-   deliveryBoyId:DBID,
-   deliveryBoyName:p.name||"Delivery Partner",
-   deliveryBoyMobile:p.mobile||""
-  })
+  headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+  body:JSON.stringify({deliveryBoyId:DBID, deliveryBoyName:p.name||"Delivery Partner", deliveryBoyMobile:p.mobile||""})
  });
  loadOrders();
 }
 
 async function pickupOrder(id){
- await fetch(`${API}/api/orders/${id}/pickup`,{method:"POST"});
+ await fetch(`${API}/api/orders/${id}/pickup`,{method:"POST",headers:{"Authorization":"Bearer "+TOKEN}});
  loadOrders();
 }
 
-/* ✅ FINAL DELIVERY FLOW */
+/* DELIVERY FLOW */
 async function deliverFlow(orderId,status){
-
- // FIRST CLICK → GENERATE CODE
  if(status==="picked_up"){
-  const res=await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
-   method:"POST"
-  });
+  const res=await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{method:"POST", headers:{"Authorization":"Bearer "+TOKEN}});
   const data=await res.json();
-
-  if(data.already){
-   alert("Delivery code already generated");
-  }else{
-   alert("Delivery code generated. Ask retailer for code.");
-  }
-
-  loadOrders();
-  return;
+  alert(data.already?"Delivery code already generated":"Delivery code generated. Ask retailer for code.");
+  loadOrders(); return;
  }
 
- // SECOND CLICK → VERIFY CODE
  if(status==="delivery_code_generated"){
   const code=prompt("Enter Delivery Code");
   if(!code) return;
-
   const res=await fetch(`${API}/api/orders/verify-delivery-code/${orderId}`,{
    method:"POST",
-   headers:{"Content-Type":"application/json"},
+   headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
    body:JSON.stringify({code})
   });
   const data=await res.json();
-
-  if(data.success){
-   alert("Delivered Successfully ✅");
-  }else{
-   alert("Wrong Code ❌");
-  }
+  alert(data.success?"Delivered Successfully ✅":"Wrong Code ❌");
   loadOrders();
  }
 }
 
+/* AUTO REFRESH ORDERS */
 loadOrders();
 setInterval(loadOrders,8000);
 </script>
