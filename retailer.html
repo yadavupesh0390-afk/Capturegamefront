@@ -175,13 +175,11 @@ let selectedProduct=null;
 
 /* LOAD PRODUCTS */
 async function loadProducts() {
-  // retailer profile se wholesalerId check karo
   const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
   // input box me value agar hai to use karo, varna profile se
   let id = document.getElementById("wid").value.trim() || profile.wholesalerId;
 
-  // agar ID nahi hai (pehli baar input box bhi empty) → alert
   if (!id) {
     alert("Wholesaler ID required");
     return;
@@ -196,7 +194,7 @@ async function loadProducts() {
       return;
     }
 
-    // products display
+    // display products
     products.innerHTML = data.products.map(p => `
       <div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
         <img src="${p.image}">
@@ -205,28 +203,14 @@ async function loadProducts() {
       </div>
     `).join("");
 
-    // agar profile me ID nahi thi to save kar do
+    // profile me ID save kar do agar nahi thi
     if (!profile.wholesalerId) {
       profile.wholesalerId = id;
       localStorage.setItem("retailerProfile", JSON.stringify(profile));
     }
 
-    // input box ko update kar do, taki dobara prompt na aaye
+    // input box update
     document.getElementById("wid").value = id;
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to load products. Try again later.");
-  }
-}
-    // products display
-    products.innerHTML = data.products.map(p => `
-      <div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
-        <img src="${p.image}">
-        <div>${p.productName}</div>
-        <div class="price">₹${p.price}</div>
-      </div>
-    `).join("");
 
   } catch (err) {
     console.error(err);
@@ -296,7 +280,7 @@ async function openOrders(){
   </div>`).join("")||"No orders";
 }
 
-/* OPEN DELIVERY INFO (MULTIPLE ORDERS, SCROLLABLE) */
+/* OPEN DELIVERY INFO */
 async function openDeliveryInfo(){
  const mobile=localStorage.getItem("retailerMobile") || prompt("Enter your mobile");
  if(!mobile) return;
@@ -324,7 +308,7 @@ async function openDeliveryInfo(){
  deliveryModal.style.display="flex";
 }
 
-/* DELIVERY NOTIFICATION DOT CHECK */
+/* DELIVERY NOTIFICATION DOT */
 async function checkDeliveryNotify(){
  const mobile = localStorage.getItem("retailerMobile");
  if(!mobile) return;
@@ -344,7 +328,7 @@ function openRetailerProfile(){
   profileModal.style.display = "flex";
 }
 
-/* SAVE/SET PROFILE FUNCTION */
+/* SAVE PROFILE */
 function setProfile(){
   const profile = {
     name: profileName.value,
@@ -352,7 +336,7 @@ function setProfile(){
     address: profileAddress.value
   };
   localStorage.setItem("retailerProfile", JSON.stringify(profile));
-  localStorage.setItem("retailerMobile", profile.mobile); // update mobile for orders & delivery notifications
+  localStorage.setItem("retailerMobile", profile.mobile);
   alert("Profile Updated ✅");
   closeAll();
 }
