@@ -169,6 +169,19 @@ async function loadOrders(){
  renderOrders(data.orders || []);
 }
 
+app.post("/api/orders/generate-delivery-code/:orderId", async (req,res)=>{
+  const code = Math.floor(100000 + Math.random()*900000); // 6 digit
+
+  await Order.findByIdAndUpdate(req.params.orderId,{
+    deliveryCode: code,
+    deliveryCodeTime: new Date(),
+    status: "delivery_code_generated"
+  });
+
+  res.json({ success:true });
+});
+
+ 
 /* RENDER */
 function renderOrders(list){
  if(!list.length){
