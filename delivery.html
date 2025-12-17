@@ -23,56 +23,31 @@ body{margin:0;background:#eef2f7}
  width:44px;height:44px;border-radius:50%;
  font-size:20px;cursor:pointer
 }
-
 .card{
  background:#fff;margin-top:14px;padding:14px;
  border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.08)
 }
-
-.order{
- display:flex;gap:12px;margin-top:12px
-}
-.order img{
- width:90px;height:80px;object-fit:cover;border-radius:10px
-}
+.order{display:flex;gap:12px;margin-top:12px}
+.order img{width:90px;height:80px;object-fit:cover;border-radius:10px}
 
 .badge{
  padding:4px 10px;border-radius:20px;
  font-size:12px;display:inline-block
 }
-.green{background:#dcfce7;color:#166534}
-.orange{background:#fff7ed;color:#9a3412}
 .blue{background:#e0f2fe;color:#075985}
+.green{background:#dcfce7;color:#166534}
 
 .btn{
- display:inline-flex;align-items:center;gap:6px;
  padding:8px 14px;border:none;border-radius:10px;
  cursor:pointer;margin-top:8px;font-size:13px
 }
 .accept{background:#16a34a;color:#fff}
 .pickup{background:#f59e0b;color:#fff}
 .done{background:#2563eb;color:#fff}
-
-/* MODAL */
-.modal{
- position:fixed;inset:0;
- background:rgba(0,0,0,.5);
- display:none;align-items:center;justify-content:center;
- z-index:20
-}
-.modal-box{
- background:#fff;width:92%;max-width:420px;
- border-radius:16px;padding:20px
-}
-.modal-box input,select{
- width:100%;padding:10px;margin:8px 0;
- border-radius:10px;border:1px solid #ccc
-}
 </style>
 </head>
 
 <body>
-
 <div class="main">
 
 <!-- HEADER -->
@@ -83,7 +58,7 @@ body{margin:0;background:#eef2f7}
  </button>
 </div>
 
-<!-- DELIVERY BOY INFO -->
+<!-- INFO -->
 <div class="card">
  <b>ID:</b> <span id="dbId"></span><br>
  <span class="badge green">ACTIVE</span>
@@ -94,71 +69,12 @@ body{margin:0;background:#eef2f7}
 
 </div>
 
-<!-- PROFILE MODAL -->
-<div class="modal" id="profileModal">
- <div class="modal-box">
-  <h3>👤 Delivery Profile</h3>
-
-  <input id="pName" placeholder="Full Name">
-  <input id="pMobile" placeholder="Mobile Number">
-
-  <select id="pVehicle">
-   <option value="">Vehicle Type</option>
-   <option value="two_wheeler">Two Wheeler</option>
-   <option value="three_wheeler">Three Wheeler</option>
-   <option value="four_wheeler">Four Wheeler</option>
-  </select>
-
-  <input id="pVehicleNo" placeholder="Vehicle Number">
-  <input id="pCity" placeholder="City">
-
-  <button class="btn accept" onclick="saveProfile()">
-   <i class="bi bi-save"></i> Save Profile
-  </button>
-
-  <button class="btn" onclick="closeProfile()">Close</button>
- </div>
-</div>
-
 <script>
-const API = "https://shopbacked-vmhs.onrender.com";
-const DBID = localStorage.getItem("userId");
-const TOKEN = localStorage.getItem("token");
+const API="https://shopbacked-vmhs.onrender.com";
+const DBID=localStorage.getItem("userId");
+const TOKEN=localStorage.getItem("token");
 
 dbId.innerText = DBID ? DBID.slice(0,8).toUpperCase() : "N/A";
-
-/* PROFILE */
-function openProfile(){
- profileModal.style.display="flex";
- const p = JSON.parse(
-  localStorage.getItem("deliveryProfile_"+DBID) || "{}"
- );
- pName.value = p.name || "";
- pMobile.value = p.mobile || "";
- pVehicle.value = p.vehicle || "";
- pVehicleNo.value = p.vehicleNo || "";
- pCity.value = p.city || "";
-}
-
-function saveProfile(){
- const profile = {
-  name: pName.value,
-  mobile: pMobile.value,
-  vehicle: pVehicle.value,
-  vehicleNo: pVehicleNo.value,
-  city: pCity.value
- };
- localStorage.setItem(
-  "deliveryProfile_"+DBID,
-  JSON.stringify(profile)
- );
- alert("Profile Saved ✅");
- profileModal.style.display="none";
-}
-
-function closeProfile(){
- profileModal.style.display="none";
-}
 
 /* LOAD ORDERS */
 async function loadOrders(){
@@ -169,85 +85,38 @@ async function loadOrders(){
  renderOrders(data.orders || []);
 }
 
-app.post("/api/orders/generate-delivery-code/:orderId", async (req,res)=>{
-  const code = Math.floor(100000 + Math.random()*900000); // 6 digit
-
-  await Order.findByIdAndUpdate(req.params.orderId,{
-    deliveryCode: code,
-    deliveryCodeTime: new Date(),
-    status: "delivery_code_generated"
-  });
-
-  res.json({ success:true });
-});
-
-app.post("/api/orders/verify-delivery-code/:orderId", async (req,res)=>{
-  const { code } = req.body;
-  const order = await Order.findById(req.params.orderId);
-
-  if(order.deliveryCode == code){
-    order.status = "delivered";
-    await order.save();
-    return res.json({ success:true });
-  }
-
-  res.json({ success:false, message:"Invalid Code" });
-});
-
- async function markDelivered(orderId){
-  const code = prompt("Enter delivery code from retailer");
-  if(!code) return;
-
-  const res = await fetch(`${API}/api/orders/verify-delivery-code/${orderId}`,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ code })
-  });
-
-  const data = await res.json();
-  data.success
-    ? alert("Delivered Successfully ✅")
-    : alert("Wrong Code ❌");
-   }
- 
-/* RENDER */
+/* RENDER ORDERS */
 function renderOrders(list){
  if(!list.length){
-  orders.innerHTML="<p style='text-align:center;margin-top:20px'>No Orders</p>";
+  orders.innerHTML="<p style='text-align:center'>No Orders</p>";
   return;
  }
 
- orders.innerHTML = list.map(o=>`
+ orders.innerHTML=list.map(o=>`
  <div class="card order">
   <img src="${o.productImg}">
   <div style="flex:1">
    <b>${o.productName}</b> ₹${o.price}<br><br>
 
-   🏪 <b>${o.wholesalerName}</b><br>
-   📞 ${o.wholesalerMobile}<br>
-   🏠 ${o.wholesalerAddress}<br><br>
+   🏪 ${o.wholesalerName}<br>
+   📞 ${o.wholesalerMobile}<br><br>
 
-   🏬 <b>${o.retailerName}</b><br>
-   📞 ${o.retailerMobile}<br>
-   🏠 ${o.retailerAddress}<br><br>
+   🏬 ${o.retailerName}<br>
+   📞 ${o.retailerMobile}<br><br>
 
-   🚚 Vehicle: ${o.vehicleType}<br>
    <span class="badge blue">${o.status}</span><br>
 
    ${o.status==="confirmed_by_wholesaler"
-    ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">
-        <i class="bi bi-check-circle-fill"></i> Accept
-       </button>` : ""}
+     ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>` : ""}
 
    ${o.status==="delivery_accepted"
-    ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">
-        <i class="bi bi-box-seam-fill"></i> Pickup
-       </button>` : ""}
+     ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>` : ""}
 
    ${o.status==="picked_up"
-    ? `<button class="btn done" onclick="deliverOrder('${o._id}')">
-        <i class="bi bi-check2-circle"></i> Delivered
-       </button>` : ""}
+     ? `<button class="btn done" onclick="generateCode('${o._id}')">Delivered</button>` : ""}
+
+   ${o.status==="delivery_code_generated"
+     ? `<button class="btn done" onclick="verifyCode('${o._id}')">Enter Code</button>` : ""}
   </div>
  </div>
  `).join("");
@@ -255,20 +124,14 @@ function renderOrders(list){
 
 /* ACTIONS */
 async function acceptOrder(id){
- const p = JSON.parse(
-  localStorage.getItem("deliveryProfile_"+DBID) || "{}"
- );
-
+ const p=JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
  await fetch(`${API}/api/orders/${id}/delivery-accept`,{
   method:"POST",
-  headers:{
-   "Content-Type":"application/json",
-   "Authorization":"Bearer "+TOKEN
-  },
+  headers:{ "Content-Type":"application/json","Authorization":"Bearer "+TOKEN },
   body:JSON.stringify({
-   deliveryBoyId: DBID,
-   deliveryBoyName: p.name || "Delivery Partner",
-   deliveryBoyMobile: p.mobile || ""
+   deliveryBoyId:DBID,
+   deliveryBoyName:p.name||"Delivery Partner",
+   deliveryBoyMobile:p.mobile||""
   })
  });
  loadOrders();
@@ -279,24 +142,29 @@ async function pickupOrder(id){
  loadOrders();
 }
 
-async function deliverOrder(id){
- const code = prompt("Enter Delivery Code");
+async function generateCode(id){
+ await fetch(`${API}/api/orders/generate-delivery-code/${id}`,{method:"POST"});
+ alert("Code generated. Ask retailer for code.");
+ loadOrders();
+}
+
+async function verifyCode(id){
+ const code=prompt("Enter delivery code");
  if(!code) return;
 
- const res = await fetch(`${API}/api/orders/${id}/delivered`,{
+ const res=await fetch(`${API}/api/orders/verify-delivery-code/${id}`,{
   method:"POST",
   headers:{ "Content-Type":"application/json" },
-  body:JSON.stringify({ deliveryCode:code })
+  body:JSON.stringify({code})
  });
+ const data=await res.json();
 
- const data = await res.json();
- data.success ? alert("Order Delivered ✅") : alert("Invalid Code ❌");
+ data.success ? alert("Delivered ✅") : alert("Wrong Code ❌");
  loadOrders();
 }
 
 loadOrders();
 setInterval(loadOrders,8000);
 </script>
-
 </body>
 </html>
