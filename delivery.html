@@ -181,6 +181,18 @@ app.post("/api/orders/generate-delivery-code/:orderId", async (req,res)=>{
   res.json({ success:true });
 });
 
+app.post("/api/orders/verify-delivery-code/:orderId", async (req,res)=>{
+  const { code } = req.body;
+  const order = await Order.findById(req.params.orderId);
+
+  if(order.deliveryCode == code){
+    order.status = "delivered";
+    await order.save();
+    return res.json({ success:true });
+  }
+
+  res.json({ success:false, message:"Invalid Code" });
+});
  
 /* RENDER */
 function renderOrders(list){
