@@ -52,6 +52,22 @@ body{margin:0;background:#eef2f7}
 .accept{background:#16a34a;color:#fff}
 .pickup{background:#f59e0b;color:#fff}
 .done{background:#2563eb;color:#fff}
+
+/* MODAL */
+.modal{
+ position:fixed;inset:0;
+ background:rgba(0,0,0,.5);
+ display:none;align-items:center;justify-content:center;
+ z-index:20
+}
+.modal-box{
+ background:#fff;width:92%;max-width:420px;
+ border-radius:16px;padding:20px
+}
+.modal-box input,select{
+ width:100%;padding:10px;margin:8px 0;
+ border-radius:10px;border:1px solid #ccc
+}
 </style>
 </head>
 
@@ -62,7 +78,7 @@ body{margin:0;background:#eef2f7}
 <!-- HEADER -->
 <div class="top">
  <h3>🚚 Delivery Partner</h3>
- <button class="icon-btn">
+ <button class="icon-btn" onclick="openProfile()">
   <i class="bi bi-person-circle"></i>
  </button>
 </div>
@@ -78,6 +94,32 @@ body{margin:0;background:#eef2f7}
 
 </div>
 
+<!-- PROFILE MODAL -->
+<div class="modal" id="profileModal">
+ <div class="modal-box">
+  <h3>👤 Delivery Profile</h3>
+
+  <input id="pName" placeholder="Full Name">
+  <input id="pMobile" placeholder="Mobile Number">
+
+  <select id="pVehicle">
+   <option value="">Vehicle Type</option>
+   <option value="two_wheeler">Two Wheeler</option>
+   <option value="three_wheeler">Three Wheeler</option>
+   <option value="four_wheeler">Four Wheeler</option>
+  </select>
+
+  <input id="pVehicleNo" placeholder="Vehicle Number">
+  <input id="pCity" placeholder="City">
+
+  <button class="btn accept" onclick="saveProfile()">
+   <i class="bi bi-save"></i> Save Profile
+  </button>
+
+  <button class="btn" onclick="closeProfile()">Close</button>
+ </div>
+</div>
+
 <script>
 const API = "https://shopbacked-vmhs.onrender.com";
 const DBID = localStorage.getItem("userId");
@@ -85,13 +127,46 @@ const TOKEN = localStorage.getItem("token");
 
 dbId.innerText = DBID ? DBID.slice(0,8).toUpperCase() : "N/A";
 
+/* PROFILE */
+function openProfile(){
+ profileModal.style.display="flex";
+ const p = JSON.parse(
+  localStorage.getItem("deliveryProfile_"+DBID) || "{}"
+ );
+ pName.value = p.name || "";
+ pMobile.value = p.mobile || "";
+ pVehicle.value = p.vehicle || "";
+ pVehicleNo.value = p.vehicleNo || "";
+ pCity.value = p.city || "";
+}
+
+function saveProfile(){
+ const profile = {
+  name: pName.value,
+  mobile: pMobile.value,
+  vehicle: pVehicle.value,
+  vehicleNo: pVehicleNo.value,
+  city: pCity.value
+ };
+ localStorage.setItem(
+  "deliveryProfile_"+DBID,
+  JSON.stringify(profile)
+ );
+ alert("Profile Saved ✅");
+ profileModal.style.display="none";
+}
+
+function closeProfile(){
+ profileModal.style.display="none";
+}
+
 /* LOAD ORDERS */
 async function loadOrders(){
-  const res = await fetch(`${API}/api/orders/delivery/${DBID}`,{
-    headers:{ "Authorization":"Bearer "+TOKEN }
-  });
-  const data = await res.json();
-  renderOrders(data.orders || []);
+ const res = await fetch(`${API}/api/orders/delivery/${DBID}`,{
+  headers:{ "Authorization":"Bearer "+TOKEN }
+ });
+ const data = await res.json();
+ renderOrders(data.orders || []);
 }
 
 /* RENDER */
@@ -118,38 +193,30 @@ function renderOrders(list){
    🚚 Vehicle: ${o.vehicleType}<br>
    <span class="badge blue">${o.status}</span><br>
 
-   ${
-    o.status==="confirmed_by_wholesaler"
+   ${o.status==="confirmed_by_wholesaler"
     ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">
         <i class="bi bi-check-circle-fill"></i> Accept
-       </button>`
-    : ""
-   }
+       </button>` : ""}
 
-   ${
-    o.status==="delivery_accepted"
+   ${o.status==="delivery_accepted"
     ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">
         <i class="bi bi-box-seam-fill"></i> Pickup
-       </button>`
-    : ""
-   }
+       </button>` : ""}
 
-   ${
-    o.status==="picked_up"
+   ${o.status==="picked_up"
     ? `<button class="btn done" onclick="deliverOrder('${o._id}')">
         <i class="bi bi-check2-circle"></i> Delivered
-       </button>`
-    : ""
-   }
-
+       </button>` : ""}
   </div>
  </div>
  `).join("");
 }
 
-/* ACCEPT */
+/* ACTIONS */
 async function acceptOrder(id){
- const profile = JSON.parse(localStorage.getItem("deliveryProfile")||"{}");
+ const p = JSON.parse(
+  localStorage.getItem("deliveryProfile_"+DBID) || "{}"
+ );
 
  await fetch(`${API}/api/orders/${id}/delivery-accept`,{
   method:"POST",
@@ -159,21 +226,18 @@ async function acceptOrder(id){
   },
   body:JSON.stringify({
    deliveryBoyId: DBID,
-   deliveryBoyName: profile.name || "Delivery Partner",
-   deliveryBoyMobile: profile.mobile || ""
+   deliveryBoyName: p.name || "Delivery Partner",
+   deliveryBoyMobile: p.mobile || ""
   })
  });
-
  loadOrders();
 }
 
-/* PICKUP */
 async function pickupOrder(id){
  await fetch(`${API}/api/orders/${id}/pickup`,{method:"POST"});
  loadOrders();
 }
 
-/* DELIVERED */
 async function deliverOrder(id){
  const code = prompt("Enter Delivery Code");
  if(!code) return;
@@ -185,12 +249,8 @@ async function deliverOrder(id){
  });
 
  const data = await res.json();
- if(data.success){
-  alert("Order Delivered ✅");
-  loadOrders();
- }else{
-  alert("Invalid Code ❌");
- }
+ data.success ? alert("Order Delivered ✅") : alert("Invalid Code ❌");
+ loadOrders();
 }
 
 loadOrders();
