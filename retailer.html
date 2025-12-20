@@ -247,30 +247,44 @@ function saveProfile(){
 /* ORDERS */
 async function openOrders(){
  ordersModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- const res=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const data=await res.json();
- myOrders.innerHTML=data.orders.map(o=>`
+
+ const p = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ const res = await fetch(`${API}/api/orders/retailer/${p.mobile}`);
+ const data = await res.json();
+
+ myOrders.innerHTML = data.orders.map(o=>`
   <div class="order-card">
-   <b>${o.productName}</b><br>
-   Status: <span class="badge">${o.status}</span>
-  </div>`).join("");
+    <b>${o.productName}</b><br>
+    Date: ${o.orderDate || "-"}<br>
+    Time: ${o.orderTime || "-"}<br>
+    <small>${o.description || ""}</small><br>
+    Status: <span class="badge">${o.status}</span>
+  </div>
+ `).join("");
 }
 
 /* DELIVERY DETAILS */
 async function openDeliveryDetails(){
  deliveryModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- const res=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const data=await res.json();
- const list=data.orders.filter(o=>o.deliveryBoyName);
- deliveryData.innerHTML=list.length?list.map(o=>`
+
+ const p = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ const res = await fetch(`${API}/api/orders/retailer/${p.mobile}`);
+ const data = await res.json();
+
+ const list = data.orders.filter(o=>o.deliveryBoyName);
+
+ deliveryData.innerHTML = list.length ? list.map(o=>`
   <div class="order-card">
-   <b>${o.productName}</b><br>
-   Boy: ${o.deliveryBoyName}<br>
-   Mobile: ${o.deliveryBoyMobile}<br>
-   Code: <b style="color:green">${o.deliveryCode}</b>
-  </div>`).join(""):"No delivery yet";
+    <b>${o.productName}</b><br>
+    Date: ${o.orderDate || "-"}<br>
+    Time: ${o.orderTime || "-"}<br>
+    ${o.description || ""}<br><br>
+
+    Delivery Boy: ${o.deliveryBoyName}<br>
+    Mobile: ${o.deliveryBoyMobile}<br>
+    Code: <b style="color:green">${o.deliveryCode}</b>
+  </div>
+ `).join("") : "No delivery assigned yet";
 }
 
 /* NOTIFY DOT */
