@@ -8,7 +8,6 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
-/* Styles same as previous + modal, cards, buttons etc. */
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
 body{margin:0;background:#f3f6fb}
 .main{padding:20px}
@@ -68,7 +67,7 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;borde
     <option value="three_wheeler">Three Wheeler</option>
     <option value="four_wheeler">Four Wheeler</option>
   </select>
-  <button class="primary" onclick="startPayment()">💳 Pay & Order</button>
+  <button class="primary" onclick="showAmountOrPay()">💳 Pay & Order</button>
   <button onclick="closeAll()">Cancel</button>
  </div>
 </div>
@@ -98,6 +97,7 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;borde
 const API="https://shopbacked-vmhs.onrender.com";
 const TOKEN=localStorage.getItem("token");
 let selectedProduct=null;
+let totalAmountShown=false;
 
 /* LOAD PRODUCTS */
 async function loadProducts() {
@@ -123,11 +123,12 @@ function showDetail(p){
  dDeliveryCharge.innerText = "";
  dTotal.innerText = "";
  vehicleType.value = "";
+ totalAmountShown=false;
  detailModal.style.display="flex";
 }
 
-/* START PAYMENT */
-async function startPayment(){
+/* SHOW AMOUNT OR START PAYMENT */
+function showAmountOrPay(){
  if(!vehicleType.value) return alert("Select vehicle");
  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
  if(!profile.address) return alert("Save your delivery address first");
@@ -141,9 +142,18 @@ async function startPayment(){
 
  const totalAmount = selectedProduct.price + deliveryCharge;
 
- dDeliveryCharge.innerText = "Delivery Charge: ₹"+deliveryCharge;
- dTotal.innerText = "Total: ₹"+totalAmount;
+ if(!totalAmountShown){
+   dDeliveryCharge.innerText = "Delivery Charge: ₹"+deliveryCharge;
+   dTotal.innerText = "Total: ₹"+totalAmount;
+   totalAmountShown=true;
+   return;
+ }
 
+ // Start Razorpay payment
+ startPayment(totalAmount, profile);
+}
+
+async function startPayment(totalAmount, profile){
  try{
    const res = await fetch(API+"/api/orders/pay-and-create",{
      method:"POST",
@@ -171,9 +181,7 @@ async function startPayment(){
      name:"ShopBacked",
      description:selectedProduct.productName,
      order_id:data.order.id,
-     handler:function(resp){
-       finalizeOrder(resp.razorpay_payment_id);
-     },
+     handler:function(resp){ finalizeOrder(resp.razorpay_payment_id); },
      prefill:{name:profile.name, contact:profile.mobile},
      theme:{color:"#16a34a"}
    });
@@ -228,6 +236,7 @@ async function openOrders(){
    <b>${o.productName}</b> ₹${o.price}<br>
    <span class="badge">${o.status}</span>
    ${o.deliveryCode?`<br>Delivery Code: <b>${o.deliveryCode}</b>`:""}
+   ${o.deliveryCodeTime?`<br>Code Generated: ${new Date(o.deliveryCodeTime).toLocaleString()}`:""}
  </div>`).join("") || "No orders";
 }
 
