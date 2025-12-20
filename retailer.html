@@ -130,100 +130,100 @@ function showDetail(p){
  detailModal.style.display="flex";
 }
 
-/* PAYMENT (REAL RAZORPAY) */
+/* PAYMENT */
 async function startPayment(){
-
- const vehicle = document.getElementById("vehicleType").value;
+ const vehicle=document.getElementById("vehicleType").value;
  if(!vehicle) return alert("Select vehicle");
 
- const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
- if(!profile.mobile || !profile.address)
-   return alert("Please save profile first");
+ const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ if(!profile.mobile||!profile.address) return alert("Save profile first");
 
- let deliveryCharge = 0;
- if(vehicle==="two_wheeler") deliveryCharge = 1;
- else if(vehicle==="three_wheeler") deliveryCharge = 50;
- else if(vehicle==="four_wheeler") deliveryCharge = 80;
+ let deliveryCharge=vehicle==="two_wheeler"?1:vehicle==="three_wheeler"?50:80;
+ const totalAmount=selectedProduct.price+deliveryCharge;
 
- const totalAmount = selectedProduct.price + deliveryCharge;
+ dDeliveryCharge.innerText="Delivery ₹"+deliveryCharge;
+ dTotal.innerText="Total ₹"+totalAmount;
 
- dDeliveryCharge.innerText = "Delivery ₹" + deliveryCharge;
- dTotal.innerText = "Total ₹" + totalAmount;
-
- /* 1️⃣ Create Razorpay Order from backend */
- const res = await fetch(API + "/api/orders/pay-and-create", {
-   method:"POST",
-   headers:{ "Content-Type":"application/json" },
-   body:JSON.stringify({ amount: totalAmount })
+ const res=await fetch(API+"/api/orders/pay-and-create",{
+  method:"POST",
+  headers:{ "Content-Type":"application/json" },
+  body:JSON.stringify({amount:totalAmount})
  });
+ const data=await res.json();
 
- const data = await res.json();
-
- /* 2️⃣ Open Razorpay Checkout */
- const options = {
-   key: data.key,
-   amount: data.amount,
-   currency: "INR",
-   order_id: data.order.id,
-   name: "ShopBacked",
-   description: "Product Order",
-   handler: async function (response) {
-
-     // ✅ TIME & DATE
-     const now = new Date();
-     const orderDate = now.toLocaleDateString("en-IN");
-     const orderTime = now.toLocaleTimeString("en-IN");
-
-     /* 3️⃣ Confirm Order After Payment */
-     await fetch(API + "/api/orders/confirm-after-payment", {
-       method:"POST",
-       headers:{ "Content-Type":"application/json" },
-       body:JSON.stringify({
-         productId: selectedProduct._id,
-         wholesalerId: selectedProduct.wholesalerId,
-         paymentId: response.razorpay_payment_id,
-
-         vehicleType: vehicle,
-         deliveryCharge: deliveryCharge,
-         totalAmount: totalAmount,
-
-         retailerName: profile.name,
-         retailerMobile: profile.mobile,
-         retailerAddress: profile.address,
-
-         // ✅ NEW FIELDS
-         orderDate: orderDate,
-         orderTime: orderTime,
-         description: `${selectedProduct.productName} ordered via ${vehicle}`
-       })
-     });
-
-     alert("Payment Success & Order Placed");
-     closeAll();
-   },
-   theme:{ color:"#16a34a" }
- };
-
- const rzp = new Razorpay(options);
+ const rzp=new Razorpay({
+  key:data.key,
+  amount:data.amount,
+  currency:"INR",
+  order_id:data.order.id,
+  name:"ShopBacked",
+  description:"Product Order",
+  handler:async function(response){
+   await fetch(API+"/api/orders/confirm-after-payment",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+     productId:selectedProduct._id,
+     wholesalerId:selectedProduct.wholesalerId,
+     paymentId:response.razorpay_payment_id,
+     vehicleType:vehicle,
+     deliveryCharge,
+     totalAmount,
+     retailerName:profile.name,
+     retailerMobile:profile.mobile,
+     retailerAddress:profile.address,
+     description:`${selectedProduct.productName} ordered via ${vehicle}`
+    })
+   });
+   alert("Payment Success & Order Placed");
+   closeAll();
+  }
+ });
  rzp.open();
 }
 
-/* CREATE ORDER */
-async function finalizeOrder(){
- const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- await fetch(API+"/api/orders/confirm-after-payment",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({
-   productId:selectedProduct._id,
-   retailerName:profile.name,
-   retailerMobile:profile.mobile,
-   retailerAddress:profile.address,
-   wholesalerId:selectedProduct.wholesalerId
-  })
- });
- alert("Order placed");
- closeAll();
+/* ORDERS */
+async function openOrders(){
+ ordersModal.style.display="flex";
+ const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ const res=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
+ const data=await res.json();
+
+ myOrders.innerHTML=data.orders.map(o=>{
+  const d=new Date(o.createdAt);
+  return `
+   <div class="order-card">
+    <b>${o.productName}</b><br>
+    Date: ${d.toLocaleDateString("en-IN")}<br>
+    Time: ${d.toLocaleTimeString("en-IN")}<br>
+    <small>${o.description||""}</small><br>
+    Status: <span class="badge">${o.status}</span>
+   </div>
+  `;
+ }).join("");
+}
+
+/* DELIVERY DETAILS */
+async function openDeliveryDetails(){
+ deliveryModal.style.display="flex";
+ const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ const res=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
+ const data=await res.json();
+
+ deliveryData.innerHTML=data.orders.filter(o=>o.deliveryBoyName).map(o=>{
+  const d=new Date(o.createdAt);
+  return `
+   <div class="order-card">
+    <b>${o.productName}</b><br>
+    Date: ${d.toLocaleDateString("en-IN")}<br>
+    Time: ${d.toLocaleTimeString("en-IN")}<br>
+    ${o.description||""}<br><br>
+    Boy: ${o.deliveryBoyName}<br>
+    Mobile: ${o.deliveryBoyMobile}<br>
+    Code: <b style="color:green">${o.deliveryCode}</b>
+   </div>
+  `;
+ }).join("") || "No delivery yet";
 }
 
 /* PROFILE */
@@ -242,49 +242,6 @@ function saveProfile(){
  }));
  alert("Profile saved");
  closeAll();
-}
-
-/* ORDERS */
-async function openOrders(){
- ordersModal.style.display="flex";
-
- const p = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- const res = await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const data = await res.json();
-
- myOrders.innerHTML = data.orders.map(o=>`
-  <div class="order-card">
-    <b>${o.productName}</b><br>
-    Date: ${o.orderDate || "-"}<br>
-    Time: ${o.orderTime || "-"}<br>
-    <small>${o.description || ""}</small><br>
-    Status: <span class="badge">${o.status}</span>
-  </div>
- `).join("");
-}
-
-/* DELIVERY DETAILS */
-async function openDeliveryDetails(){
- deliveryModal.style.display="flex";
-
- const p = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- const res = await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const data = await res.json();
-
- const list = data.orders.filter(o=>o.deliveryBoyName);
-
- deliveryData.innerHTML = list.length ? list.map(o=>`
-  <div class="order-card">
-    <b>${o.productName}</b><br>
-    Date: ${o.orderDate || "-"}<br>
-    Time: ${o.orderTime || "-"}<br>
-    ${o.description || ""}<br><br>
-
-    Delivery Boy: ${o.deliveryBoyName}<br>
-    Mobile: ${o.deliveryBoyMobile}<br>
-    Code: <b style="color:green">${o.deliveryCode}</b>
-  </div>
- `).join("") : "No delivery assigned yet";
 }
 
 /* NOTIFY DOT */
