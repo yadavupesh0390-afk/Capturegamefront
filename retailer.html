@@ -14,7 +14,7 @@
 body{margin:0;background:#f3f6fb}
 .main{padding:20px}
 .icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:650px;margin:auto}
-.icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;position:relative}
+.icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.08)}
 .products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
 .product-card{background:#fff;padding:6px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}
@@ -22,36 +22,31 @@ body{margin:0;background:#f3f6fb}
 .price{color:#16a34a;font-weight:600;font-size:13px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
 .modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px}
-select,button{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none}
-.primary{background:#16a34a;color:#fff;font-size:16px}
+select,button,input,textarea{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:1px solid #ddd}
+.primary{background:#16a34a;color:#fff;font-size:16px;border:none}
 </style>
 </head>
 
 <body>
 <div class="main">
 
-  <!-- ICON BAR -->
-  <div class="icon-bar">
-    <button class="icon-btn" onclick="openProfile()"><i class="bi bi-person-circle"></i></button>
-    <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>
-  </div>
-
-  <!-- HEADER -->
-  <div class="header">
-    <h3>🛒 Retailer Dashboard</h3>
-  </div>
-
-  <!-- WHOLESALER SEARCH -->
-  <div class="header">
-    <input id="wid" placeholder="Enter Wholesaler ID">
-    <button class="primary" onclick="loadProducts()">Search</button>
-  </div>
-
-  <!-- PRODUCTS -->
-  <div class="products-grid" id="products"></div>
+<div class="icon-bar">
+ <button class="icon-btn" onclick="openProfile()"><i class="bi bi-person-circle"></i></button>
 </div>
 
-<!-- PRODUCT DETAIL -->
+<div class="header">
+ <h3>🛒 Retailer Dashboard</h3>
+</div>
+
+<div class="header">
+ <input id="wid" placeholder="Enter Wholesaler ID">
+ <button class="primary" onclick="loadProducts()">Search</button>
+</div>
+
+<div class="products-grid" id="products"></div>
+</div>
+
+<!-- PRODUCT MODAL -->
 <div class="modal" id="detailModal">
  <div class="modal-content">
   <h3 id="dName"></h3>
@@ -61,13 +56,13 @@ select,button{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:
   <p><b>Address:</b> <span id="dAddress"></span></p>
 
   <select id="vehicleType">
-    <option value="">Select Vehicle</option>
-    <option value="two_wheeler">Two Wheeler</option>
-    <option value="three_wheeler">Three Wheeler</option>
-    <option value="four_wheeler">Four Wheeler</option>
+    <option value="">Select Delivery Vehicle</option>
+    <option value="two_wheeler">2 Wheeler</option>
+    <option value="three_wheeler">3 Wheeler</option>
+    <option value="four_wheeler">4 Wheeler</option>
   </select>
 
-  <button class="primary" onclick="startPayment()">💳 Pay Now</button>
+  <button class="primary" onclick="startPayment()">Pay & Order</button>
   <button onclick="closeAll()">Cancel</button>
  </div>
 </div>
@@ -78,7 +73,7 @@ select,button{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:
   <h3>Retailer Profile</h3>
   <input id="pName" placeholder="Name">
   <input id="pMobile" placeholder="Mobile">
-  <textarea id="pAddress" placeholder="Address"></textarea>
+  <textarea id="pAddress" placeholder="Full Delivery Address (Required)"></textarea>
   <button class="primary" onclick="saveProfile()">Save</button>
   <button onclick="closeAll()">Close</button>
  </div>
@@ -97,8 +92,8 @@ async function loadProducts(){
  const res=await fetch(`${API}/api/products/wholesaler/${id}`);
  const data=await res.json();
 
- products.innerHTML=data.products.map(p=>`
-  <div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
+ products.innerHTML=(data.products||[]).map(p=>`
+  <div class="product-card" onclick="showDetail('${p._id}')">
     <img src="${p.image}">
     <div>${p.productName}</div>
     <div class="price">₹${p.price}</div>
@@ -107,18 +102,22 @@ async function loadProducts(){
 }
 
 /* SHOW DETAIL */
-function showDetail(p){
- selectedProduct=p;
- dName.innerText=p.productName;
- dImg.src=p.image;
- dPrice.innerText="₹"+p.price;
- dShop.innerText=p.shopName;
- dAddress.innerText=p.address;
+async function showDetail(id){
+ const res=await fetch(`${API}/api/products/${id}`);
+ selectedProduct=await res.json();
+
+ dName.innerText=selectedProduct.productName;
+ dImg.src=selectedProduct.image;
+ dPrice.innerText="₹"+selectedProduct.price;
+ dShop.innerText=selectedProduct.shopName;
+ dAddress.innerText=selectedProduct.address;
  detailModal.style.display="flex";
 }
 
-/* PAYMENT START */
+/* PAYMENT */
 async function startPayment(){
+ const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ if(!profile.address) return alert("Please save delivery address first");
  if(!vehicleType.value) return alert("Select vehicle");
 
  const res=await fetch(API+"/api/pay/create-order",{
@@ -135,24 +134,20 @@ async function startPayment(){
 
  const data=await res.json();
 
- const options={
+ const rzp=new Razorpay({
   key:data.key,
   amount:data.amount,
   currency:"INR",
   name:"ShopBacked",
-  description:selectedProduct.productName,
-  order_id:data.razorpayOrderId,
-  handler:function(resp){
-   finalizeOrder(resp.razorpay_payment_id);
-  }
- };
-
- new Razorpay(options).open();
+  order_id:data.orderId,
+  handler:(resp)=>finalizeOrder(resp.razorpay_payment_id)
+ });
+ rzp.open();
 }
 
-/* CONFIRM ORDER */
+/* CONFIRM */
 async function finalizeOrder(paymentId){
- const res=await fetch(API+"/api/orders/confirm-after-payment",{
+ await fetch(API+"/api/orders/confirm-after-payment",{
   method:"POST",
   headers:{
    "Content-Type":"application/json",
@@ -164,9 +159,7 @@ async function finalizeOrder(paymentId){
    paymentId
   })
  });
-
- const data=await res.json();
- alert(data.success?"Order Placed ✅":"Failed");
+ alert("Order placed successfully ✅");
  closeAll();
 }
 
@@ -177,12 +170,14 @@ function openProfile(){
  profileModal.style.display="flex";
 }
 function saveProfile(){
- const p={name:pName.value,mobile:pMobile.value,address:pAddress.value};
- localStorage.setItem("retailerProfile",JSON.stringify(p));
- alert("Saved ✅"); closeAll();
+ localStorage.setItem("retailerProfile",JSON.stringify({
+  name:pName.value,
+  mobile:pMobile.value,
+  address:pAddress.value
+ }));
+ alert("Profile Saved");
+ closeAll();
 }
-
-/* HELPERS */
 function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none")}
 </script>
 </body>
