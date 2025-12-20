@@ -157,7 +157,8 @@ async function loadOrders(){
     headers:{ Authorization:"Bearer "+TOKEN }
   });
   const data = await res.json();
-  lastOrders = data.orders || [];
+  // ✅ Only show unassigned orders or assigned to current delivery boy
+  lastOrders = (data.orders || []).filter(o => !o.deliveryBoyId || o.deliveryBoyId === DBID);
   renderOrders(lastOrders);
  }catch(err){
   orders.innerHTML="<p style='text-align:center;color:red'>Failed to load orders</p>";
@@ -249,7 +250,6 @@ function closeCodeModal(){ codeModal.style.display="none"; }
 /* INIT */
 loadOrders();
 setInterval(loadOrders,8000);
-
 </script>
 </body>
 </html>
