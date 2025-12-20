@@ -14,39 +14,44 @@
 body{margin:0;background:#f3f6fb}
 .main{padding:20px}
 .icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:650px;margin:auto}
-.icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer}
+.icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;position:relative}
+.notify-dot{position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:red;display:none}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.08)}
 .products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
 .product-card{background:#fff;padding:6px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}
 .product-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}
 .price{color:#16a34a;font-weight:600;font-size:13px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
-.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px}
-select,button,input,textarea{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:1px solid #ddd}
-.primary{background:#16a34a;color:#fff;font-size:16px;border:none}
+.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
+input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
 </style>
 </head>
 
 <body>
 <div class="main">
 
-<div class="icon-bar">
- <button class="icon-btn" onclick="openProfile()"><i class="bi bi-person-circle"></i></button>
+  <!-- ICON BAR -->
+  <div class="icon-bar">
+    <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>
+    <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header"><h3>🛒 Retailer Dashboard</h3></div>
+
+  <!-- Wholesaler ID SEARCH -->
+  <div class="header">
+    <input id="wid" placeholder="Enter Wholesaler ID">
+    <button class="primary" onclick="loadProducts()">Search</button>
+  </div>
+
+  <!-- PRODUCTS GRID -->
+  <div class="products-grid" id="products"></div>
+
 </div>
 
-<div class="header">
- <h3>🛒 Retailer Dashboard</h3>
-</div>
-
-<div class="header">
- <input id="wid" placeholder="Enter Wholesaler ID">
- <button class="primary" onclick="loadProducts()">Search</button>
-</div>
-
-<div class="products-grid" id="products"></div>
-</div>
-
-<!-- PRODUCT MODAL -->
+<!-- PRODUCT DETAIL MODAL -->
 <div class="modal" id="detailModal">
  <div class="modal-content">
   <h3 id="dName"></h3>
@@ -56,13 +61,13 @@ select,button,input,textarea{width:100%;padding:10px;margin-top:10px;border-radi
   <p><b>Address:</b> <span id="dAddress"></span></p>
 
   <select id="vehicleType">
-    <option value="">Select Delivery Vehicle</option>
-    <option value="two_wheeler">2 Wheeler</option>
-    <option value="three_wheeler">3 Wheeler</option>
-    <option value="four_wheeler">4 Wheeler</option>
+    <option value="">Select Vehicle</option>
+    <option value="two_wheeler">Two Wheeler</option>
+    <option value="three_wheeler">Three Wheeler</option>
+    <option value="four_wheeler">Four Wheeler</option>
   </select>
 
-  <button class="primary" onclick="startPayment()">Pay & Order</button>
+  <button class="primary" onclick="startPayment()">💳 Pay & Order</button>
   <button onclick="closeAll()">Cancel</button>
  </div>
 </div>
@@ -70,11 +75,11 @@ select,button,input,textarea{width:100%;padding:10px;margin-top:10px;border-radi
 <!-- PROFILE -->
 <div class="modal" id="profileModal">
  <div class="modal-content">
-  <h3>Retailer Profile</h3>
-  <input id="pName" placeholder="Name">
-  <input id="pMobile" placeholder="Mobile">
-  <textarea id="pAddress" placeholder="Full Delivery Address (Required)"></textarea>
-  <button class="primary" onclick="saveProfile()">Save</button>
+  <h3>🧑 Retailer Profile</h3>
+  <input id="profileName" placeholder="Retailer Name">
+  <input id="profileMobile" placeholder="Retailer Mobile">
+  <textarea id="profileAddress" placeholder="Retailer Address (Required)"></textarea>
+  <button class="primary" onclick="setProfile()">Save Profile</button>
   <button onclick="closeAll()">Close</button>
  </div>
 </div>
@@ -85,100 +90,96 @@ const TOKEN=localStorage.getItem("token");
 let selectedProduct=null;
 
 /* LOAD PRODUCTS */
-async function loadProducts(){
- const id=document.getElementById("wid").value.trim();
- if(!id) return alert("Enter Wholesaler ID");
-
- const res=await fetch(`${API}/api/products/wholesaler/${id}`);
- const data=await res.json();
-
- products.innerHTML=(data.products||[]).map(p=>`
-  <div class="product-card" onclick="showDetail('${p._id}')">
-    <img src="${p.image}">
-    <div>${p.productName}</div>
-    <div class="price">₹${p.price}</div>
-  </div>
- `).join("") || "No products";
+async function loadProducts() {
+  const id = document.getElementById("wid").value.trim();
+  if (!id) return alert("Wholesaler ID required");
+  try {
+    const res = await fetch(`${API}/api/products/wholesaler/${id}`);
+    const data = await res.json();
+    if (!data.products.length) { products.innerHTML="No products"; return; }
+    products.innerHTML = data.products.map(p => `<div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
+      <img src="${p.image}"><div>${p.productName}</div><div class="price">₹${p.price}</div></div>`).join("");
+  } catch (err){ console.error(err); alert("Failed to load products"); }
 }
 
 /* SHOW DETAIL */
-async function showDetail(id){
- const res=await fetch(`${API}/api/products/${id}`);
- selectedProduct=await res.json();
-
- dName.innerText=selectedProduct.productName;
- dImg.src=selectedProduct.image;
- dPrice.innerText="₹"+selectedProduct.price;
- dShop.innerText=selectedProduct.shopName;
- dAddress.innerText=selectedProduct.address;
+function showDetail(p){
+ selectedProduct=p;
+ dName.innerText=p.productName;
+ dImg.src=p.image;
+ dPrice.innerText="₹"+p.price;
+ dShop.innerText=p.shopName;
+ dAddress.innerText=p.address;
  detailModal.style.display="flex";
 }
 
 /* PAYMENT */
 async function startPayment(){
- const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- if(!profile.address) return alert("Please save delivery address first");
  if(!vehicleType.value) return alert("Select vehicle");
+ const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ if(!profile.address) return alert("Save your delivery address first");
 
- const res=await fetch(API+"/api/pay/create-order",{
+ const res = await fetch(API+"/api/pay/create-order", {
   method:"POST",
-  headers:{
-   "Content-Type":"application/json",
-   "Authorization":"Bearer "+TOKEN
-  },
-  body:JSON.stringify({
-   productId:selectedProduct._id,
-   vehicleType:vehicleType.value
-  })
+  headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+  body:JSON.stringify({productId:selectedProduct._id,vehicleType:vehicleType.value})
  });
+ const data = await res.json();
 
- const data=await res.json();
-
- const rzp=new Razorpay({
+ const rzp = new Razorpay({
   key:data.key,
   amount:data.amount,
   currency:"INR",
   name:"ShopBacked",
   order_id:data.orderId,
-  handler:(resp)=>finalizeOrder(resp.razorpay_payment_id)
+  handler: function(resp){
+   finalizeOrder(resp.razorpay_payment_id);
+  }
  });
  rzp.open();
 }
 
-/* CONFIRM */
+/* CONFIRM ORDER AFTER PAYMENT */
 async function finalizeOrder(paymentId){
- await fetch(API+"/api/orders/confirm-after-payment",{
-  method:"POST",
-  headers:{
-   "Content-Type":"application/json",
-   "Authorization":"Bearer "+TOKEN
-  },
-  body:JSON.stringify({
+ const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ const body = {
+   wholesalerId:selectedProduct.wholesalerId,
+   wholesalerName:selectedProduct.shopName,
+   wholesalerMobile:selectedProduct.mobile,
+   wholesalerAddress:selectedProduct.address,
    productId:selectedProduct._id,
+   productName:selectedProduct.productName,
+   price:selectedProduct.price,
+   productImg:selectedProduct.image,
+   retailerName:profile.name,
+   retailerMobile:profile.mobile,
+   retailerAddress:profile.address,
    vehicleType:vehicleType.value,
    paymentId
-  })
+ };
+ const res = await fetch(API+"/api/orders/confirm-after-payment",{
+  method:"POST",
+  headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+  body:JSON.stringify(body)
  });
- alert("Order placed successfully ✅");
+ const data = await res.json();
+ alert(data.success?"Order Placed ✅":"Order failed");
  closeAll();
 }
 
 /* PROFILE */
-function openProfile(){
- const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- pName.value=p.name||""; pMobile.value=p.mobile||""; pAddress.value=p.address||"";
- profileModal.style.display="flex";
+function openRetailerProfile(){
+ const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ profileName.value=profile.name||""; profileMobile.value=profile.mobile||""; profileAddress.value=profile.address||""; profileModal.style.display="flex";
 }
-function saveProfile(){
- localStorage.setItem("retailerProfile",JSON.stringify({
-  name:pName.value,
-  mobile:pMobile.value,
-  address:pAddress.value
- }));
- alert("Profile Saved");
- closeAll();
+function setProfile(){
+ const profile={name:profileName.value,mobile:profileMobile.value,address:profileAddress.value};
+ localStorage.setItem("retailerProfile",JSON.stringify(profile));
+ alert("Profile Updated ✅"); closeAll();
 }
-function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none")}
+
+/* HELPERS */
+function closeAll(){document.querySelectorAll('.modal').forEach(m=>m.style.display='none')}
 </script>
 </body>
 </html>
