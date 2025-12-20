@@ -118,12 +118,15 @@ async function loadProducts(){
  if(!wid) return alert("Enter wholesaler ID");
  const res=await fetch(`${API}/api/products/wholesaler/${wid}`);
  const data=await res.json();
- products.innerHTML=data.products.map(p=>`
-  <div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
-   <img src="${p.image}">
-   <div>${p.productName}</div>
-   <div class="price">₹${p.price}</div>
-  </div>`).join("");
+ products.innerHTML=data.products.map(p=>{
+   const safeProduct = JSON.stringify(p).replace(/'/g, "\\'");
+   return `
+    <div class="product-card" onclick='showDetail(${safeProduct})'>
+     <img src="${p.image}">
+     <div>${p.productName}</div>
+     <div class="price">₹${p.price}</div>
+    </div>`;
+ }).join("");
 }
 
 /* PRODUCT DETAIL */
@@ -131,12 +134,7 @@ function showDetail(p){
  selectedProduct=p;
  dName.innerText=p.productName;
  dImg.src=p.image;
-
- // ✅ DESCRIPTION SHOW
- dDesc.innerText = p.description 
-   ? p.description 
-   : "No description available for this product.";
-
+ dDesc.innerText = p.detail ? p.detail : "No description available for this product.";
  dPrice.innerText="Price ₹"+p.price;
  dDeliveryCharge.innerText="";
  dTotal.innerText="";
@@ -185,7 +183,7 @@ async function startPayment(){
      retailerName:profile.name,
      retailerMobile:profile.mobile,
      retailerAddress:profile.address,
-     description:selectedProduct.description
+     description:selectedProduct.detail
     })
    });
    alert("Payment Success & Order Placed");
