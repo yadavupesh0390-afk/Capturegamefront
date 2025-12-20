@@ -27,6 +27,7 @@ body{margin:0;background:#f3f6fb}
 .modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
 input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
 button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}
+.desc{font-size:14px;color:#444;margin:10px 0;line-height:1.5}
 </style>
 </head>
 
@@ -57,15 +58,21 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;borde
  <div class="modal-content">
   <h3 id="dName"></h3>
   <img id="dImg" style="width:100%;border-radius:10px">
+
+  <!-- ✅ PRODUCT DESCRIPTION -->
+  <div id="dDesc" class="desc"></div>
+
   <p id="dPrice"></p>
   <p id="dDeliveryCharge"></p>
   <p id="dTotal"></p>
+
   <select id="vehicleType">
     <option value="">Select Vehicle</option>
     <option value="two_wheeler">Two Wheeler</option>
     <option value="three_wheeler">Three Wheeler</option>
     <option value="four_wheeler">Four Wheeler</option>
   </select>
+
   <button class="primary" onclick="startPayment()">Pay & Order</button>
   <button onclick="closeAll()">Close</button>
  </div>
@@ -124,6 +131,12 @@ function showDetail(p){
  selectedProduct=p;
  dName.innerText=p.productName;
  dImg.src=p.image;
+
+ // ✅ DESCRIPTION SHOW
+ dDesc.innerText = p.description 
+   ? p.description 
+   : "No description available for this product.";
+
  dPrice.innerText="Price ₹"+p.price;
  dDeliveryCharge.innerText="";
  dTotal.innerText="";
@@ -172,7 +185,7 @@ async function startPayment(){
      retailerName:profile.name,
      retailerMobile:profile.mobile,
      retailerAddress:profile.address,
-     description:`${selectedProduct.productName} ordered via ${vehicle}`
+     description:selectedProduct.description
     })
    });
    alert("Payment Success & Order Placed");
