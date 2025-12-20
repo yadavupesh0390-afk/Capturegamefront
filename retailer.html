@@ -30,25 +30,20 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;borde
 <body>
 <div class="main">
 
-  <!-- ICON BAR -->
   <div class="icon-bar">
     <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>
     <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>
     <button class="icon-btn" onclick="checkDeliveryNotify()"><i class="bi bi-truck"></i><span id="deliveryDot" class="notify-dot"></span></button>
   </div>
 
-  <!-- HEADER -->
   <div class="header"><h3>🛒 Retailer Dashboard</h3></div>
 
-  <!-- Wholesaler ID SEARCH -->
   <div class="header">
     <input id="wid" placeholder="Enter Wholesaler ID">
     <button class="primary" onclick="loadProducts()">Search</button>
   </div>
 
-  <!-- PRODUCTS GRID -->
   <div class="products-grid" id="products"></div>
-
 </div>
 
 <!-- PRODUCT DETAIL MODAL -->
@@ -67,7 +62,7 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;borde
     <option value="three_wheeler">Three Wheeler</option>
     <option value="four_wheeler">Four Wheeler</option>
   </select>
-  <button class="primary" onclick="showAmountOrPay()">💳 Pay & Order</button>
+  <button class="primary" onclick="startPayment()">💳 Pay & Order</button>
   <button onclick="closeAll()">Cancel</button>
  </div>
 </div>
@@ -97,7 +92,7 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;borde
 const API="https://shopbacked-vmhs.onrender.com";
 const TOKEN=localStorage.getItem("token");
 let selectedProduct=null;
-let totalAmountShown=false;
+let paymentStarted=false;
 
 /* LOAD PRODUCTS */
 async function loadProducts() {
@@ -118,58 +113,41 @@ function showDetail(p){
  dName.innerText=p.productName;
  dImg.src=p.image;
  dPrice.innerText="Price: ₹"+p.price;
- dShop.innerText=p.shopName;
- dAddress.innerText=p.address;
- dDeliveryCharge.innerText = "";
- dTotal.innerText = "";
- vehicleType.value = "";
- totalAmountShown=false;
+ dDeliveryCharge.innerText="";
+ dTotal.innerText="";
+ vehicleType.value="";
+ paymentStarted=false;
  detailModal.style.display="flex";
 }
 
-/* SHOW AMOUNT OR START PAYMENT */
-function showAmountOrPay(){
+/* START PAYMENT */
+async function startPayment(){
  if(!vehicleType.value) return alert("Select vehicle");
  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
  if(!profile.address) return alert("Save your delivery address first");
 
- let deliveryCharge = 0;
+ // calculate delivery charge & total
+ let deliveryCharge=0;
  switch(vehicleType.value){
-   case "two_wheeler": deliveryCharge = 20; break;
-   case "three_wheeler": deliveryCharge = 50; break;
-   case "four_wheeler": deliveryCharge = 80; break;
+   case "two_wheeler": deliveryCharge=20; break;
+   case "three_wheeler": deliveryCharge=50; break;
+   case "four_wheeler": deliveryCharge=80; break;
  }
-
  const totalAmount = selectedProduct.price + deliveryCharge;
 
- if(!totalAmountShown){
-   dDeliveryCharge.innerText = "Delivery Charge: ₹"+deliveryCharge;
-   dTotal.innerText = "Total: ₹"+totalAmount;
-   totalAmountShown=true;
-   return;
- }
+ // show prices
+ dDeliveryCharge.innerText="Delivery Charge: ₹"+deliveryCharge;
+ dTotal.innerText="Total: ₹"+totalAmount;
 
- // Start Razorpay payment
- startPayment(totalAmount, profile);
-}
+ // if already started, return
+ if(paymentStarted) return alert("Payment process already started!");
+ paymentStarted=true;
 
-async function startPayment(totalAmount, profile){
  try{
    const res = await fetch(API+"/api/orders/pay-and-create",{
      method:"POST",
      headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-     body:JSON.stringify({
-       productId:selectedProduct._id,
-       vehicleType:vehicleType.value,
-       amount:totalAmount,
-       retailerName:profile.name,
-       retailerMobile:profile.mobile,
-       retailerAddress:profile.address,
-       wholesalerId:selectedProduct.wholesalerId,
-       wholesalerName:selectedProduct.shopName,
-       wholesalerMobile:selectedProduct.mobile,
-       wholesalerAddress:selectedProduct.address
-     })
+     body:JSON.stringify({amount:totalAmount})
    });
    const data = await res.json();
    if(!data.success) return alert("Failed to create order");
@@ -181,17 +159,16 @@ async function startPayment(totalAmount, profile){
      name:"ShopBacked",
      description:selectedProduct.productName,
      order_id:data.order.id,
-     handler:function(resp){ finalizeOrder(resp.razorpay_payment_id); },
+     handler:function(resp){ finalizeOrder(resp.razorpay_payment_id,deliveryCharge,totalAmount); },
      prefill:{name:profile.name, contact:profile.mobile},
      theme:{color:"#16a34a"}
    });
    rzp.open();
-
- }catch(e){console.error(e); alert("Payment failed"); }
+ }catch(e){ console.error(e); alert("Payment failed"); paymentStarted=false; }
 }
 
 /* CONFIRM ORDER AFTER PAYMENT */
-async function finalizeOrder(paymentId){
+async function finalizeOrder(paymentId,deliveryCharge,totalAmount){
  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
  const body = {
    productId:selectedProduct._id,
@@ -203,7 +180,8 @@ async function finalizeOrder(paymentId){
    wholesalerId:selectedProduct.wholesalerId,
    wholesalerName:selectedProduct.shopName,
    wholesalerMobile:selectedProduct.mobile,
-   wholesalerAddress:selectedProduct.address
+   wholesalerAddress:selectedProduct.address,
+   deliveryCharge,totalAmount
  };
  const res = await fetch(API+"/api/orders/confirm-after-payment",{
    method:"POST",
@@ -213,6 +191,7 @@ async function finalizeOrder(paymentId){
  const data = await res.json();
  alert(data.success?"Order Placed ✅":"Order failed");
  closeAll();
+ paymentStarted=false;
 }
 
 /* PROFILE */
@@ -230,13 +209,14 @@ function setProfile(){
 async function openOrders(){
  ordersModal.style.display="flex";
  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ if(!profile.mobile) return;
  const res = await fetch(API+"/api/orders/retailer/"+profile.mobile);
  const data = await res.json();
  myOrders.innerHTML = data.orders.map(o=>`<div class="order-card">
-   <b>${o.productName}</b> ₹${o.price}<br>
+   <b>${o.productName}</b> ₹${o.totalAmount}<br>
    <span class="badge">${o.status}</span>
    ${o.deliveryCode?`<br>Delivery Code: <b>${o.deliveryCode}</b>`:""}
-   ${o.deliveryCodeTime?`<br>Code Generated: ${new Date(o.deliveryCodeTime).toLocaleString()}`:""}
+   <br><small>${o.statusHistory[o.statusHistory.length-1]?.time? new Date(o.statusHistory[o.statusHistory.length-1].time).toLocaleString() : ""}</small>
  </div>`).join("") || "No orders";
 }
 
@@ -249,7 +229,6 @@ async function checkDeliveryNotify(){
  const hasDelivery = data.orders.some(o=>o.deliveryBoyName);
  document.getElementById("deliveryDot").style.display = hasDelivery?"block":"none";
 }
-
 setInterval(checkDeliveryNotify,8000);
 
 function closeAll(){document.querySelectorAll('.modal').forEach(m=>m.style.display='none')}
