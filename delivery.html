@@ -175,7 +175,7 @@ function renderOrders(list){
  <div class="card order">
   <img src="${o.productImg}">
   <div style="flex:1">
-   <b>${o.productName}</b> ₹${o.price}<br><br>
+   <b>${o.productName}</b><br><br>
 
    🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>
    📍 ${o.wholesalerAddress || "Address not available"}<br>
@@ -205,13 +205,14 @@ function renderOrders(list){
    }
 
    ${(o.status==="picked_up" || o.status==="delivery_code_generated")
- ? `<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`
- : ""
-}
+     ? `<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`
+     : ""
+   }
   </div>
  </div>
  `).join("");
 }
+
 /* ACTIONS */
 async function acceptOrder(id){
  const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
@@ -227,7 +228,7 @@ async function pickupOrder(id){
  loadOrders();
 }
 
-/* DELIVERY FLOW (FINAL SAFE LOGIC) */
+/* DELIVERY FLOW (FINAL) */
 async function deliverFlow(orderId,status){
  const order = lastOrders.find(o=>o._id===orderId);
  if(!order) return;
