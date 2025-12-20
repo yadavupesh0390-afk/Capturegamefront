@@ -169,6 +169,11 @@ async function startPayment(){
    description: "Product Order",
    handler: async function (response) {
 
+     // ✅ TIME & DATE
+     const now = new Date();
+     const orderDate = now.toLocaleDateString("en-IN");
+     const orderTime = now.toLocaleTimeString("en-IN");
+
      /* 3️⃣ Confirm Order After Payment */
      await fetch(API + "/api/orders/confirm-after-payment", {
        method:"POST",
@@ -177,12 +182,19 @@ async function startPayment(){
          productId: selectedProduct._id,
          wholesalerId: selectedProduct.wholesalerId,
          paymentId: response.razorpay_payment_id,
+
          vehicleType: vehicle,
          deliveryCharge: deliveryCharge,
          totalAmount: totalAmount,
+
          retailerName: profile.name,
          retailerMobile: profile.mobile,
-         retailerAddress: profile.address
+         retailerAddress: profile.address,
+
+         // ✅ NEW FIELDS
+         orderDate: orderDate,
+         orderTime: orderTime,
+         description: `${selectedProduct.productName} ordered via ${vehicle}`
        })
      });
 
