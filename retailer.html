@@ -54,8 +54,8 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px 15px;borde
   <p id="dPrice"></p>
   <p id="dDeliveryCharge"></p>
   <p id="dTotal"></p>
-  <p><b>Shop:</b> <span id="dShop"></span></p>
-  <p><b>Address:</b> <span id="dAddress"></span></p>
+  <p><b>Wholesaler Shop:</b> <span id="dShop"></span></p>
+  <p><b>Wholesaler Address:</b> <span id="dAddress"></span></p>
   <select id="vehicleType">
     <option value="">Select Vehicle</option>
     <option value="two_wheeler">Two Wheeler</option>
@@ -115,6 +115,8 @@ function showDetail(p){
  dPrice.innerText="Price: ₹"+p.price;
  dDeliveryCharge.innerText="";
  dTotal.innerText="";
+ dShop.innerText=p.shopName || "N/A";
+ dAddress.innerText=p.address || "N/A";
  vehicleType.value="";
  paymentStarted=false;
  detailModal.style.display="flex";
@@ -126,7 +128,6 @@ async function startPayment(){
  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
  if(!profile.address) return alert("Save your delivery address first");
 
- // calculate delivery charge & total
  let deliveryCharge=0;
  switch(vehicleType.value){
    case "two_wheeler": deliveryCharge=20; break;
@@ -135,12 +136,10 @@ async function startPayment(){
  }
  const totalAmount = selectedProduct.price + deliveryCharge;
 
- // show prices
  dDeliveryCharge.innerText="Delivery Charge: ₹"+deliveryCharge;
  dTotal.innerText="Total: ₹"+totalAmount;
 
- // if already started, return
- if(paymentStarted) return alert("Payment process already started!");
+ if(paymentStarted) return alert("Payment already started!");
  paymentStarted=true;
 
  try{
@@ -217,6 +216,8 @@ async function openOrders(){
    <span class="badge">${o.status}</span>
    ${o.deliveryCode?`<br>Delivery Code: <b>${o.deliveryCode}</b>`:""}
    <br><small>${o.statusHistory[o.statusHistory.length-1]?.time? new Date(o.statusHistory[o.statusHistory.length-1].time).toLocaleString() : ""}</small>
+   <br><b>Wholesaler Shop:</b> ${o.wholesalerName || "N/A"}
+   <br><b>Wholesaler Address:</b> ${o.wholesalerAddress || "N/A"}
  </div>`).join("") || "No orders";
 }
 
