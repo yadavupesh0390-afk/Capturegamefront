@@ -144,7 +144,7 @@ function saveProfile(){
   vehicleNo:pVehicleNo.value,
   city:pCity.value
  };
- localStorage.setItem("deliveryProfile_"+DBID, JSON.stringify(p));
+ localStorage.setItem("deliveryProfile_"+DBID,JSON.stringify(p));
  alert("Profile Saved ✅");
  closeProfile();
 }
@@ -164,7 +164,7 @@ async function loadOrders(){
  }
 }
 
-/* RENDER */
+/* RENDER ORDERS */
 function renderOrders(list){
  if(!list.length){
   orders.innerHTML="<p style='text-align:center'>No Orders</p>";
@@ -175,39 +175,20 @@ function renderOrders(list){
  <div class="card order">
   <img src="${o.productImg}">
   <div style="flex:1">
-   <b>${o.productName}</b><br><br>
-
-   🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>
-   📍 ${o.wholesalerAddress || "Address not available"}<br>
-   📞 ${o.wholesalerMobile || "N/A"}<br><br>
-
-   🏬 <b>Retailer:</b> ${o.retailerName}<br>
-   📍 ${o.retailerAddress || "Address not available"}<br>
-   📞 ${o.retailerMobile || "N/A"}<br><br>
-
-   🚗 <b>Vehicle:</b> ${
-     o.vehicleType === "two_wheeler" ? "Two Wheeler" :
-     o.vehicleType === "three_wheeler" ? "Three Wheeler" :
-     o.vehicleType === "four_wheeler" ? "Four Wheeler" :
-     "Not specified"
-   }<br><br>
-
+   <b>${o.productName}</b><br>
    <span class="badge blue">${o.status}</span><br>
+   <small>${o.statusHistory[o.statusHistory.length-1]?.time ? new Date(o.statusHistory[o.statusHistory.length-1].time).toLocaleString() : ""}</small><br><br>
+   🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>
+   📍 ${o.wholesalerAddress || "Address N/A"}<br>
+   📞 ${o.wholesalerMobile || "N/A"}<br><br>
+   🏬 <b>Retailer:</b> ${o.retailerName}<br>
+   📍 ${o.retailerAddress || "Address N/A"}<br>
+   📞 ${o.retailerMobile || "N/A"}<br><br>
+   🚗 <b>Vehicle:</b> ${o.vehicleType==="two_wheeler"?"Two Wheeler":o.vehicleType==="three_wheeler"?"Three Wheeler":o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"}<br><br>
 
-   ${o.status==="confirmed_by_wholesaler"
-     ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`
-     : ""
-   }
-
-   ${o.status==="delivery_accepted"
-     ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`
-     : ""
-   }
-
-   ${(o.status==="picked_up" || o.status==="delivery_code_generated")
-     ? `<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`
-     : ""
-   }
+   ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
+   ${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
+   ${(o.status==="picked_up" || o.status==="delivery_code_generated")?`<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`:""}
   </div>
  </div>
  `).join("");
@@ -228,7 +209,7 @@ async function pickupOrder(id){
  loadOrders();
 }
 
-/* DELIVERY FLOW (FINAL) */
+/* DELIVERY FLOW */
 async function deliverFlow(orderId,status){
  const order = lastOrders.find(o=>o._id===orderId);
  if(!order) return;
@@ -263,14 +244,12 @@ async function submitDeliveryCode(){
  loadOrders();
 }
 
-function closeCodeModal(){
- codeModal.style.display="none";
-}
+function closeCodeModal(){ codeModal.style.display="none"; }
 
 /* INIT */
 loadOrders();
 setInterval(loadOrders,8000);
-</script>
 
+</script>
 </body>
 </html>
