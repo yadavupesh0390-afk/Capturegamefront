@@ -13,21 +13,26 @@
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
 body{margin:0;background:#f3f6fb}
 .main{padding:20px}
-.icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:650px;margin:auto}
+.icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:700px;margin:auto}
 .icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;position:relative}
 .notify-dot{position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:red;display:none}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.08)}
 .products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
-.product-card{background:#fff;padding:6px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+.product-card{background:#fff;padding:8px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}
 .product-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}
 .price{color:#16a34a;font-weight:600;font-size:13px}
+.actions{display:flex;gap:5px;margin-top:6px}
+.actions button{flex:1;border:none;border-radius:8px;padding:6px;font-size:12px;cursor:pointer}
+.cart-btn{background:#e5fbe9}
+.buy-btn{background:#fee2e2}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
 .modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
 input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
 button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-radius:10px;cursor:pointer;width:100%}
 .cart-item{border-bottom:1px solid #ddd;padding:8px 0}
-.order-card{background:#fff;padding:12px;margin-bottom:10px;border-radius:12px}
+.order-card{background:#fff;padding:12px;margin-bottom:10px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}
 .badge{background:#e0f2fe;padding:4px 10px;border-radius:20px;font-size:12px}
+.small{font-size:12px;color:#555}
 </style>
 </head>
 
@@ -60,7 +65,15 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
   <img id="dImg" style="width:100%;border-radius:10px">
   <p id="dDesc"></p>
   <p id="dPrice"></p>
-  <button class="primary" onclick="addToCart()">➕ Add to Cart</button>
+  <select id="vehicleType">
+    <option value="">Select Vehicle</option>
+    <option value="two_wheeler">Two Wheeler</option>
+    <option value="three_wheeler">Three Wheeler</option>
+    <option value="four_wheeler">Four Wheeler</option>
+  </select>
+  <p id="dDelivery"></p>
+  <p id="dTotal"></p>
+  <button class="primary" onclick="directBuy()">⚡ Buy Now</button>
   <button onclick="closeAll()">Close</button>
  </div>
 </div>
@@ -71,14 +84,12 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
   <h3>🧺 My Cart</h3>
   <div id="cartItems"></div>
   <p id="cartTotal"></p>
-
-  <select id="vehicleType">
+  <select id="cartVehicle">
     <option value="">Select Vehicle</option>
     <option value="two_wheeler">Two Wheeler</option>
     <option value="three_wheeler">Three Wheeler</option>
     <option value="four_wheeler">Four Wheeler</option>
   </select>
-
   <button class="primary" onclick="payCart()">Pay & Order</button>
   <button onclick="closeAll()">Close</button>
  </div>
@@ -119,45 +130,97 @@ const API="https://shopbacked-vmhs.onrender.com";
 let selectedProduct=null;
 let cart=JSON.parse(localStorage.getItem("cart")||"[]");
 
-/* PRODUCTS */
+/* TIME FORMAT */
+function formatDT(d){
+ const dt=new Date(d);
+ return dt.toLocaleDateString()+" "+dt.toLocaleTimeString();
+}
+function deliveryChargeByVehicle(v){
+ return v==="two_wheeler"?1:v==="three_wheeler"?50:80;
+}
+
+/* LOAD PRODUCTS */
 async function loadProducts(){
- const wid=document.getElementById("wid").value.trim();
+ const wid=widInput= document.getElementById("wid").value.trim();
  const r=await fetch(`${API}/api/products/wholesaler/${wid}`);
  const d=await r.json();
- products.innerHTML=d.products.map(p=>{
-  return `<div class="product-card" onclick='showDetail(${JSON.stringify(p)})'>
-   <img src="${p.image}">
-   <div>${p.productName}</div>
-   <div class="price">₹${p.price}</div>
-  </div>`;
- }).join("");
+ products.innerHTML=d.products.map(p=>`
+ <div class="product-card">
+  <img src="${p.image}">
+  <div>${p.productName}</div>
+  <div class="price">₹${p.price}</div>
+  <div class="actions">
+   <button class="cart-btn" onclick='addToCart(${JSON.stringify(p)})'>🛒</button>
+   <button class="buy-btn" onclick='openDetail(${JSON.stringify(p)})'>⚡</button>
+  </div>
+ </div>`).join("");
 }
 
 /* DETAIL */
-function showDetail(p){
+function openDetail(p){
  selectedProduct=p;
  dName.innerText=p.productName;
  dImg.src=p.image;
  dDesc.innerText=p.detail||"No description";
- dPrice.innerText="₹"+p.price;
+ dPrice.innerText="Price ₹"+p.price;
+ dDelivery.innerText="";
+ dTotal.innerText="";
  detailModal.style.display="flex";
 }
 
+/* DIRECT BUY */
+async function directBuy(){
+ const v=vehicleType.value;
+ if(!v) return alert("Select vehicle");
+ const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ if(!profile.mobile) return alert("Save profile first");
+
+ const dc=deliveryChargeByVehicle(v);
+ const total=selectedProduct.price+dc;
+ dDelivery.innerText="Delivery ₹"+dc;
+ dTotal.innerText="Total ₹"+total;
+
+ const r=await fetch(API+"/api/orders/pay-and-create",{
+  method:"POST",headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({amount:total})
+ });
+ const d=await r.json();
+
+ new Razorpay({
+  key:d.key,amount:d.amount,order_id:d.order.id,currency:"INR",
+  handler:async resp=>{
+   await fetch(API+"/api/orders/confirm-after-payment",{
+    method:"POST",headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+     paymentId:resp.razorpay_payment_id,
+     productId:selectedProduct._id,
+     totalAmount:total,
+     deliveryCharge:dc,
+     retailerName:profile.name,
+     retailerMobile:profile.mobile,
+     retailerAddress:profile.address
+    })
+   });
+   alert("Order placed");
+   closeAll();
+  }
+ }).open();
+}
+
 /* CART */
-function addToCart(){
- cart.push(selectedProduct);
+function addToCart(p){
+ cart.push(p);
  localStorage.setItem("cart",JSON.stringify(cart));
  alert("Added to cart");
- closeAll();
 }
 function openCart(){
- let total=0;
+ let sum=0;
  cartItems.innerHTML=cart.map((c,i)=>{
-  total+=c.price;
+  sum+=c.price;
   return `<div class="cart-item">${c.productName} ₹${c.price}
-   <button onclick="removeCart(${i})">❌</button></div>`;
+  <button onclick="removeCart(${i})">❌</button></div>`;
  }).join("");
- cartTotal.innerText="Subtotal ₹"+total;
+ cartTotal.innerText="Subtotal ₹"+sum;
  cartModal.style.display="flex";
 }
 function removeCart(i){
@@ -166,41 +229,72 @@ function removeCart(i){
  openCart();
 }
 
-/* PAYMENT */
+/* PAY CART */
 async function payCart(){
- const vehicle=vehicleType.value;
+ const v=cartVehicle.value;
+ if(!v) return alert("Select vehicle");
  const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- if(!profile.mobile||!profile.address) return alert("Save profile first");
-
- let delivery=vehicle==="two_wheeler"?1:vehicle==="three_wheeler"?50:80;
- let amount=cart.reduce((s,i)=>s+i.price,0)+delivery;
+ const dc=deliveryChargeByVehicle(v);
+ const total=cart.reduce((s,i)=>s+i.price,0)+dc;
 
  const r=await fetch(API+"/api/orders/pay-and-create",{
   method:"POST",headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({amount})
+  body:JSON.stringify({amount:total})
  });
  const d=await r.json();
 
  new Razorpay({
-  key:d.key,amount:d.amount,currency:"INR",order_id:d.order.id,
+  key:d.key,amount:d.amount,order_id:d.order.id,currency:"INR",
   handler:async resp=>{
    await fetch(API+"/api/orders/confirm-after-payment",{
     method:"POST",headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
      paymentId:resp.razorpay_payment_id,
      products:cart,
-     totalAmount:amount,
+     totalAmount:total,
+     deliveryCharge:dc,
      retailerName:profile.name,
      retailerMobile:profile.mobile,
      retailerAddress:profile.address
     })
    });
-   localStorage.removeItem("cart");
    cart=[];
+   localStorage.removeItem("cart");
    alert("Order placed");
    closeAll();
   }
  }).open();
+}
+
+/* ORDERS */
+async function openOrders(){
+ ordersModal.style.display="flex";
+ const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ const r=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
+ const d=await r.json();
+ myOrders.innerHTML=d.orders.map(o=>`
+ <div class="order-card">
+  <b>${o.productName||"Cart Order"}</b><br>
+  ₹${o.totalAmount} (Delivery ₹${o.deliveryCharge||0})<br>
+  <span class="small">🕒 ${formatDT(o.createdAt)}</span><br>
+  <span class="badge">${o.status}</span>
+ </div>`).join("");
+}
+
+/* DELIVERY */
+async function openDeliveryDetails(){
+ deliveryModal.style.display="flex";
+ const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ const r=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
+ const d=await r.json();
+ deliveryData.innerHTML=d.orders.filter(o=>o.deliveryBoyName).map(o=>`
+ <div class="order-card">
+  ${o.productName}<br>
+  Delivery ₹${o.deliveryCharge}<br>
+  Boy: ${o.deliveryBoyName} (${o.deliveryBoyMobile})<br>
+  Code: <b>${o.deliveryCode}</b><br>
+  <span class="small">${formatDT(o.createdAt)}</span>
+ </div>`).join("")||"No delivery yet";
 }
 
 /* PROFILE */
@@ -221,37 +315,8 @@ function saveProfile(){
  closeAll();
 }
 
-/* ORDERS */
-async function openOrders(){
- ordersModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- const r=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const d=await r.json();
- myOrders.innerHTML=d.orders.map(o=>`
-  <div class="order-card">
-   <b>${o.productName||"Cart Order"}</b><br>
-   ₹${o.totalAmount}<br>
-   <span class="badge">${o.status}</span>
-  </div>`).join("");
-}
-
-/* DELIVERY */
-async function openDeliveryDetails(){
- deliveryModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- const r=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const d=await r.json();
- deliveryData.innerHTML=d.orders.filter(o=>o.deliveryBoyName).map(o=>`
-  <div class="order-card">
-   ${o.productName}<br>
-   Boy: ${o.deliveryBoyName}<br>
-   Mobile: ${o.deliveryBoyMobile}<br>
-   Code: <b>${o.deliveryCode}</b>
-  </div>`).join("")||"No delivery yet";
-}
-
 /* NOTIFY */
-setInterval(async ()=>{
+setInterval(async()=>{
  const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
  if(!p.mobile) return;
  const r=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
