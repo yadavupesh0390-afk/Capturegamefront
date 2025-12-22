@@ -475,6 +475,50 @@ async function openDeliveryDetails(){
   }).join("");
 }
 
+async function openOrderStatus(){
+  orderStatusModal.style.display="flex";
+
+  const p = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+  if(!p.mobile){
+    orderStatusData.innerHTML="Profile not found";
+    return;
+  }
+
+  const res = await fetch(`${API}/api/orders/retailer/${p.mobile}`);
+  const data = await res.json();
+
+  if(!data.orders || data.orders.length===0){
+    orderStatusData.innerHTML="<p style='text-align:center;color:#666'>No orders found</p>";
+    return;
+  }
+
+  orderStatusData.innerHTML = data.orders.map(o=>{
+    const d = new Date(o.updatedAt || o.createdAt);
+
+    let cls = "status-pending";
+    if(o.status.includes("confirmed")) cls="status-confirmed";
+    if(o.status.includes("delivery")) cls="status-delivery";
+    if(o.status==="delivered") cls="status-delivered";
+
+    return `
+      <div class="status-card">
+        <div class="status-product">${o.productName}</div>
+
+        <div class="status-badge ${cls}">
+          ${o.status.replaceAll("_"," ").toUpperCase()}
+        </div>
+
+        <div class="status-time">
+          🕒 ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+  
+
+
+  
 /* PROFILE */
 function openRetailerProfile(){
  const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
