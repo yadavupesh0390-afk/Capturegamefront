@@ -383,19 +383,58 @@ function openCart(){
 }
 
 /* DELIVERY */
+
 async function openDeliveryDetails(){
- deliveryModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- const r=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const d=await r.json();
- deliveryData.innerHTML=d.orders.filter(o=>o.deliveryBoyName).map(o=>`
- <div class="order-card">
-  ${o.productName}<br>
-  Delivery ₹${o.deliveryCharge}<br>
-  Boy: ${o.deliveryBoyName} (${o.deliveryBoyMobile})<br>
-  Code: <b>${o.deliveryCode}</b><br>
-  <span class="small">${formatDT(o.createdAt)}</span>
- </div>`).join("")||"No delivery yet";
+  deliveryModal.style.display="flex";
+
+  const p = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+  if(!p.mobile){
+    deliveryData.innerHTML="Profile not found";
+    return;
+  }
+
+  const res = await fetch(`${API}/api/orders/retailer/${p.mobile}`);
+  const data = await res.json();
+
+  const delivered = data.orders.filter(o => o.deliveryBoyName);
+
+  if(delivered.length === 0){
+    deliveryData.innerHTML = "<p style='text-align:center;color:#666'>No delivery assigned yet</p>";
+    return;
+  }
+
+  deliveryData.innerHTML = delivered.map(o=>{
+    const d = new Date(o.createdAt);
+    return `
+      <div class="delivery-card">
+        <div class="delivery-row">
+          <span class="delivery-label">📦 Product</span>
+          <span class="delivery-value">${o.productName}</span>
+        </div>
+
+        <div class="delivery-row">
+          <span class="delivery-label">👤 Delivery Boy</span>
+          <span class="delivery-value">${o.deliveryBoyName}</span>
+        </div>
+
+        <div class="delivery-row">
+          <span class="delivery-label">📞 Mobile</span>
+          <span class="delivery-value">${o.deliveryBoyMobile}</span>
+        </div>
+
+        <div class="delivery-row">
+          <span class="delivery-label">🕒 Date</span>
+          <span class="delivery-value">
+            ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}
+          </span>
+        </div>
+
+        <div class="delivery-code">
+          🔐 Delivery Code : ${o.deliveryCode}
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 /* PROFILE */
