@@ -242,37 +242,46 @@ function removeCart(i){
 
 /* PAY CART */
 async function payCart(){
- const v=cartVehicle.value;
- if(!v) return alert("Select vehicle");
- const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- const dc=deliveryChargeByVehicle(v);
- const total=cart.reduce((s,i)=>s+i.price,0)+dc;
+ const vehicle = cartVehicle.value;
+ if(!vehicle) return alert("Select vehicle first");
 
- const r=await fetch(API+"/api/orders/pay-and-create",{
-  method:"POST",headers:{'Content-Type':'application/json'},
+ const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+ if(!profile.mobile) return alert("Save profile first");
+
+ let delivery = vehicle==="two_wheeler"?1:vehicle==="three_wheeler"?50:80;
+ let subtotal = cart.reduce((s,i)=>s+i.price,0);
+ let total = subtotal + delivery;
+
+ const r = await fetch(API+"/api/orders/pay-and-create",{
+  method:"POST",
+  headers:{'Content-Type':'application/json'},
   body:JSON.stringify({amount:total})
  });
- const d=await r.json();
+ const d = await r.json();
 
  new Razorpay({
-  key:d.key,amount:d.amount,order_id:d.order.id,currency:"INR",
-  handler:async resp=>{
-   await fetch(API+"/api/orders/confirm-after-payment",{
-    method:"POST",headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-     paymentId:resp.razorpay_payment_id,
-     products:cart,
-     totalAmount:total,
-     deliveryCharge:dc,
-     retailerName:profile.name,
-     retailerMobile:profile.mobile,
-     retailerAddress:profile.address
-    })
-   });
-   cart=[];
-   localStorage.removeItem("cart");
-   alert("Order placed");
-   closeAll();
+  key:d.key,
+  amount:d.amount,
+  order_id:d.order.id,
+  currency:"INR",
+  handler: async resp=>{
+    await fetch(API+"/api/orders/confirm-after-payment",{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        paymentId:resp.razorpay_payment_id,
+        products:cart,
+        totalAmount:total,
+        deliveryCharge:delivery,
+        retailerName:profile.name,
+        retailerMobile:profile.mobile,
+        retailerAddress:profile.address
+      })
+    });
+    localStorage.removeItem("cart");
+    cart=[];
+    alert("Order placed successfully");
+    closeAll();
   }
  }).open();
 }
