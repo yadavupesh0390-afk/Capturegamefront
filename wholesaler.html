@@ -70,12 +70,53 @@ socket.emit("joinWholesaler", WID);
 
 function openProduct(){productModal.style.display="flex";}
 function openOrders(){orderModal.style.display="flex";loadOrders();}
-function openProfile(){
-profileModal.style.display="flex";
-const p=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
-shopName.value=p.shopName||"";
-shopMobile.value=p.mobile||"";
-shopAddress.value=p.address||"";
+async function openProfile(){
+
+  profileModal.style.display = "flex";
+
+  try {
+    const res = await fetch(
+      `${API}/api/wholesalers/profile/${WID}`,
+      {
+        headers: {
+          "Authorization": "Bearer " + TOKEN
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success && data.profile) {
+
+      shopName.value   = data.profile.shopName || "";
+      shopMobile.value = data.profile.mobile || "";
+      shopAddress.value= data.profile.address || "";
+
+      // 🔁 optional local backup
+      localStorage.setItem(
+        "wholesalerProfile_" + WID,
+        JSON.stringify(data.profile)
+      );
+
+    } else {
+      // agar server par profile na mile
+      shopName.value   = "";
+      shopMobile.value = "";
+      shopAddress.value= "";
+    }
+
+  } catch (err) {
+    console.error("Load profile error:", err);
+
+    // 🔴 fallback to local (safe)
+    const p = JSON.parse(
+      localStorage.getItem("wholesalerProfile_" + WID) || "{}"
+    );
+
+    shopName.value   = p.shopName || "";
+    shopMobile.value = p.mobile || "";
+    shopAddress.value= p.address || "";
+  }
 }
 function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}
 
