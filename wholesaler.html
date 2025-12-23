@@ -126,6 +126,37 @@ async function saveWholesalerProfileToServer() {
   }
 }
 
+ async function loadWholesalerProfileFromServer(){
+
+  try{
+    const res = await fetch(
+      `${API}/api/wholesalers/profile/${WID}`,
+      {
+        headers:{
+          "Authorization":"Bearer "+TOKEN
+        }
+      }
+    );
+
+    const data = await res.json();
+    if(!data.profile) return;
+
+    shopName.value   = data.profile.shopName || "";
+    shopMobile.value = data.profile.mobile || "";
+    shopAddress.value= data.profile.address || "";
+
+    // local sync
+    localStorage.setItem(
+      "wholesalerProfile_"+WID,
+      JSON.stringify(data.profile)
+    );
+
+  }catch(err){
+    console.error(err);
+  }
+ }
+
+ 
 /* ADD PRODUCT */
 async function addProduct(){
 const img=pimg.files[0]; if(!img) return alert("Image required");
