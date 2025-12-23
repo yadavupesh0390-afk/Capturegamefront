@@ -1,4 +1,5 @@
-<!DOCTYPE html>  <html lang="en">  
+<!DOCTYPE html>
+<html lang="en">  
 <head>  
 <meta charset="UTF-8">  
 <title>Wholesaler Dashboard</title>  
@@ -73,12 +74,51 @@ socket.emit("joinWholesaler", WID);
   
 function openProduct(){productModal.style.display="flex";}  
 function openOrders(){orderModal.style.display="flex";loadOrders();}  
-function openProfile(){  
- profileModal.style.display="flex";  
- const p=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");  
- shopName.value=p.shopName||"";  
- shopMobile.value=p.mobile||"";  
- shopAddress.value=p.address||"";  
+async function saveWholesalerProfileToServer() {
+
+  if (!shopMobile.value.trim()) {
+    alert("Mobile number required");
+    return;
+  }
+
+  const payload = {
+    wholesalerId: WID,              // 🔑 primary key
+    shopName: shopName.value.trim(),
+    mobile: shopMobile.value.trim(),
+    address: shopAddress.value.trim()
+  };
+
+  try {
+    const res = await fetch(`${API}/api/wholesalers/saveProfile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + TOKEN
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+
+      // optional local sync
+      localStorage.setItem(
+        "wholesalerProfile_" + WID,
+        JSON.stringify(payload)
+      );
+
+      alert("✅ Profile server par save ho gaya");
+      closeAll();
+
+    } else {
+      alert("❌ Server save failed");
+    }
+
+  } catch (err) {
+    console.error("Save wholesaler profile error:", err);
+    alert("❌ Server error");
+  }
 }  
 function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}  
   
