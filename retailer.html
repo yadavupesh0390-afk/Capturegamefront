@@ -337,10 +337,19 @@ async function openCart(){
 
   cartModal.style.display="flex";
 }
-function removeCart(i){
- cart.splice(i,1);
- localStorage.setItem("cart",JSON.stringify(cart));
- openCart();
+async function removeCart(i){
+  cart.splice(i,1);
+
+  await fetch(`${API}/api/cart/save`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      retailerId: localStorage.getItem("userId"),
+      items: cart
+    })
+  });
+
+  openCart();
 }
 
  function updateCartTotal(){
