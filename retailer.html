@@ -13,298 +13,302 @@
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
 body{margin:0;background:#f3f6fb}
 .main{padding:20px}
-.icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:700px;margin:auto}
+.icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:720px;margin:auto}
 .icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;position:relative}
-.notify-dot{position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:red;display:none}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.08)}
-.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
-.product-card{background:#fff;padding:8px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}
-.product-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}
-.price{color:#16a34a;font-weight:600;font-size:13px}
-.actions{display:flex;gap:5px;margin-top:6px}
-.actions button{flex:1;border:none;border-radius:8px;padding:6px;font-size:12px;cursor:pointer}
-.cart-btn{background:#e5fbe9}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:20px}
+.product-card{background:#fff;padding:10px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+.product-card img{width:100%;height:100px;object-fit:cover;border-radius:8px}
+.price{color:#16a34a;font-weight:600}
+.actions{display:flex;gap:6px;margin-top:8px}
+.actions button{flex:1;border:none;border-radius:8px;padding:6px;font-size:13px;cursor:pointer}
+.cart-btn{background:#dcfce7}
 .buy-btn{background:#fee2e2}
+
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
-.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
+.modal-content{background:#fff;padding:20px;width:92%;max-width:480px;border-radius:16px;max-height:85vh;overflow:auto}
+
 input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
 button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-radius:10px;cursor:pointer;width:100%}
+
+.cart-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}
+.order-card{background:#fff;padding:12px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.08);margin-bottom:10px}
 .small{font-size:12px;color:#555}
 </style>
 </head>
 
 <body>
+
 <div class="main">
 
 <div class="icon-bar">
-  <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>
-  <button class="icon-btn" onclick="openOrderStatus()"><i class="bi bi-bag-check"></i></button>
-  <button class="icon-btn" onclick="openCart()"><i class="bi bi-cart"></i></button>
-  <button class="icon-btn" onclick="openDeliveryDetails()">
-    <i class="bi bi-truck"></i><span id="deliveryDot" class="notify-dot"></span>
-  </button>
+<button class="icon-btn" onclick="openProfile()"><i class="bi bi-person"></i></button>
+<button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>
+<button class="icon-btn" onclick="openCart()"><i class="bi bi-cart"></i></button>
 </div>
 
 <div class="header"><h3>🛒 Retailer Dashboard</h3></div>
 
 <div class="header">
-  <input id="wid" placeholder="Enter Wholesaler ID">
-  <button class="primary" onclick="loadProducts()">Search</button>
+<input id="wid" placeholder="Enter Wholesaler ID">
+<button class="primary" onclick="loadProducts()">Search Products</button>
 </div>
 
 <div class="products-grid" id="products"></div>
+
 </div>
 
 <!-- PRODUCT DETAIL -->
 <div class="modal" id="detailModal">
- <div class="modal-content">
-  <h3 id="dName"></h3>
-  <img id="dImg" style="width:100%;border-radius:10px">
-  <p id="dDesc"></p>
-  <p id="dPrice"></p>
+<div class="modal-content">
+<h3 id="dName"></h3>
+<img id="dImg" style="width:100%;border-radius:10px">
+<p class="price" id="dPrice"></p>
 
-  <select id="vehicleType">
-    <option value="">Select Vehicle</option>
-    <option value="two_wheeler">Two Wheeler</option>
-    <option value="three_wheeler">Three Wheeler</option>
-    <option value="four_wheeler">Four Wheeler</option>
-  </select>
+<select id="vehicleType">
+<option value="">Select Vehicle</option>
+<option value="two_wheeler">Two Wheeler</option>
+<option value="three_wheeler">Three Wheeler</option>
+<option value="four_wheeler">Four Wheeler</option>
+</select>
 
-  <p id="dDelivery"></p>
-  <p id="dTotal"></p>
-
-  <button class="primary" onclick="directBuy()">⚡ Buy Now</button>
-  <button onclick="closeAll()">Close</button>
- </div>
+<p id="dTotal"></p>
+<button class="primary" onclick="buyNow()">Pay & Order</button>
+<button onclick="closeAll()">Close</button>
+</div>
 </div>
 
 <!-- CART -->
 <div class="modal" id="cartModal">
- <div class="modal-content">
-  <h3 style="text-align:center">🧺 My Cart</h3>
+<div class="modal-content">
+<h3>🧺 Cart</h3>
+<div id="cartItems"></div>
 
-  <div id="cartItems"></div>
+<select id="cartVehicle" onchange="updateCartTotal()">
+<option value="">Select Vehicle</option>
+<option value="two_wheeler">Two Wheeler</option>
+<option value="three_wheeler">Three Wheeler</option>
+<option value="four_wheeler">Four Wheeler</option>
+</select>
 
-  <select id="cartVehicle" onchange="updateCartTotal()">
-    <option value="">Select Vehicle</option>
-    <option value="two_wheeler">Two Wheeler</option>
-    <option value="three_wheeler">Three Wheeler</option>
-    <option value="four_wheeler">Four Wheeler</option>
-  </select>
-
-  <p id="cartSubtotal"></p>
-  <p id="cartDelivery"></p>
-  <b id="cartGrandTotal"></b>
-
-  <button class="primary" onclick="payCart()">Pay & Order</button>
-  <button onclick="closeAll()">Close</button>
- </div>
+<b id="cartTotal"></b>
+<button class="primary" onclick="payCart()">Pay & Order</button>
+<button onclick="closeAll()">Close</button>
+</div>
 </div>
 
 <!-- PROFILE -->
 <div class="modal" id="profileModal">
- <div class="modal-content">
-  <h3>Retailer Profile</h3>
-  <input id="profileName" placeholder="Name">
-  <input id="profileMobile" placeholder="Mobile">
-  <textarea id="profileAddress" placeholder="Address"></textarea>
-  <button class="primary" onclick="saveProfile()">Save</button>
-  <button onclick="closeAll()">Close</button>
- </div>
+<div class="modal-content">
+<h3>Retailer Profile</h3>
+<input id="pName" placeholder="Name">
+<input id="pMobile" placeholder="Mobile">
+<textarea id="pAddress" placeholder="Address"></textarea>
+<button class="primary" onclick="saveProfile()">Save</button>
+<button onclick="closeAll()">Close</button>
+</div>
 </div>
 
-<!-- ORDER STATUS -->
-<div class="modal" id="orderStatusModal">
- <div class="modal-content">
-  <h3>📦 Order Status</h3>
-  <div id="orderStatusData"></div>
-  <button class="primary" onclick="closeAll()">Close</button>
- </div>
+<!-- ORDERS -->
+<div class="modal" id="ordersModal">
+<div class="modal-content">
+<h3>📦 My Orders</h3>
+<div id="ordersData"></div>
+<button onclick="closeAll()">Close</button>
 </div>
-
-<!-- DELIVERY -->
-<div class="modal" id="deliveryModal">
- <div class="modal-content">
-  <h3>🚚 Delivery Details</h3>
-  <div id="deliveryData"></div>
-  <button class="primary" onclick="closeAll()">Close</button>
- </div>
 </div>
 
 <script>
-const API="https://shopbacked-vmhs.onrender.com";
-let selectedProduct=null;
-let cart=[];
+const API = "https://shopbacked-vmhs.onrender.com";
+const retailerId = localStorage.getItem("userId") || "demoRetailer";
+let selectedProduct = null;
+let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
-/* HELPERS */
-function deliveryCharge(v){return v==="two_wheeler"?1:v==="three_wheeler"?50:80}
+/* UTILS */
+function deliveryCharge(v){
+return v==="two_wheeler"?1:v==="three_wheeler"?50:80;
+}
 
 /* LOAD PRODUCTS */
 async function loadProducts(){
- const wid=document.getElementById("wid").value.trim();
- const r=await fetch(`${API}/api/products/wholesaler/${wid}`);
- const d=await r.json();
- products.innerHTML=d.products.map(p=>`
-  <div class="product-card">
-   <img src="${p.image}">
-   <div>${p.productName}</div>
-   <div class="price">₹${p.price}</div>
-   <div class="actions">
-    <button class="cart-btn" onclick='addToCart(${JSON.stringify(p)})'>🛒</button>
-    <button class="buy-btn" onclick='openDetail(${JSON.stringify(p)})'>⚡</button>
-   </div>
-  </div>`).join("");
+const wid = document.getElementById("wid").value.trim();
+const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
+const data = await res.json();
+
+products.innerHTML = data.products.map(p=>`
+<div class="product-card">
+<img src="${p.image}">
+<div>${p.productName}</div>
+<div class="price">₹${p.price}</div>
+<div class="actions">
+<button class="cart-btn" onclick='addToCart(${JSON.stringify(p)})'>🛒</button>
+<button class="buy-btn" onclick='openDetail(${JSON.stringify(p)})'>⚡</button>
+</div>
+</div>
+`).join("");
 }
 
 /* DETAIL */
 function openDetail(p){
- selectedProduct=p;
- dName.innerText=p.productName;
- dImg.src=p.image;
- dDesc.innerText=p.detail||"No description";
- dPrice.innerText="Price ₹"+p.price;
- dDelivery.innerText="";
- dTotal.innerText="";
- detailModal.style.display="flex";
+selectedProduct = p;
+dName.innerText = p.productName;
+dImg.src = p.image;
+dPrice.innerText = "₹"+p.price;
+dTotal.innerText = "";
+detailModal.style.display = "flex";
 }
 
-/* DIRECT BUY */
-async function directBuy(){
- const v=vehicleType.value;
- if(!v) return alert("Select vehicle");
+/* BUY NOW */
+async function buyNow(){
+const vehicle = vehicleType.value;
+if(!vehicle) return alert("Select vehicle");
 
- const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- if(!profile.mobile) return alert("Save profile first");
+const dc = deliveryCharge(vehicle);
+const total = selectedProduct.price + dc;
+dTotal.innerText = "Total ₹"+total;
 
- const dc=deliveryCharge(v);
- const total=selectedProduct.price+dc;
+const r = await fetch(`${API}/api/orders/pay-and-create`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({amount:total})
+});
+const d = await r.json();
 
- const r=await fetch(API+"/api/orders/pay-and-create",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:total})});
- const d=await r.json();
-
- new Razorpay({
-  key:d.key,amount:d.amount,order_id:d.order.id,currency:"INR",
-  handler:async res=>{
-   await fetch(API+"/api/orders/confirm-after-payment",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({
-    paymentId:res.razorpay_payment_id,
-    productId:selectedProduct._id,
-    totalAmount:total,
-    deliveryCharge:dc,
-    retailerName:profile.name,
-    retailerMobile:profile.mobile,
-    retailerAddress:profile.address
-   })});
-   alert("Order placed");
-   closeAll();
-  }
- }).open();
+new Razorpay({
+key:d.key,
+amount:d.order.amount,
+order_id:d.order.id,
+handler: async resp=>{
+await fetch(`${API}/api/orders/confirm-after-payment`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+paymentId:resp.razorpay_payment_id,
+productId:selectedProduct._id,
+retailerId,
+totalAmount:total
+})
+});
+alert("Order placed");
+closeAll();
+}
+}).open();
 }
 
 /* CART */
-async function addToCart(p){
- cart.push(p);
- await fetch(`${API}/api/cart/save`,{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({
-  retailerId:localStorage.getItem("userId"),
-  items:cart
- })});
- alert("Added to cart");
+function addToCart(p){
+cart.push(p);
+localStorage.setItem("cart",JSON.stringify(cart));
+alert("Added to cart");
 }
 
-async function openCart(){
- const res=await fetch(`${API}/api/cart/${localStorage.getItem("userId")}`);
- const d=await res.json();
- cart=d.cart?d.cart.items:[];
- if(cart.length===0){cartItems.innerHTML="Cart empty";cartModal.style.display="flex";return;}
- let sub=0;
- cartItems.innerHTML=cart.map(i=>{sub+=i.price;return `<p>${i.productName} ₹${i.price}</p>`}).join("");
- cartSubtotal.innerText="Subtotal ₹"+sub;
- cartDelivery.innerText="Delivery ₹0";
- cartGrandTotal.innerText="Total ₹"+sub;
- cartModal.style.display="flex";
+function openCart(){
+if(cart.length===0){
+cartItems.innerHTML="Cart empty";
+cartModal.style.display="flex";
+return;
+}
+
+let sum=0;
+cartItems.innerHTML = cart.map((c,i)=>{
+sum+=c.price;
+return `<div class="cart-item">${c.productName} ₹${c.price}
+<button onclick="removeCart(${i})">❌</button></div>`;
+}).join("");
+
+cartTotal.innerText="Subtotal ₹"+sum;
+cartModal.style.display="flex";
+}
+
+function removeCart(i){
+cart.splice(i,1);
+localStorage.setItem("cart",JSON.stringify(cart));
+openCart();
 }
 
 function updateCartTotal(){
- const v=cartVehicle.value;
- const sub=cart.reduce((s,i)=>s+i.price,0);
- const d=deliveryCharge(v);
- cartDelivery.innerText="Delivery ₹"+d;
- cartGrandTotal.innerText="Total ₹"+(sub+d);
+const v = cartVehicle.value;
+let sum = cart.reduce((s,i)=>s+i.price,0);
+cartTotal.innerText="Total ₹"+(sum+deliveryCharge(v));
 }
 
 /* PAY CART */
 async function payCart(){
- const v=cartVehicle.value;
- if(!v) return alert("Select vehicle");
- const profile=JSON.parse(localStorage.getItem("retailerProfile"));
- const d=deliveryCharge(v);
- const sub=cart.reduce((s,i)=>s+i.price,0);
- const total=sub+d;
+const v = cartVehicle.value;
+if(!v) return alert("Select vehicle");
 
- const r=await fetch(API+"/api/orders/pay-and-create",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:total})});
- const o=await r.json();
+let sum = cart.reduce((s,i)=>s+i.price,0);
+let total = sum + deliveryCharge(v);
 
- new Razorpay({
-  key:o.key,amount:o.amount,order_id:o.order.id,
-  handler:async res=>{
-   await fetch(API+"/api/orders/confirm-after-payment",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify({
-    paymentId:res.razorpay_payment_id,
-    products:cart,
-    totalAmount:total,
-    deliveryCharge:d,
-    retailerName:profile.name,
-    retailerMobile:profile.mobile,
-    retailerAddress:profile.address
-   })});
-   cart=[];
-   alert("Order placed");
-   closeAll();
-  }
- }).open();
+const r = await fetch(`${API}/api/orders/pay-and-create`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({amount:total})
+});
+const d = await r.json();
+
+new Razorpay({
+key:d.key,
+amount:d.order.amount,
+order_id:d.order.id,
+handler: async resp=>{
+alert("Cart Order Placed");
+cart=[];
+localStorage.removeItem("cart");
+closeAll();
+}
+}).open();
 }
 
 /* PROFILE */
-function openRetailerProfile(){
- profileModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- profileName.value=p.name||"";
- profileMobile.value=p.mobile||"";
- profileAddress.value=p.address||"";
+async function openProfile(){
+profileModal.style.display="flex";
+const r = await fetch(`${API}/api/retailers/profile/${retailerId}`);
+const d = await r.json();
+if(d.profile){
+pName.value=d.profile.name||"";
+pMobile.value=d.profile.mobile||"";
+pAddress.value=d.profile.address||"";
+}
 }
 
 async function saveProfile(){
- const payload={
-  retailerId:localStorage.getItem("userId"),
-  name:profileName.value,
-  mobile:profileMobile.value,
-  address:profileAddress.value
- };
- const r=await fetch(API+"/api/retailers/saveProfile",{method:"POST",headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
- const d=await r.json();
- if(d.success){
-  localStorage.setItem("retailerProfile",JSON.stringify(payload));
-  alert("Profile saved");
-  closeAll();
- }
+await fetch(`${API}/api/retailers/saveProfile`,{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+retailerId,
+name:pName.value,
+mobile:pMobile.value,
+address:pAddress.value
+})
+});
+alert("Profile saved");
+closeAll();
 }
 
-/* STATUS & DELIVERY */
-async function openOrderStatus(){
- orderStatusModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("retailerProfile"));
- const r=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const d=await r.json();
- orderStatusData.innerHTML=d.orders.map(o=>`<p>${o.productName} - ${o.status}</p>`).join("");
+/* ORDERS */
+async function openOrders(){
+ordersModal.style.display="flex";
+const p = pMobile.value;
+if(!p) return ordersData.innerHTML="Save profile first";
+
+const r = await fetch(`${API}/api/orders/retailer/${p}`);
+const d = await r.json();
+
+ordersData.innerHTML = d.orders.map(o=>`
+<div class="order-card">
+<b>${o.productName}</b>
+<div class="small">Status: ${o.status}</div>
+<div class="small">₹${o.totalAmount}</div>
+</div>
+`).join("");
 }
 
-async function openDeliveryDetails(){
- deliveryModal.style.display="flex";
- const p=JSON.parse(localStorage.getItem("retailerProfile"));
- const r=await fetch(`${API}/api/orders/retailer/${p.mobile}`);
- const d=await r.json();
- deliveryData.innerHTML=d.orders.filter(o=>o.deliveryBoyName).map(o=>`<p>${o.productName} - ${o.deliveryBoyName}</p>`).join("");
+function closeAll(){
+document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
 }
-
-function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none")}
 </script>
+
 </body>
-  </html>
+</html>
