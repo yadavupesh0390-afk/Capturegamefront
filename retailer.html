@@ -356,47 +356,7 @@ closeAll();
 }).open();
 }
 
-/* ORDERS */
-async function openCart(){
-const retailerId = localStorage.getItem("userId");
 
-const res = await fetch(${API}/api/cart/${retailerId});
-const data = await res.json();
-
-cart = data.cart ? data.cart.items : [];
-
-if(cart.length===0){
-cartItems.innerHTML="🛒 Cart empty";
-cartModal.style.display="flex";
-return;
-}
-
-let subtotal=0;
-cartItems.innerHTML = cart.map((c,i)=>{
-subtotal+=c.price;
-return      <div class="cart-item">     ${c.productName} ₹${c.price}     <button onclick="removeCart(${i})">❌</button>     </div>;
-}).join("");
-
-cartSubtotal.innerText="Subtotal ₹"+subtotal;
-cartDelivery.innerText="Delivery ₹0";
-cartGrandTotal.innerText="Total ₹"+subtotal;
-
-cartModal.style.display="flex";
-}
-async function removeCart(i){
-cart.splice(i,1);
-
-await fetch(${API}/api/cart/save,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-retailerId: localStorage.getItem("userId"),
-items: cart
-})
-});
-
-openCart();
-}
 
 /* DELIVERY */
 
