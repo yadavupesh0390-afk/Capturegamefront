@@ -412,51 +412,7 @@ async function payCart(){
  }).open();
 }
 
-/* ORDERS */
-function openCart(){
- cart = JSON.parse(localStorage.getItem("cart")||"[]");
 
- if(cart.length===0){
-  cartItems.innerHTML="<p style='text-align:center'>🛒 Cart is empty</p>";
-  cartSubtotal.innerText="";
-  cartDelivery.innerText="";
-  cartGrandTotal.innerText="";
-  cartModal.style.display="flex";
-  return;
- }
-
- let subtotal=0;
- cartItems.innerHTML = cart.map((c,i)=>{
-  subtotal+=c.price;
-  return `
-  <div style="
-    display:flex;
-    gap:10px;
-    align-items:center;
-    background:#fff;
-    padding:10px;
-    border-radius:12px;
-    margin-bottom:8px;
-    box-shadow:0 3px 8px rgba(0,0,0,.08)">
-    
-    <img src="${c.image}" style="width:60px;height:60px;border-radius:8px;object-fit:cover">
-
-    <div style="flex:1">
-      <b>${c.productName}</b><br>
-      <span class="small">₹${c.price}</span>
-    </div>
-
-    <button onclick="removeCart(${i})"
-     style="border:none;background:#fee2e2;border-radius:50%;width:30px;height:30px">❌</button>
-  </div>`;
- }).join("");
-
- cartSubtotal.innerText = "Subtotal ₹"+subtotal;
- cartDelivery.innerText = "Delivery ₹0";
- cartGrandTotal.innerText = "Total ₹"+subtotal;
-
- cartModal.style.display="flex";
-}
 
 /* DELIVERY */
 
