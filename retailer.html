@@ -293,20 +293,49 @@ async function directBuy(){
 }
 
 /* CART */
-function addToCart(p){
- cart.push(p);
- localStorage.setItem("cart",JSON.stringify(cart));
- alert("Added to cart");
+async function addToCart(p){
+  cart.push(p);
+
+  await fetch(`${API}/api/cart/save`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      retailerId: localStorage.getItem("userId"),
+      items: cart
+    })
+  });
+
+  alert("🛒 Cart me add ho gaya");
 }
-function openCart(){
- let sum=0;
- cartItems.innerHTML=cart.map((c,i)=>{
-  sum+=c.price;
-  return `<div class="cart-item">${c.productName} ₹${c.price}
-  <button onclick="removeCart(${i})">❌</button></div>`;
- }).join("");
- cartTotal.innerText="Subtotal ₹"+sum;
- cartModal.style.display="flex";
+async function openCart(){
+  const retailerId = localStorage.getItem("userId");
+
+  const res = await fetch(`${API}/api/cart/${retailerId}`);
+  const data = await res.json();
+
+  cart = data.cart ? data.cart.items : [];
+
+  if(cart.length===0){
+    cartItems.innerHTML="🛒 Cart empty";
+    cartModal.style.display="flex";
+    return;
+  }
+
+  let subtotal=0;
+  cartItems.innerHTML = cart.map((c,i)=>{
+    subtotal+=c.price;
+    return `
+      <div class="cart-item">
+        ${c.productName} ₹${c.price}
+        <button onclick="removeCart(${i})">❌</button>
+      </div>`;
+  }).join("");
+
+  cartSubtotal.innerText="Subtotal ₹"+subtotal;
+  cartDelivery.innerText="Delivery ₹0";
+  cartGrandTotal.innerText="Total ₹"+subtotal;
+
+  cartModal.style.display="flex";
 }
 function removeCart(i){
  cart.splice(i,1);
