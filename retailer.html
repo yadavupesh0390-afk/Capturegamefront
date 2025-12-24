@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
 <title>Retailer Dashboard</title>
@@ -178,28 +178,32 @@ const deliveryDot = document.getElementById("deliveryDot");
 function formatDT(d){ const dt=new Date(d); return dt.toLocaleDateString()+" "+dt.toLocaleTimeString(); }
 function deliveryChargeByVehicle(v){ return v==="two_wheeler"?1:v==="three_wheeler"?50:80; }
 
-// Load products
+// ------------------- PRODUCTS -------------------
 async function loadProducts(){
   const wid = document.getElementById("wid").value.trim();
   if(!wid) return alert("Enter Wholesaler ID");
-  const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
-  const data = await res.json();
-  products.innerHTML = data.products.map(p => {
-    const pdata = encodeURIComponent(JSON.stringify(p));
-    return `
-      <div class="product-card">
-        <img src="${p.image}">
-        <div>${p.productName}</div>
-        <div class="price">₹${p.price}</div>
-        <div class="actions">
-          <button class="cart-btn" onclick='addToCart(JSON.parse(decodeURIComponent("${pdata}")))'>🛒</button>
-          <button class="buy-btn" onclick='openDetail(JSON.parse(decodeURIComponent("${pdata}")))'>⚡</button>
-        </div>
-      </div>`;
-  }).join("");
+  try{
+    const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
+    const data = await res.json();
+    products.innerHTML = data.products.map(p => {
+      const pdata = encodeURIComponent(JSON.stringify(p));
+      return `
+        <div class="product-card">
+          <img src="${p.image}">
+          <div>${p.productName}</div>
+          <div class="price">₹${p.price}</div>
+          <div class="actions">
+            <button class="cart-btn" onclick='addToCart(JSON.parse(decodeURIComponent("${pdata}")))'>🛒</button>
+            <button class="buy-btn" onclick='openDetail(JSON.parse(decodeURIComponent("${pdata}")))'>⚡</button>
+          </div>
+        </div>`;
+    }).join("");
+  }catch(e){
+    alert("Products load failed");
+  }
 }
 
-// Open detail modal
+// ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
   selectedProduct = p;
   dName.innerText = p.productName;
@@ -212,103 +216,119 @@ function openDetail(p){
   detailModal.style.display = "flex";
 }
 
-// Direct Buy
 async function directBuy(){
   const v = vehicleType.value;
   if(!v) return alert("Select vehicle");
   const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
   if(!profile.mobile) return alert("Save profile first");
+
   const dc = deliveryChargeByVehicle(v);
   const total = selectedProduct.price + dc;
   dDelivery.innerText = "Delivery ₹"+dc;
   dTotal.innerText = "Total ₹"+total;
 
-  const res = await fetch(`${API}/api/orders/pay-and-create`,{
-    method:"POST", headers:{'Content-Type':'application/json'}, body: JSON.stringify({amount:total})
-  });
-  const data = await res.json();
+  try{
+    const res = await fetch(`${API}/api/orders/pay-and-create`,{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({amount:total})
+    });
+    const data = await res.json();
 
-  new Razorpay({
-    key:data.key, amount:data.amount, order_id:data.order.id, currency:"INR",
-    handler: async resp => {
-      await fetch(`${API}/api/orders/confirm-after-payment`,{
-        method:"POST", headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          paymentId:resp.razorpay_payment_id,
-          productId:selectedProduct._id,
-          totalAmount:total,
-          deliveryCharge:dc,
-          retailerName:profile.name,
-          retailerMobile:profile.mobile,
-          retailerAddress:profile.address
-        })
-      });
-      alert("Order placed");
-      closeAll();
-    }
-  }).open();
+    new Razorpay({
+      key:data.key,
+      amount:data.amount,
+      order_id:data.order.id,
+      currency:"INR",
+      handler: async resp => {
+        await fetch(`${API}/api/orders/confirm-after-payment`,{
+          method:"POST",
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            paymentId:resp.razorpay_payment_id,
+            productId:selectedProduct._id,
+            totalAmount:total,
+            deliveryCharge:dc,
+            retailerName:profile.name,
+            retailerMobile:profile.mobile,
+            retailerAddress:profile.address
+          })
+        });
+        alert("✅ Order placed successfully");
+        closeAll();
+      }
+    }).open();
+  }catch(e){ alert("Payment failed"); }
 }
 
-// Add to cart
+// ------------------- CART -------------------
 async function addToCart(p){
   cart.push(p);
-  await fetch(`${API}/api/cart/save`,{
-    method:"POST", headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ retailerId: localStorage.getItem("userId"), items: cart })
-  });
-  localStorage.setItem("cart", JSON.stringify(cart));
-  alert("🛒 Cart me add ho gaya");
-}
-
-// Open cart
-async function openCart(){
-  const retailerId = localStorage.getItem("userId");
-  const res = await fetch(`${API}/api/cart/${retailerId}`);
-  const data = await res.json();
-  cart = data.cart ? data.cart.items : [];
-  localStorage.setItem("cart", JSON.stringify(cart));
-
-  if(cart.length === 0){
-    cartItems.innerHTML="🛒 Cart empty";
-    cartModal.style.display="flex";
-    return;
+  try{
+    await fetch(`${API}/api/cart/save`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ retailerId: localStorage.getItem("userId"), items: cart })
+    });
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert("🛒 Added to cart");
+  }catch(e){
+    alert("Failed to add cart");
   }
-
-  let subtotal = 0;
-  cartItems.innerHTML = cart.map((c,i)=>{
-    subtotal += c.price;
-    return `<div class="cart-item">${c.productName} ₹${c.price} <button onclick="removeCart(${i})">❌</button></div>`;
-  }).join("");
-
-  cartSubtotal.innerText = "Subtotal ₹"+subtotal;
-  cartDelivery.innerText = "Delivery ₹0";
-  cartGrandTotal.innerText = "Total ₹"+subtotal;
-
-  cartVehicle.value = "";
-  cartModal.style.display = "flex";
 }
 
-// Remove cart item
+async function openCart(){
+  try{
+    const retailerId = localStorage.getItem("userId");
+    const res = await fetch(`${API}/api/cart/${retailerId}`);
+    const data = await res.json();
+    cart = data.cart ? data.cart.items : [];
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    if(cart.length===0){
+      cartItems.innerHTML="🛒 Cart empty";
+      cartSubtotal.innerText="";
+      cartDelivery.innerText="";
+      cartGrandTotal.innerText="";
+      cartVehicle.value="";
+      cartModal.style.display="flex";
+      return;
+    }
+
+    let subtotal = 0;
+    cartItems.innerHTML = cart.map((c,i)=>{
+      subtotal += c.price;
+      return `<div class="cart-item">${c.productName} ₹${c.price} <button onclick="removeCart(${i})">❌</button></div>`;
+    }).join("");
+    cartSubtotal.innerText = "Subtotal ₹"+subtotal;
+    cartDelivery.innerText = "Delivery ₹0";
+    cartGrandTotal.innerText = "Total ₹"+subtotal;
+    cartVehicle.value="";
+    cartModal.style.display="flex";
+  }catch(e){ alert("Failed to load cart"); }
+}
+
 async function removeCart(i){
   cart.splice(i,1);
-  await fetch(`${API}/api/cart/save`,{
-    method:"POST", headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ retailerId: localStorage.getItem("userId"), items: cart })
-  });
-  localStorage.setItem("cart", JSON.stringify(cart));
-  openCart();
+  try{
+    await fetch(`${API}/api/cart/save`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ retailerId: localStorage.getItem("userId"), items: cart })
+    });
+    localStorage.setItem("cart", JSON.stringify(cart));
+    openCart();
+  }catch(e){ alert("Failed to remove item"); }
 }
 
-// Update cart total
 function updateCartTotal(){
   const vehicle = cartVehicle.value;
   let subtotal = cart.reduce((s,i)=>s+i.price,0);
-  let delivery = deliveryChargeByVehicle(vehicle);
+  let delivery = vehicle ? deliveryChargeByVehicle(vehicle) : 0;
   cartDelivery.innerText = "Delivery ₹"+delivery;
   cartGrandTotal.innerText = "Total ₹"+(subtotal+delivery);
 }
 
-// Pay cart
 async function payCart(){
   const vehicle = cartVehicle.value;
   if(!vehicle) return alert("Select vehicle first");
@@ -319,207 +339,154 @@ async function payCart(){
   const subtotal = cart.reduce((s,i)=>s+i.price,0);
   const total = subtotal + delivery;
 
-  const res = await fetch(`${API}/api/orders/pay-and-create`,{
-    method:"POST", headers:{'Content-Type':'application/json'}, body: JSON.stringify({amount:total})
-  });
-  const data = await res.json();
+  try{
+    const res = await fetch(`${API}/api/orders/pay-and-create`,{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({amount:total})
+    });
+    const data = await res.json();
 
-  new Razorpay({
-    key:data.key, amount:data.amount, order_id:data.order.id, currency:"INR",
-    handler: async resp => {
-      await fetch(`${API}/api/orders/confirm-after-payment`,{
-        method:"POST", headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          paymentId:resp.razorpay_payment_id,
-          products:cart,
-          totalAmount:total,
-          deliveryCharge:delivery,
-          retailerName:profile.name,
-          retailerMobile:profile.mobile,
-          retailerAddress:profile.address
-        })
-      });
-      localStorage.removeItem("cart");
-      cart = [];
-      alert("Order placed successfully");
-      closeAll();
-    }
-  }).open();
+    new Razorpay({
+      key:data.key,
+      amount:data.amount,
+      order_id:data.order.id,
+      currency:"INR",
+      handler: async resp => {
+        await fetch(`${API}/api/orders/confirm-after-payment`,{
+          method:"POST",
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            paymentId:resp.razorpay_payment_id,
+            products:cart,
+            totalAmount:total,
+            deliveryCharge:delivery,
+            retailerName:profile.name,
+            retailerMobile:profile.mobile,
+            retailerAddress:profile.address
+          })
+        });
+        localStorage.removeItem("cart");
+        cart=[];
+        alert("✅ Cart order placed successfully");
+        closeAll();
+      }
+    }).open();
+  }catch(e){ alert("Payment failed"); }
 }
 
-
-
-/* DELIVERY */
-
+// ------------------- DELIVERY -------------------
 async function openDeliveryDetails(){
-deliveryModal.style.display="flex";
-
-const p = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!p.mobile){
-deliveryData.innerHTML="Profile not found";
-return;
+  deliveryModal.style.display="flex";
+  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+  if(!profile.mobile){
+    deliveryData.innerHTML="Profile not found";
+    return;
+  }
+  try{
+    const res = await fetch(`${API}/api/orders/retailer/${profile.mobile}`);
+    const data = await res.json();
+    const delivered = data.orders.filter(o=>o.deliveryBoyName);
+    if(delivered.length===0){
+      deliveryData.innerHTML="<p style='text-align:center;color:#666'>No delivery assigned yet</p>";
+      return;
+    }
+    deliveryData.innerHTML = delivered.map(o=>{
+      const d = new Date(o.createdAt);
+      return `
+      <div class="delivery-card">
+        <div class="delivery-row"><span class="delivery-label">📦 Product</span><span class="delivery-value">${o.productName}</span></div>
+        <div class="delivery-row"><span class="delivery-label">👤 Delivery Boy</span><span class="delivery-value">${o.deliveryBoyName}</span></div>
+        <div class="delivery-row"><span class="delivery-label">📞 Mobile</span><span class="delivery-value">${o.deliveryBoyMobile}</span></div>
+        <div class="delivery-row"><span class="delivery-label">🕒 Date</span><span class="delivery-value">${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</span></div>
+        <div class="delivery-code">🔐 Delivery Code : ${o.deliveryCode}</div>
+      </div>`;
+    }).join("");
+  }catch(e){ deliveryData.innerHTML="Failed to load deliveries"; }
 }
 
-const res = await fetch(${API}/api/orders/retailer/${p.mobile});
-const data = await res.json();
-
-const delivered = data.orders.filter(o => o.deliveryBoyName);
-
-if(delivered.length === 0){
-deliveryData.innerHTML = "<p style='text-align:center;color:#666'>No delivery assigned yet</p>";
-return;
-}
-
-deliveryData.innerHTML = delivered.map(o=>{
-const d = new Date(o.createdAt);
-return `
-<div class="delivery-card">
-<div class="delivery-row">
-<span class="delivery-label">📦 Product</span>
-<span class="delivery-value">${o.productName}</span>
-</div>
-
-<div class="delivery-row">    
-      <span class="delivery-label">👤 Delivery Boy</span>    
-      <span class="delivery-value">${o.deliveryBoyName}</span>    
-    </div>    
-
-    <div class="delivery-row">    
-      <span class="delivery-label">📞 Mobile</span>    
-      <span class="delivery-value">${o.deliveryBoyMobile}</span>    
-    </div>    
-
-    <div class="delivery-row">    
-      <span class="delivery-label">🕒 Date</span>    
-      <span class="delivery-value">    
-        ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}    
-      </span>    
-    </div>    
-
-    <div class="delivery-code">    
-      🔐 Delivery Code : ${o.deliveryCode}    
-    </div>    
-  </div>    
-`;
-
-}).join("");
-}
-
+// ------------------- ORDER STATUS -------------------
 async function openOrderStatus(){
-orderStatusModal.style.display="flex";
-
-const p = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!p.mobile){
-orderStatusData.innerHTML="Profile not found";
-return;
+  orderStatusModal.style.display="flex";
+  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+  if(!profile.mobile){
+    orderStatusData.innerHTML="Profile not found";
+    return;
+  }
+  try{
+    const res = await fetch(`${API}/api/orders/retailer/${profile.mobile}`);
+    const data = await res.json();
+    if(!data.orders || data.orders.length===0){
+      orderStatusData.innerHTML="<p style='text-align:center;color:#666'>No orders found</p>";
+      return;
+    }
+    orderStatusData.innerHTML = data.orders.map(o=>{
+      const d = new Date(o.updatedAt || o.createdAt);
+      let cls = "status-pending";
+      if(o.status.includes("confirmed")) cls="status-confirmed";
+      if(o.status.includes("delivery")) cls="status-delivery";
+      if(o.status==="delivered") cls="status-delivered";
+      return `<div class="status-card">
+        <div class="status-product">${o.productName}</div>
+        <div class="status-badge ${cls}">${o.status.replaceAll("_"," ").toUpperCase()}</div>
+        <div class="status-time">🕒 ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</div>
+      </div>`;
+    }).join("");
+  }catch(e){ orderStatusData.innerHTML="Failed to load orders"; }
 }
 
-const res = await fetch(${API}/api/orders/retailer/${p.mobile});
-const data = await res.json();
-
-if(!data.orders || data.orders.length===0){
-orderStatusData.innerHTML="<p style='text-align:center;color:#666'>No orders found</p>";
-return;
-}
-
-orderStatusData.innerHTML = data.orders.map(o=>{
-const d = new Date(o.updatedAt || o.createdAt);
-
-let cls = "status-pending";    
-if(o.status.includes("confirmed")) cls="status-confirmed";    
-if(o.status.includes("delivery")) cls="status-delivery";    
-if(o.status==="delivered") cls="status-delivered";    
-
-return `    
-  <div class="status-card">    
-    <div class="status-product">${o.productName}</div>    
-
-    <div class="status-badge ${cls}">    
-      ${o.status.replaceAll("_"," ").toUpperCase()}    
-    </div>    
-
-    <div class="status-time">    
-      🕒 ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}    
-    </div>    
-  </div>    
-`;
-
-}).join("");
-}
-
-/* PROFILE */
+// ------------------- PROFILE -------------------
 async function openRetailerProfile(){
-profileModal.style.display = "flex";
-
-const retailerId = localStorage.getItem("userId");
-
-try{
-const res = await fetch(${API}/api/retailers/profile/${retailerId});
-const data = await res.json();
-
-if(data.success && data.profile){    
-  profileName.value    = data.profile.name || "";    
-  profileMobile.value  = data.profile.mobile || "";    
-  profileAddress.value = data.profile.address || "";    
-}else{    
-  profileName.value="";    
-  profileMobile.value="";    
-  profileAddress.value="";    
-}
-
-}catch(err){
-alert("Server error");
-}
+  profileModal.style.display = "flex";
+  const retailerId = localStorage.getItem("userId");
+  try{
+    const res = await fetch(`${API}/api/retailers/profile/${retailerId}`);
+    const data = await res.json();
+    if(data.success && data.profile){
+      profileName.value = data.profile.name || "";
+      profileMobile.value = data.profile.mobile || "";
+      profileAddress.value = data.profile.address || "";
+    } else {
+      profileName.value = profileMobile.value = profileAddress.value = "";
+    }
+  }catch(e){ alert("Server error"); }
 }
 
 async function saveProfile(){
-
-if(!profileMobile.value.trim()){
-alert("Mobile required");
-return;
+  if(!profileMobile.value.trim()){ alert("Mobile required"); return; }
+  const payload = {
+    retailerId: localStorage.getItem("userId"),
+    name: profileName.value.trim(),
+    mobile: profileMobile.value.trim(),
+    address: profileAddress.value.trim()
+  };
+  try{
+    const res = await fetch(`${API}/api/retailers/saveProfile`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(data.success){ alert("✅ Profile saved"); closeAll(); }
+    else alert("❌ Save failed");
+  }catch(e){ alert("Server error"); }
 }
 
-const payload = {
-retailerId: localStorage.getItem("userId"),
-name: profileName.value.trim(),
-mobile: profileMobile.value.trim(),
-address: profileAddress.value.trim()
-};
-
-try{
-const res = await fetch(${API}/api/retailers/saveProfile,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify(payload)
-});
-
-const data = await res.json();    
-
-if(data.success){    
-  alert("✅ Profile server me save ho gaya");    
-  closeAll();    
-}else{    
-  alert("❌ Save failed");    
-}
-
-}catch(err){
-alert("Server error");
-}
-}
-
-/* NOTIFY */
+// ------------------- NOTIFY -------------------
 setInterval(async()=>{
-const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!p.mobile) return;
-const r=await fetch(${API}/api/orders/retailer/${p.mobile});
-const d=await r.json();
-deliveryDot.style.display=d.orders.some(o=>o.deliveryBoyName)?"block":"none";
+  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+  if(!profile.mobile) return;
+  try{
+    const res = await fetch(`${API}/api/orders/retailer/${profile.mobile}`);
+    const data = await res.json();
+    deliveryDot.style.display = data.orders.some(o=>o.deliveryBoyName) ? "block":"none";
+  }catch(e){}
 },8000);
 
+// ------------------- CLOSE MODALS -------------------
 function closeAll(){
-document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
+  document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
 }
 </script>
 </body>
-
-</html> 
+</html>
