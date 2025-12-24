@@ -520,21 +520,27 @@ async function openOrderStatus(){
 
   
 /* PROFILE */
-function openRetailerProfile(){
- const p=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
- profileName.value=p.name||"";
- profileMobile.value=p.mobile||"";
- profileAddress.value=p.address||"";
- profileModal.style.display="flex";
-}
-function saveProfile(){
- localStorage.setItem("retailerProfile",JSON.stringify({
-  name:profileName.value,
-  mobile:profileMobile.value,
-  address:profileAddress.value
- }));
- alert("Profile saved");
- closeAll();
+async function openRetailerProfile(){
+  profileModal.style.display = "flex";
+
+  const retailerId = localStorage.getItem("userId");
+
+  try{
+    const res = await fetch(`${API}/api/retailers/profile/${retailerId}`);
+    const data = await res.json();
+
+    if(data.success && data.profile){
+      profileName.value    = data.profile.name || "";
+      profileMobile.value  = data.profile.mobile || "";
+      profileAddress.value = data.profile.address || "";
+    }else{
+      profileName.value="";
+      profileMobile.value="";
+      profileAddress.value="";
+    }
+  }catch(err){
+    alert("Server error");
+  }
 }
 
 /* NOTIFY */
