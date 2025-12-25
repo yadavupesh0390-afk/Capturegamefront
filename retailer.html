@@ -476,15 +476,14 @@ async function saveProfile(){
 
     if(data.success){
 
-      // ✅ SAME KEY AS OLD CODE
+      // 🔑 MUST — old code dependency
       localStorage.setItem(
-        "retailerProfile_"+payload.retailerId,
+        "retailerProfile",
         JSON.stringify(payload)
       );
 
       alert("✅ Profile saved");
       closeAll();
-      loadOrders(); // 🔥 important
 
     }else{
       alert("❌ Save failed");
