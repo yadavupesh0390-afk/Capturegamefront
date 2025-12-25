@@ -458,10 +458,8 @@ async function saveProfile(){
     return;
   }
 
-  const retailerId = localStorage.getItem("userId");
-
   const payload = {
-    retailerId,
+    retailerId: localStorage.getItem("userId"),
     name: profileName.value.trim(),
     mobile: profileMobile.value.trim(),
     address: profileAddress.value.trim()
@@ -478,14 +476,16 @@ async function saveProfile(){
 
     if(data.success){
 
-      // ✅ IMPORTANT FIX
+      // ✅ SAME KEY AS OLD CODE
       localStorage.setItem(
-        "retailerProfile_"+retailerId,
+        "retailerProfile_"+payload.retailerId,
         JSON.stringify(payload)
       );
 
       alert("✅ Profile saved");
       closeAll();
+      loadOrders(); // 🔥 important
+
     }else{
       alert("❌ Save failed");
     }
@@ -494,7 +494,6 @@ async function saveProfile(){
     alert("Server error");
   }
 }
-
 // ------------------- NOTIFY -------------------
 setInterval(async()=>{
   const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
