@@ -152,46 +152,56 @@ async function openProfile(){
 }
 
 
-async function saveProfile(){
 
-  if(!pMobile.value.trim()){
-    alert("Mobile number required");
-    return;
-  }
+async function saveProfile(){  
 
-  const payload = {
-    deliveryBoyId: DBID,          // 🔑 logged-in user
-    name: pName.value.trim(),
-    mobile: pMobile.value.trim(),
-    vehicle: pVehicle.value,
-    vehicleNo: pVehicleNo.value.trim(),
-    city: pCity.value.trim()
-  };
+  if(!pMobile.value.trim()){  
+    alert("Mobile number required");  
+    return;  
+  }  
 
-  try{
-    const res = await fetch(`${API}/api/delivery/profile/save`,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization":"Bearer "+TOKEN
-      },
-      body: JSON.stringify(payload)
-    });
+  const payload = {  
+    deliveryBoyId: DBID,
+    name: pName.value.trim(),  
+    mobile: pMobile.value.trim(),  
+    vehicle: pVehicle.value,  
+    vehicleNo: pVehicleNo.value.trim(),  
+    city: pCity.value.trim()  
+  };  
 
-    const data = await res.json();
+  try{  
+    const res = await fetch(`${API}/api/delivery/profile/save`,{  
+      method:"POST",  
+      headers:{  
+        "Content-Type":"application/json",  
+        "Authorization":"Bearer "+TOKEN  
+      },  
+      body: JSON.stringify(payload)  
+    });  
 
-    if(data.success){
-      alert("✅ Profile server par save ho gaya");
-      closeProfile();
-    }else{
-      alert("❌ Profile save failed");
-    }
+    const data = await res.json();  
 
-  }catch(err){
-    console.error(err);
-    alert("❌ Server error");
+    if(data.success){  
+      alert("✅ Profile server par save ho gaya");  
+      window.closeProfile();   // ✅ FIX
+    }else{  
+      alert("❌ Profile save failed");  
+    }  
+
+  }catch(err){  
+    console.error(err);  
+    alert("❌ Server error");  
+  }  
+}
+
+
+window.closeProfile = function(){
+  const modal = document.getElementById("profileModal");
+  if(modal){
+    modal.style.display = "none";
   }
 }
+ 
 /* LOAD ORDERS */
 async function loadOrders(){
  try{
