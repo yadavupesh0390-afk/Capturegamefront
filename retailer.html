@@ -453,23 +453,41 @@ async function openRetailerProfile(){
 }
 
 async function saveProfile(){
-  if(!profileMobile.value.trim()){ alert("Mobile required"); return; }
+  if(!profileMobile.value.trim()){
+    alert("Mobile required");
+    return;
+  }
+
   const payload = {
     retailerId: localStorage.getItem("userId"),
     name: profileName.value.trim(),
     mobile: profileMobile.value.trim(),
     address: profileAddress.value.trim()
   };
+
   try{
     const res = await fetch(`${API}/api/retailers/saveProfile`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify(payload)
     });
+
     const data = await res.json();
-    if(data.success){ alert("✅ Profile saved"); closeAll(); }
-    else alert("❌ Save failed");
-  }catch(e){ alert("Server error"); }
+
+    if(data.success){
+
+      // ✅ FIX — localStorage save
+      localStorage.setItem("retailerProfile", JSON.stringify(payload));
+
+      alert("✅ Profile saved");
+      closeAll();
+    }else{
+      alert("❌ Save failed");
+    }
+
+  }catch(e){
+    alert("Server error");
+  }
 }
 
 // ------------------- NOTIFY -------------------
