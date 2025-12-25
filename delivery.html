@@ -127,14 +127,28 @@ let currentOrderId = null;
 dbId.innerText = DBID ? DBID.slice(0,8).toUpperCase() : "N/A";
 
 /* PROFILE */
-function openProfile(){
- const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID) || "{}");
- pName.value = p.name || "";
- pMobile.value = p.mobile || "";
- pVehicle.value = p.vehicle || "";
- pVehicleNo.value = p.vehicleNo || "";
- pCity.value = p.city || "";
- profileModal.style.display = "flex";
+
+async function openProfile(){
+  profileModal.style.display="flex";
+
+  try{
+    const res = await fetch(`${API}/api/delivery/profile/${DBID}`,{
+      headers:{ "Authorization":"Bearer "+TOKEN }
+    });
+
+    const data = await res.json();
+    if(!data.profile) return;
+
+    const p = data.profile;
+    pName.value = p.name || "";
+    pMobile.value = p.mobile || "";
+    pVehicle.value = p.vehicle || "";
+    pVehicleNo.value = p.vehicleNo || "";
+    pCity.value = p.city || "";
+
+  }catch(err){
+    console.error(err);
+  }
 }
 
 async function saveProfile(){
