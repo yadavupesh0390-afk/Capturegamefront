@@ -458,8 +458,10 @@ async function saveProfile(){
     return;
   }
 
+  const retailerId = localStorage.getItem("userId");
+
   const payload = {
-    retailerId: localStorage.getItem("userId"),
+    retailerId,
     name: profileName.value.trim(),
     mobile: profileMobile.value.trim(),
     address: profileAddress.value.trim()
@@ -476,8 +478,11 @@ async function saveProfile(){
 
     if(data.success){
 
-      // ✅ FIX — localStorage save
-      localStorage.setItem("retailerProfile", JSON.stringify(payload));
+      // ✅ IMPORTANT FIX
+      localStorage.setItem(
+        "retailerProfile_"+retailerId,
+        JSON.stringify(payload)
+      );
 
       alert("✅ Profile saved");
       closeAll();
