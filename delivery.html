@@ -136,17 +136,46 @@ function openProfile(){
  pCity.value = p.city || "";
  profileModal.style.display = "flex";
 }
-function saveProfile(){
- const p = {
-  name:pName.value,
-  mobile:pMobile.value,
-  vehicle:pVehicle.value,
-  vehicleNo:pVehicleNo.value,
-  city:pCity.value
- };
- localStorage.setItem("deliveryProfile_"+DBID,JSON.stringify(p));
- alert("Profile Saved ✅");
- closeProfile();
+
+async function saveProfile(){
+
+  if(!pMobile.value.trim()){
+    alert("Mobile number required");
+    return;
+  }
+
+  const payload = {
+    deliveryBoyId: DBID,          // 🔑 logged-in user
+    name: pName.value.trim(),
+    mobile: pMobile.value.trim(),
+    vehicle: pVehicle.value,
+    vehicleNo: pVehicleNo.value.trim(),
+    city: pCity.value.trim()
+  };
+
+  try{
+    const res = await fetch(`${API}/api/delivery/profile/save`,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer "+TOKEN
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      alert("✅ Profile server par save ho gaya");
+      closeProfile();
+    }else{
+      alert("❌ Profile save failed");
+    }
+
+  }catch(err){
+    console.error(err);
+    alert("❌ Server error");
+  closeProfile();
 }
 function closeProfile(){ profileModal.style.display="none"; }
 
