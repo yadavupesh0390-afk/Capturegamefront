@@ -151,6 +151,7 @@ async function openProfile(){
   }
 }
 
+
 async function saveProfile(){
 
   if(!pMobile.value.trim()){
@@ -189,10 +190,8 @@ async function saveProfile(){
   }catch(err){
     console.error(err);
     alert("❌ Server error");
-  closeProfile();
+  }
 }
-function closeProfile(){ profileModal.style.display="none"; }
-
 /* LOAD ORDERS */
 async function loadOrders(){
  try{
