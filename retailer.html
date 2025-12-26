@@ -437,63 +437,87 @@ async function openOrderStatus(){
 
 // ------------------- PROFILE -------------------
 /* PROFILE */
+a
 async function openRetailerProfile(){
-profileModal.style.display = "flex";
 
-const retailerId = localStorage.getItem("userId");
+  profileModal.style.display = "flex";
 
-try{
-const res = await fetch(${API}/api/retailers/profile/${retailerId});
-const data = await res.json();
+  const retailerId = localStorage.getItem("userId");
+  if(!retailerId){
+    alert("Login required");
+    return;
+  }
 
-if(data.success && data.profile){    
-  profileName.value    = data.profile.name || "";    
-  profileMobile.value  = data.profile.mobile || "";    
-  profileAddress.value = data.profile.address || "";    
-}else{    
-  profileName.value="";    
-  profileMobile.value="";    
-  profileAddress.value="";    
+  try{
+    const res = await fetch(`${API}/api/retailers/profile/${retailerId}`);
+    const data = await res.json();
+
+    if(data.success && data.profile){
+
+      profileName.value    = data.profile.name || "";
+      profileMobile.value  = data.profile.mobile || "";
+      profileAddress.value = data.profile.address || "";
+
+      // ✅ IMPORTANT — cache for order/delivery
+      localStorage.setItem(
+        "retailerProfile",
+        JSON.stringify(data.profile)
+      );
+
+    }else{
+      profileName.value="";
+      profileMobile.value="";
+      profileAddress.value="";
+    }
+
+  }catch(err){
+    alert("Server error");
+  }
 }
 
-}catch(err){
-alert("Server error");
-}
-}
+
 
 async function saveProfile(){
 
-if(!profileMobile.value.trim()){
-alert("Mobile required");
-return;
-}
+  if(!profileMobile.value.trim()){
+    alert("Mobile required");
+    return;
+  }
 
-const payload = {
-retailerId: localStorage.getItem("userId"),
-name: profileName.value.trim(),
-mobile: profileMobile.value.trim(),
-address: profileAddress.value.trim()
-};
+  const payload = {
+    retailerId: localStorage.getItem("userId"),
+    name: profileName.value.trim(),
+    mobile: profileMobile.value.trim(),
+    address: profileAddress.value.trim()
+  };
 
-try{
-const res = await fetch(${API}/api/retailers/saveProfile,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify(payload)
-});
+  try{
+    const res = await fetch(`${API}/api/retailers/saveProfile`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    });
 
-const data = await res.json();    
+    const data = await res.json();
 
-if(data.success){    
-  alert("✅ Profile server me save ho gaya");    
-  closeAll();    
-}else{    
-  alert("❌ Save failed");    
-}
+    if(data.success){
 
-}catch(err){
-alert("Server error");
-}
+      // ✅ CRITICAL — system dependency
+      localStorage.setItem(
+        "retailerProfile",
+        JSON.stringify(payload)
+      );
+
+      alert("✅ Profile server me save ho gaya");
+      closeAll();
+
+    }else{
+      alert("❌ Save failed");
+    }
+
+  }catch(err){
+    alert("Server error");
+  }
 }
 // ------------------- NOTIFY -------------------
 setInterval(async()=>{
