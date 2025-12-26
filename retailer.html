@@ -436,62 +436,64 @@ async function openOrderStatus(){
 }
 
 // ------------------- PROFILE -------------------
+/* PROFILE */
 async function openRetailerProfile(){
-  profileModal.style.display = "flex";
-  const retailerId = localStorage.getItem("userId");
-  try{
-    const res = await fetch(`${API}/api/retailers/profile/${retailerId}`);
-    const data = await res.json();
-    if(data.success && data.profile){
-      profileName.value = data.profile.name || "";
-      profileMobile.value = data.profile.mobile || "";
-      profileAddress.value = data.profile.address || "";
-    } else {
-      profileName.value = profileMobile.value = profileAddress.value = "";
-    }
-  }catch(e){ alert("Server error"); }
+profileModal.style.display = "flex";
+
+const retailerId = localStorage.getItem("userId");
+
+try{
+const res = await fetch(${API}/api/retailers/profile/${retailerId});
+const data = await res.json();
+
+if(data.success && data.profile){    
+  profileName.value    = data.profile.name || "";    
+  profileMobile.value  = data.profile.mobile || "";    
+  profileAddress.value = data.profile.address || "";    
+}else{    
+  profileName.value="";    
+  profileMobile.value="";    
+  profileAddress.value="";    
+}
+
+}catch(err){
+alert("Server error");
+}
 }
 
 async function saveProfile(){
-  if(!profileMobile.value.trim()){
-    alert("Mobile required");
-    return;
-  }
 
-  const payload = {
-    retailerId: localStorage.getItem("userId"),
-    name: profileName.value.trim(),
-    mobile: profileMobile.value.trim(),
-    address: profileAddress.value.trim()
-  };
+if(!profileMobile.value.trim()){
+alert("Mobile required");
+return;
+}
 
-  try{
-    const res = await fetch(`${API}/api/retailers/saveProfile`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
-    });
+const payload = {
+retailerId: localStorage.getItem("userId"),
+name: profileName.value.trim(),
+mobile: profileMobile.value.trim(),
+address: profileAddress.value.trim()
+};
 
-    const data = await res.json();
+try{
+const res = await fetch(${API}/api/retailers/saveProfile,{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body: JSON.stringify(payload)
+});
 
-    if(data.success){
+const data = await res.json();    
 
-      // 🔑 MUST — old code dependency
-      localStorage.setItem(
-        "retailerProfile",
-        JSON.stringify(payload)
-      );
+if(data.success){    
+  alert("✅ Profile server me save ho gaya");    
+  closeAll();    
+}else{    
+  alert("❌ Save failed");    
+}
 
-      alert("✅ Profile saved");
-      closeAll();
-
-    }else{
-      alert("❌ Save failed");
-    }
-
-  }catch(e){
-    alert("Server error");
-  }
+}catch(err){
+alert("Server error");
+}
 }
 // ------------------- NOTIFY -------------------
 setInterval(async()=>{
