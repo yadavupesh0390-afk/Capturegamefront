@@ -241,7 +241,9 @@ function renderOrders(list){
 
    ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
    ${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
-   ${(o.status==="picked_up" || o.status==="delivery_code_generated")?`<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`:""}
+   ${o.status.includes("delivery") && !o.status.includes("picked")
+  ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`
+  : ""}
   </div>
  </div>
  `).join("");
