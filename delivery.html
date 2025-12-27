@@ -216,7 +216,10 @@ function renderOrders(list){
    🚗 <b>Vehicle:</b> ${o.vehicleType==="two_wheeler"?"Two Wheeler":o.vehicleType==="three_wheeler"?"Three Wheeler":o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"}<br><br>  
   
    ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}  
-   ${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}  
+   ${o.status.includes("delivery")
+  ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`
+  : ""
+}  
    ${(o.status==="picked_up" || o.status==="delivery_code_generated")?`<button class="btn done" onclick="deliverFlow('${o._id}','${o.status}')">Delivered</button>`:""}  
   </div>  
  </div>  
