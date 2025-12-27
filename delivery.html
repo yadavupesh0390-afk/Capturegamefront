@@ -234,17 +234,24 @@ async function acceptOrder(id){
  });  
  loadOrders();  
 }  
-async function pickupOrder(id){  
- await fetch(`${API}/api/orders/${id}/pickup`,{ method:"POST",headers:{ "Authorization":"Bearer "+TOKEN }});  
- loadOrders();  
-}  
+// pickupOrder
+async function pickupOrder(orderId){
+  const res = await fetch(`${API}/api/orders/${orderId}/pickup`,{
+    method:"POST",
+    headers:{ "Authorization":"Bearer "+TOKEN }
+  });
+  const data = await res.json();
+  if(data.success){
+    alert("Order picked up ✅");
+    loadOrders(); // Refresh so button becomes Generate Code
+  } else alert(data.message || "Pickup failed ❌");
+}
   
 /* DELIVERY FLOW */  
 async function deliverFlow(orderId){
-  const order = lastOrders.find(o => o._id === orderId);
+  const order = lastOrders.find(o => o._id===orderId);
   if(!order) return;
 
-  // 1️⃣ Generate code
   if(order.status === "picked_up"){
     const res = await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
       method:"POST",
@@ -254,15 +261,14 @@ async function deliverFlow(orderId){
 
     if(data.success){
       alert("🔐 Delivery code generated & sent to retailer");
-      loadOrders(); // refresh orders so button now shows Delivered
+      loadOrders(); // Refresh orders so Delivered button shows
+      return;
     } else {
-      alert("❌ Failed to generate code");
+      alert("❌ Code generation failed");
+      return;
     }
-
-    return;
   }
 
-  // 2️⃣ Show modal for delivery code input
   if(order.status === "delivery_code_generated"){
     currentOrderId = orderId;
     deliveryCodeInput.value = "";
@@ -270,7 +276,7 @@ async function deliverFlow(orderId){
     return;
   }
 
-  alert("❌ Order not ready for delivery");
+  alert("Order not ready for delivery ❌");
 }
   
 async function submitDeliveryCode(){  
