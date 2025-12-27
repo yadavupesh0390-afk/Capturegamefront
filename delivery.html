@@ -233,10 +233,26 @@ async function acceptOrder(id){
  });  
  loadOrders();  
 }  
-async function pickupOrder(id){  
- await fetch(`${API}/api/orders/${id}/pickup`,{ method:"POST",headers:{ "Authorization":"Bearer "+TOKEN }});  
- loadOrders();  
-}  
+async function pickupOrder(id){
+  try{
+    const res = await fetch(`${API}/api/orders/${id}/pickup`,{
+      method:"POST",
+      headers:{ "Authorization":"Bearer "+TOKEN }
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      alert("📦 Order picked up");
+      loadOrders();
+    }else{
+      alert("❌ Pickup failed");
+    }
+
+  }catch(e){
+    alert("❌ Server error");
+  }
+}
   
 /* DELIVERY FLOW */  
 async function deliverFlow(orderId,status){  
