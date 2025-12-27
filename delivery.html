@@ -246,12 +246,19 @@ async function deliverFlow(orderId){
 
   // 1️⃣ Generate code
   if(order.status === "picked_up"){
-    await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
+    const res = await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
       method:"POST",
       headers:{ "Authorization":"Bearer "+TOKEN }
     });
-    alert("🔐 Delivery code generated & sent to retailer");
-    loadOrders(); // refresh orders after code generation
+    const data = await res.json();
+
+    if(data.success){
+      alert("🔐 Delivery code generated & sent to retailer");
+      loadOrders(); // refresh orders so button now shows Delivered
+    } else {
+      alert("❌ Failed to generate code");
+    }
+
     return;
   }
 
@@ -263,7 +270,6 @@ async function deliverFlow(orderId){
     return;
   }
 
-  // 3️⃣ Safety
   alert("❌ Order not ready for delivery");
 }
   
