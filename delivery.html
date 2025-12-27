@@ -243,13 +243,13 @@ async function deliverFlow(orderId){
   const order = lastOrders.find(o => o._id === orderId);
   if(!order) return;
 
-  // ❌ Safety: wrong status
-  if(order.status !== "out_for_delivery"){
+  // ✅ Correct status check
+  if(order.status !== "picked_up" && order.status !== "delivery_code_generated"){
     alert("❌ Order not ready for delivery");
     return;
   }
 
-  // 1️⃣ Code generate nahi hua
+  // 1️⃣ Generate code if not exists
   if(!order.deliveryCode){
     await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
       method:"POST",
@@ -258,10 +258,10 @@ async function deliverFlow(orderId){
 
     alert("🔐 Delivery code generated & sent to retailer");
     loadOrders();
-    return; // ⛔ yahin stop
+    return;
   }
 
-  // 2️⃣ Code already generated → ONLY open modal
+  // 2️⃣ Code exists → open modal
   currentOrderId = orderId;
   deliveryCodeInput.value = "";
   codeModal.style.display = "flex";
