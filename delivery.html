@@ -239,24 +239,33 @@ async function pickupOrder(id){
 }  
   
 /* DELIVERY FLOW */  
-async function deliverFlow(orderId,status){  
- const order = lastOrders.find(o=>o._id===orderId);  
- if(!order) return;  
-  
- if(!order.deliveryCode){  
-  await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{  
-    method:"POST",  
-    headers:{ "Authorization":"Bearer "+TOKEN }  
-  });  
-  alert("Delivery code generated & sent to retailer 📩");  
-  loadOrders();  
-  return;  
- }  
-  
- currentOrderId = orderId;  
- deliveryCodeInput.value="";  
- codeModal.style.display="flex";  
-}  
+async function deliverFlow(orderId){
+  const order = lastOrders.find(o => o._id === orderId);
+  if(!order) return;
+
+  // ❌ Safety: wrong status
+  if(order.status !== "out_for_delivery"){
+    alert("❌ Order not ready for delivery");
+    return;
+  }
+
+  // 1️⃣ Code generate nahi hua
+  if(!order.deliveryCode){
+    await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
+      method:"POST",
+      headers:{ "Authorization":"Bearer "+TOKEN }
+    });
+
+    alert("🔐 Delivery code generated & sent to retailer");
+    loadOrders();
+    return; // ⛔ yahin stop
+  }
+
+  // 2️⃣ Code already generated → ONLY open modal
+  currentOrderId = orderId;
+  deliveryCodeInput.value = "";
+  codeModal.style.display = "flex";
+}
   
 async function submitDeliveryCode(){  
  const code = deliveryCodeInput.value.trim();  
