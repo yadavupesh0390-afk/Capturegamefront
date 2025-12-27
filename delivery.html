@@ -215,10 +215,10 @@ function renderOrders(list){
    📞 ${o.retailerMobile || "N/A"}<br><br>  
    🚗 <b>Vehicle:</b> ${o.vehicleType==="two_wheeler"?"Two Wheeler":o.vehicleType==="three_wheeler"?"Three Wheeler":o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"}<br><br>  
   
-   ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
+        ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
         ${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
         ${o.status==="picked_up"?`<button class="btn pickup" onclick="deliverFlow('${o._id}')">Generate Code</button>`:""}
-${o.status==="delivery_code_generated"?`<button class="btn done" onclick="deliverFlow('${o._id}')">Delivered</button>`:""}
+        ${o.status==="delivery_code_generated"?`<button class="btn done" onclick="deliverFlow('${o._id}')">Delivered</button>`:""}
       </div>
     </div>
   `).join("");
@@ -261,7 +261,7 @@ async function deliverFlow(orderId){
 
     if(data.success){
       alert("🔐 Delivery code generated & sent to retailer");
-      loadOrders(); // Refresh orders so Delivered button shows
+      await loadOrders(); // Orders reload
       return;
     } else {
       alert("❌ Code generation failed");
@@ -272,7 +272,7 @@ async function deliverFlow(orderId){
   if(order.status === "delivery_code_generated"){
     currentOrderId = orderId;
     deliveryCodeInput.value = "";
-    codeModal.style.display = "flex";
+    codeModal.style.display = "flex"; // Modal open
     return;
   }
 
