@@ -218,7 +218,7 @@ function renderOrders(list){
    ${o.status==="confirmed_by_wholesaler"?`<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
         ${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
         ${o.status==="picked_up"?`<button class="btn pickup" onclick="deliverFlow('${o._id}')">Generate Code</button>`:""}
-        ${o.status==="delivery_code_generated"?`<button class="btn done" onclick="deliverFlow('${o._id}')">Delivered</button>`:""}
+${o.status==="delivery_code_generated"?`<button class="btn done" onclick="deliverFlow('${o._id}')">Delivered</button>`:""}
       </div>
     </div>
   `).join("");
@@ -280,19 +280,23 @@ async function deliverFlow(orderId){
 }
   
 async function submitDeliveryCode(){  
- const code = deliveryCodeInput.value.trim();  
- if(!code) return alert("Enter delivery code");  
-  
- const res = await fetch(`${API}/api/orders/verify-delivery-code/${currentOrderId}`,{  
-  method:"POST",  
-  headers:{ "Content-Type":"application/json","Authorization":"Bearer "+TOKEN },  
-  body:JSON.stringify({ code })  
- });  
- const data = await res.json();  
- alert(data.success?"Delivered Successfully ✅":"Wrong Code ❌");  
- closeCodeModal();  
- loadOrders();  
-}  
+  const code = deliveryCodeInput.value.trim();  
+  if(!code) return alert("Enter delivery code");  
+
+  const res = await fetch(`${API}/api/orders/verify-delivery-code/${currentOrderId}`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json","Authorization":"Bearer "+TOKEN },
+    body:JSON.stringify({ code })
+  });  
+  const data = await res.json();  
+  if(data.success){
+    alert("✅ Order delivered successfully");
+    closeCodeModal();
+    loadOrders();
+  } else {
+    alert("❌ Wrong code");
+  }
+}
   
 function closeCodeModal(){ codeModal.style.display="none"; }  
   
