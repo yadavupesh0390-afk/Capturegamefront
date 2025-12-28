@@ -292,17 +292,33 @@ async function submitDeliveryCode(){
 
   const res = await fetch(`${API}/api/orders/verify-delivery-code/${currentOrderId}`,{
     method:"POST",
-    headers:{ "Content-Type":"application/json","Authorization":"Bearer "+TOKEN },
+    headers:{ 
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+TOKEN 
+    },
     body:JSON.stringify({ code })
   });  
+
   const data = await res.json();  
+
+  // ✅ SUCCESS → DELIVERED
   if(data.success){
-  alert("✅ Order delivered successfully");
-  closeCodeModal();
-  loadOrders();
-} else {
-  alert(data.message || "❌ Verification failed");
+    alert("✅ Order delivered successfully");
+    closeCodeModal();
+    loadOrders();
+    return;
   }
+
+  // ⏱️ CODE EXPIRED → AUTO SHOW GENERATE BUTTON
+  if(data.message && data.message.includes("expired")){
+    alert(data.message);              // "Delivery code expired..."
+    closeCodeModal();
+    loadOrders();                     // 🔥 status → picked_up
+    return;
+  }
+
+  // ❌ WRONG CODE
+  alert("❌ Wrong delivery code");
 }
   
 function closeCodeModal(){ codeModal.style.display="none"; }  
