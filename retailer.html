@@ -378,31 +378,61 @@ async function payCart(){
 // ------------------- DELIVERY -------------------
 async function openDeliveryDetails(){
   deliveryModal.style.display="flex";
+
   const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
   if(!profile.mobile){
     deliveryData.innerHTML="Profile not found";
     return;
   }
+
   try{
     const res = await fetch(`${API}/api/orders/retailer/${profile.mobile}`);
     const data = await res.json();
-    const delivered = data.orders.filter(o=>o.deliveryBoyName);
-    if(delivered.length===0){
-      deliveryData.innerHTML="<p style='text-align:center;color:#666'>No delivery assigned yet</p>";
+
+    const visibleOrders = data.orders.filter(o =>
+      o.status === "delivery_code_generated" || o.status === "delivered"
+    );
+
+    if(visibleOrders.length===0){
+      deliveryData.innerHTML="<p style='text-align:center;color:#666'>No delivery details yet</p>";
       return;
     }
-    deliveryData.innerHTML = delivered.map(o=>{
-      const d = new Date(o.createdAt);
+
+    deliveryData.innerHTML = visibleOrders.map(o=>{
+      const lastStatusTime =
+        o.statusHistory && o.statusHistory.length
+          ? o.statusHistory[o.statusHistory.length - 1].time
+          : o.createdAt;
+
+      const d = new Date(lastStatusTime);
+
       return `
       <div class="delivery-card">
-        <div class="delivery-row"><span class="delivery-label">📦 Product</span><span class="delivery-value">${o.productName}</span></div>
-        <div class="delivery-row"><span class="delivery-label">👤 Delivery Boy</span><span class="delivery-value">${o.deliveryBoyName}</span></div>
-        <div class="delivery-row"><span class="delivery-label">📞 Mobile</span><span class="delivery-value">${o.deliveryBoyMobile}</span></div>
-        <div class="delivery-row"><span class="delivery-label">🕒 Date</span><span class="delivery-value">${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</span></div>
-        <div class="delivery-code">🔐 Delivery Code : ${o.deliveryCode}</div>
+        <div class="delivery-row">
+          <span class="delivery-label">📦 Product</span>
+          <span class="delivery-value">${o.productName || "-"}</span>
+        </div>
+
+        <div class="delivery-row">
+          <span class="delivery-label">👤 Delivery Boy</span>
+          <span class="delivery-value">${o.deliveryBoyName || "Assigned"}</span>
+        </div>
+
+        <div class="delivery-row">
+          <span class="delivery-label">🕒 Time</span>
+          <span class="delivery-value">${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</span>
+        </div>
+
+        ${o.deliveryCode
+          ? `<div class="delivery-code">🔐 Delivery Code : ${o.deliveryCode}</div>`
+          : `<div class="delivery-code">⏳ Waiting for code...</div>`
+        }
       </div>`;
     }).join("");
-  }catch(e){ deliveryData.innerHTML="Failed to load deliveries"; }
+
+  }catch(e){
+    deliveryData.innerHTML="Failed to load delivery details";
+  }
 }
 
 // ------------------- ORDER STATUS -------------------
