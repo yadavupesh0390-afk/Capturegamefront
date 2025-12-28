@@ -297,11 +297,11 @@ async function submitDeliveryCode(){
   });  
   const data = await res.json();  
   if(data.success){
-    alert("✅ Order delivered successfully");
-    closeCodeModal();
-    loadOrders();
-  } else {
-    alert("❌ Wrong code");
+  alert("✅ Order delivered successfully");
+  closeCodeModal();
+  loadOrders();
+} else {
+  alert(data.message || "❌ Verification failed");
   }
 }
   
