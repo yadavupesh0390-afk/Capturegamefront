@@ -257,24 +257,54 @@ socket.emit("newOrder", { orderId: id, vehicle });
 }
 
 /* LOAD ORDERS */
+/* LOAD ORDERS (UPDATED LOGIC) */
 async function loadOrders(){
-const r=await fetch(API+"/api/orders/wholesaler/"+WID);
-const d=await r.json();
-orders.innerHTML=d.orders.map(o=>`
+  const r = await fetch(API + "/api/orders/wholesaler/" + WID);
+  const d = await r.json();
 
-  <div class="card">    
-   <b>${o.productName}</b> ₹${o.price}<br>    
-   🏪 ${o.wholesalerName} | 📞 ${o.wholesalerMobile}<br>    
-   📍 ${o.wholesalerAddress}<br>    
-   🏬 ${o.retailerName} | 📞 ${o.retailerMobile}<br>    
-   📍 ${o.retailerAddress}<br>    
-   Vehicle: ${o.vehicleType}<br>    
-   <div class="status">Status: <b>${o.status}</b></div>    
-   ${o.status==="pending"?`<button class="success" onclick="confirmOrder('${o._id}')" style="display:flex;align-items:center;gap:6px"><i class="bi bi-check-circle-fill"></i>  
-  Confirm Order  
-</button>`:""}  
-  </div>    
- `).join("") || "No orders";    
+  if (!d.orders || !d.orders.length) {
+    orders.innerHTML = "No orders";
+    return;
+  }
+
+  orders.innerHTML = d.orders.map(o => `
+    <div class="card">
+      <b>${o.productName}</b> ₹${o.price}<br>
+
+      🏬 Retailer: ${o.retailerName} | 📞 ${o.retailerMobile}<br>
+      📍 ${o.retailerAddress}<br><br>
+
+      🚚 Vehicle: ${o.vehicleType || "Not assigned"}<br>
+
+      <div class="status">
+        Status: <b>${o.status}</b>
+      </div>
+
+      ${
+        o.status === "pending"
+        ? `
+          <button class="success"
+            onclick="confirmOrder('${o._id}')"
+            style="display:flex;align-items:center;gap:6px">
+            <i class="bi bi-check-circle-fill"></i>
+            Confirm Order
+          </button>
+        `
+        : o.status === "assigned"
+        ? `
+          <div style="margin-top:6px;color:#16a34a;font-size:13px">
+            ✅ Assigned to Delivery Boy<br>
+            👤 Delivery ID: ${o.deliveryBoyId || "N/A"}
+          </div>
+        `
+        : `
+          <div style="margin-top:6px;color:#2563eb;font-size:13px">
+            📦 ${o.status}
+          </div>
+        `
+      }
+    </div>
+  `).join("");
 }    loadProducts();
 </script>  </body>
 
