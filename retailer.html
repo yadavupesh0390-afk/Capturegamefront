@@ -243,44 +243,42 @@ async function directBuy(){
 
   handler: async function (resp) {
 
-    // 🔐 VERIFY PAYMENT ON SERVER
-    const verifyRes = await fetch(`${API}/api/payment/verify`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        razorpay_payment_id: resp.razorpay_payment_id,
-        razorpay_order_id: resp.razorpay_order_id,
-        razorpay_signature: resp.razorpay_signature,
+  const verifyRes = await fetch(`${API}/api/payment/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      razorpay_payment_id: resp.razorpay_payment_id,
+      razorpay_order_id: resp.razorpay_order_id,
+      razorpay_signature: resp.razorpay_signature,
 
-        // extra order data
+      // 🔥 SAB KUCH orderData KE ANDAR
+      orderData: {
         productId: selectedProduct?._id,
         products: cart,
         totalAmount: total,
         deliveryCharge: delivery,
+
         retailerName: profile.name,
         retailerMobile: profile.mobile,
         retailerAddress: profile.address
-      })
-    });
+      }
+    })
+  });
 
-    const verifyData = await verifyRes.json();
+  const verifyData = await verifyRes.json();
 
-    if (!verifyData.success) {
-      alert("❌ Payment verification failed");
-      return;
-    }
-
-    alert("✅ Payment successful & order placed");
-    closeAll();
-  },
-
-  modal: {
-    ondismiss: function () {
-      alert("❌ Payment cancelled");
-    }
+  if (!verifyData.success) {
+    alert("❌ Payment verification failed");
+    return;
   }
-}).open();
-  }catch(e){ alert("Payment failed"); }
+
+  alert("✅ Payment successful & order placed");
+  closeAll();
+},
+modal: {
+  ondismiss: function () {
+    alert("❌ Payment cancelled");
+  }
 }
 
 // ------------------- CART -------------------
