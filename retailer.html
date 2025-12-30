@@ -236,28 +236,50 @@ async function directBuy(){
     const data = await res.json();
 
     new Razorpay({
-      key:data.key,
-      amount:data.amount,
-      order_id:data.order.id,
-      currency:"INR",
-      handler: async resp => {
-        await fetch(`${API}/api/orders/confirm-after-payment`,{
-          method:"POST",
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            paymentId:resp.razorpay_payment_id,
-            productId:selectedProduct._id,
-            totalAmount:total,
-            deliveryCharge:dc,
-            retailerName:profile.name,
-            retailerMobile:profile.mobile,
-            retailerAddress:profile.address
-          })
-        });
-        alert("✅ Order placed successfully");
-        closeAll();
-      }
-    }).open();
+  key: data.key,
+  amount: data.amount,
+  order_id: data.order.id,
+  currency: "INR",
+
+  handler: async function (resp) {
+
+    // 🔐 VERIFY PAYMENT ON SERVER
+    const verifyRes = await fetch(`${API}/api/payment/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        razorpay_payment_id: resp.razorpay_payment_id,
+        razorpay_order_id: resp.razorpay_order_id,
+        razorpay_signature: resp.razorpay_signature,
+
+        // extra order data
+        productId: selectedProduct?._id,
+        products: cart,
+        totalAmount: total,
+        deliveryCharge: delivery,
+        retailerName: profile.name,
+        retailerMobile: profile.mobile,
+        retailerAddress: profile.address
+      })
+    });
+
+    const verifyData = await verifyRes.json();
+
+    if (!verifyData.success) {
+      alert("❌ Payment verification failed");
+      return;
+    }
+
+    alert("✅ Payment successful & order placed");
+    closeAll();
+  },
+
+  modal: {
+    ondismiss: function () {
+      alert("❌ Payment cancelled");
+    }
+  }
+}).open();
   }catch(e){ alert("Payment failed"); }
 }
 
