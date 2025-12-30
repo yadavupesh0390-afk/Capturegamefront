@@ -203,6 +203,7 @@ async function loadProducts(){
   }
 }
 
+
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
   selectedProduct = p;
@@ -219,68 +220,72 @@ function openDetail(p){
 async function directBuy(){
   const v = vehicleType.value;
   if(!v) return alert("Select vehicle");
-  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+
+  const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
   if(!profile.mobile) return alert("Save profile first");
 
-  const dc = deliveryChargeByVehicle(v);
+  const dc = deliveryChargeByVehicle(v);     // ✅ FIX
   const total = selectedProduct.price + dc;
-  dDelivery.innerText = "Delivery ₹"+dc;
-  dTotal.innerText = "Total ₹"+total;
+
+  dDelivery.innerText = "Delivery ₹" + dc;
+  dTotal.innerText = "Total ₹" + total;
 
   try{
+    // 🔹 CREATE RAZORPAY ORDER
     const res = await fetch(`${API}/api/orders/pay-and-create`,{
       method:"POST",
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({amount:total})
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ amount: total })
     });
+
     const data = await res.json();
+    if(!data.success) return alert("Payment init failed");
 
-    new Razorpay({
-  key: data.key,
-  amount: data.amount,
-  order_id: data.order.id,
-  currency: "INR",
+    // 🔹 OPEN RAZORPAY
+    const rzp = new Razorpay({
+      key: data.key,
+      amount: data.amount,
+      currency: "INR",
+      order_id: data.order.id,
 
-  handler: async function (resp) {
+      handler: async function (resp) {
 
-  const verifyRes = await fetch(`${API}/api/payment/verify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      razorpay_payment_id: resp.razorpay_payment_id,
-      razorpay_order_id: resp.razorpay_order_id,
-      razorpay_signature: resp.razorpay_signature,
+        // ✅ DIRECT ORDER CREATE (NO VERIFY API)
+        await fetch(`${API}/api/orders/confirm-after-payment`,{
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({
+            paymentId: resp.razorpay_payment_id,
 
-      // 🔥 SAB KUCH orderData KE ANDAR
-      orderData: {
-        productId: selectedProduct?._id,
-        products: cart,
-        totalAmount: total,
-        deliveryCharge: delivery,
+            productId: selectedProduct._id,
+            vehicleType: v,
+            totalAmount: total,
+            deliveryCharge: dc,
 
-        retailerName: profile.name,
-        retailerMobile: profile.mobile,
-        retailerAddress: profile.address
+            retailerName: profile.name,
+            retailerMobile: profile.mobile,
+            retailerAddress: profile.address
+          })
+        });
+
+        alert("✅ Payment successful & order placed");
+        closeAll();
+      },
+
+      modal:{
+        ondismiss: function(){
+          alert("❌ Payment cancelled");
+        }
       }
-    })
-  });
+    });
 
-  const verifyData = await verifyRes.json();
+    rzp.open(); // 🔥 MOST IMPORTANT LINE
 
-  if (!verifyData.success) {
-    alert("❌ Payment verification failed");
-    return;
-  }
-
-  alert("✅ Payment successful & order placed");
-  closeAll();
-},
-modal: {
-  ondismiss: function () {
-    alert("❌ Payment cancelled");
+  }catch(err){
+    console.error(err);
+    alert("Payment failed");
   }
 }
-
 // ------------------- CART -------------------
 async function addToCart(p){
   cart.push(p);
