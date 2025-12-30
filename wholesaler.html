@@ -67,7 +67,11 @@ widText.innerText=WID.substring(0,8).toUpperCase();
 /* SOCKET.IO */
 const socket = io(API);
 socket.emit("joinWholesaler", WID);
-
+// 🔥 Real-time update when delivery boy accepts
+socket.on("orderAssigned", ({ orderId, deliveryBoyId }) => {
+  console.log("Order assigned:", orderId, deliveryBoyId);
+  loadOrders(); // wholesaler order auto refresh
+});
 function openProduct(){productModal.style.display="flex";}
 function openOrders(){orderModal.style.display="flex";loadOrders();}
 async function openProfile(){
