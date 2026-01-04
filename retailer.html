@@ -218,20 +218,27 @@ function openDetail(p){
 }
 
 async function directBuy(){
+
   const v = vehicleType.value;
-  if(!v) return alert("Select vehicle");
+  if(!v){
+    alert("🚚 Please select vehicle");
+    return;
+  }
 
   const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-  if(!profile.mobile) return alert("Save profile first");
+  if(!profile.mobile){
+    alert("👤 Please save profile first");
+    return;
+  }
 
-  const dc = deliveryChargeByVehicle(v);     // ✅ FIX
+  const dc = deliveryChargeByVehicle(v);
   const total = selectedProduct.price + dc;
 
   dDelivery.innerText = "Delivery ₹" + dc;
   dTotal.innerText = "Total ₹" + total;
 
   try{
-    // 🔹 CREATE RAZORPAY ORDER
+    // 🔹 STEP 1: CREATE RAZORPAY ORDER
     const res = await fetch(`${API}/api/orders/pay-and-create`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
@@ -239,9 +246,12 @@ async function directBuy(){
     });
 
     const data = await res.json();
-    if(!data.success) return alert("Payment init failed");
+    if(!data.success){
+      alert("❌ Payment initialization failed");
+      return;
+    }
 
-    // 🔹 OPEN RAZORPAY
+    // 🔹 STEP 2: OPEN RAZORPAY
     const rzp = new Razorpay({
       key: data.key,
       amount: data.amount,
@@ -250,40 +260,57 @@ async function directBuy(){
 
       handler: async function (resp) {
 
-        // ✅ DIRECT ORDER CREATE (NO VERIFY API)
-        await fetch(`${API}/api/orders/confirm-after-payment`,{
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({
-            paymentId: resp.razorpay_payment_id,
+        try{
+          // 🔹 STEP 3: CONFIRM PAYMENT & CREATE ORDER
+          const confirmRes = await fetch(`${API}/api/orders/confirm-after-payment`,{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({
+              paymentId: resp.razorpay_payment_id,
 
-            productId: selectedProduct._id,
-            vehicleType: v,
-            totalAmount: total,
-            deliveryCharge: dc,
+              productId: selectedProduct._id,
+              vehicleType: v,
+              totalAmount: total,
+              deliveryCharge: dc,
 
-            retailerName: profile.name,
-            retailerMobile: profile.mobile,
-            retailerAddress: profile.address
-          })
-        });
+              retailerName: profile.name,
+              retailerMobile: profile.mobile,
+              retailerAddress: profile.address
+            })
+          });
 
-        alert("✅ Payment successful & order placed");
-        closeAll();
+          const result = await confirmRes.json();
+
+          if(result.success){
+            alert(
+              "✅ PAYMENT SUCCESSFUL 🎉\n\n" +
+              "Order placed successfully\n" +
+              "Order ID: " + (result.orderId || "Generated") + "\n\n" +
+              "Delivery partner will be assigned soon 🚚"
+            );
+            closeAll();
+          }else{
+            alert("⚠️ Payment received but order not created");
+          }
+
+        }catch(err){
+          console.error("CONFIRM ERROR:", err);
+          alert("⚠️ Payment success but server not responding");
+        }
       },
 
       modal:{
-        ondismiss: function(){
-          alert("❌ Payment cancelled");
+        ondismiss:function(){
+          alert("❌ Payment cancelled by user");
         }
       }
     });
 
-    rzp.open(); // 🔥 MOST IMPORTANT LINE
+    rzp.open(); // 🚀 OPEN PAYMENT WINDOW
 
   }catch(err){
-    console.error(err);
-    alert("Payment failed");
+    console.error("PAY ERROR:", err);
+    alert("❌ Payment process failed");
   }
 }
 // ------------------- CART -------------------
