@@ -315,17 +315,55 @@ async function directBuy(){
 }
 // ------------------- CART -------------------
 async function addToCart(p){
+
+  const retailerId = localStorage.getItem("userId");
+  if(!retailerId){
+    alert("🔐 Please login first");
+    return;
+  }
+
+  // 🔁 DUPLICATE CHECK
+  const already = cart.find(item => item._id === p._id);
+  if(already){
+    alert("⚠️ Product already in cart");
+    return;
+  }
+
+  // ✅ ADD TO CART (LOCAL)
   cart.push(p);
+
   try{
-    await fetch(`${API}/api/cart/save`,{
+    const res = await fetch(`${API}/api/cart/save`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ retailerId: localStorage.getItem("userId"), items: cart })
+      body: JSON.stringify({
+        retailerId: retailerId,
+        items: cart
+      })
     });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert("🛒 Added to cart");
-  }catch(e){
-    alert("Failed to add cart");
+
+    const data = await res.json();
+
+    if(data.success){
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      alert(
+        "🛒 Added to cart successfully ✅\n\n" +
+        "Product: " + p.productName + "\n" +
+        "Price: ₹" + p.price
+      );
+    }else{
+      // ❌ rollback
+      cart = cart.filter(item => item._id !== p._id);
+      alert("❌ Failed to add item to cart");
+    }
+
+  }catch(err){
+    console.error("ADD CART ERROR:", err);
+
+    // ❌ rollback
+    cart = cart.filter(item => item._id !== p._id);
+    alert("❌ Server error while adding to cart");
   }
 }
 
