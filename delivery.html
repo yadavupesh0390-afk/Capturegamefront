@@ -157,26 +157,12 @@ async function saveProfile(){
   
     const data = await res.json();    
   
-    if(data.success){
-
-  // ✅ LOCAL STORAGE ME PROFILE SAVE KARO
-  localStorage.setItem(
-    "deliveryProfile_"+DBID,
-    JSON.stringify({
-      name: pName.value.trim(),
-      mobile: pMobile.value.trim(),
-      vehicle: pVehicle.value,
-      vehicleNo: pVehicleNo.value.trim(),
-      city: pCity.value.trim()
-    })
-  );
-
-  alert("✅ Profile server + local dono me save ho gaya");
-  closeProfile();
-
-}else{
-  alert("❌ Profile save failed");
-}   
+    if(data.success){    
+      alert("✅ Profile server par save ho gaya");    
+      window.closeProfile();   // ✅ FIX  
+    }else{    
+      alert("❌ Profile save failed");    
+    }    
   
   }catch(err){    
     console.error(err);    
@@ -341,4 +327,4 @@ function closeCodeModal(){ codeModal.style.display="none"; }
 loadOrders();  
 setInterval(loadOrders,8000);  
 </script>  </body>  
-</html>  
+</html>
