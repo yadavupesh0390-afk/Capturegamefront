@@ -412,34 +412,19 @@ async function payCart(){
   try{
     const res = await fetch(`${API}/api/orders/pay-and-create`,{
       method:"POST",
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({amount:total})
-    });
-    const data = await res.json();
+      handler: function (resp) {
 
-    new Razorpay({
-      key:data.key,
-      amount:data.amount,
-      order_id:data.order.id,
-      currency:"INR",
-      handler: async resp => {
-        await fetch(`${API}/api/orders/confirm-after-payment`,{
-          method:"POST",
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            paymentId:resp.razorpay_payment_id,
-            products:cart,
-            totalAmount:total,
-            deliveryCharge:delivery,
-            retailerName:profile.name,
-            retailerMobile:profile.mobile,
-            retailerAddress:profile.address
-          })
-        });
-        localStorage.removeItem("cart");
-        cart=[];
-        alert("✅ Cart order placed successfully");
-        closeAll();
+  localStorage.removeItem("cart");
+  cart = [];
+
+  alert(
+    "✅ Cart Payment Successful 🎉\n\n" +
+    "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
+    "Orders processing me hain 🚚"
+  );
+
+  closeAll();
+}
       }
     }).open();
   }catch(e){ alert("Payment failed"); }
