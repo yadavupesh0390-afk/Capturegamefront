@@ -256,29 +256,35 @@ async function directBuy(e) {
     console.log("Razorpay order created:", data.order.id);
 
     const rzp = new Razorpay({
-      key: data.key,
-      amount: data.amount,
-      currency: "INR",
-      order_id: data.order.id,
+  key: data.key,
+  amount: data.amount,
+  currency: "INR",
+  order_id: data.order.id,
 
-      handler: function(resp) {
-        console.log("Payment handler called:", resp);
+  // 🔥 MOST IMPORTANT FIX
+  redirect: false,
 
-        alert(
-          "✅ Payment Successful 🎉\n\n" +
-          "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
-          "Order processing me hai 🚚"
-        );
+  handler: function (resp) {
+    console.log("Payment handler called:", resp);
 
-        closeAll(); // modal close
-      },
+    alert(
+      "✅ Payment Successful 🎉\n\n" +
+      "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
+      "Order processing me hai 🚚"
+    );
 
-      modal: {
-        ondismiss: function() {
-          alert("❌ Payment cancelled by user");
-        }
-      }
-    });
+    closeAll();
+
+    // ⏳ webhook ko time do
+    setTimeout(openOrderStatus, 2500);
+  },
+
+  modal: {
+    ondismiss: function () {
+      alert("❌ Payment cancelled by user");
+    }
+  }
+});
 
     rzp.open();
 
