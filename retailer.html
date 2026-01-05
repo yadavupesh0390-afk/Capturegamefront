@@ -257,7 +257,25 @@ async function directBuy(){
       amount: data.amount,
       currency: "INR",
       order_id: data.order.id,
+      notes: {
+  wholesalerId: selectedProduct.wholesalerId,
+  wholesalerName: selectedProduct.shopName,
+  wholesalerMobile: selectedProduct.mobile,
+  wholesalerAddress: selectedProduct.address,
 
+  productId: selectedProduct._id,
+  productName: selectedProduct.productName,
+  productImg: selectedProduct.image,
+  description: selectedProduct.detail,
+  price: selectedProduct.price,
+
+  retailerName: profile.name,
+  retailerMobile: profile.mobile,
+  retailerAddress: profile.address,
+
+  vehicleType: v,
+  deliveryCharge: dc
+      }
       handler: function (resp) {
 
   alert(
