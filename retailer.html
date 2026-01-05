@@ -310,7 +310,7 @@ async function directBuy(){
     console.error("PAY ERROR:", err);
     alert("❌ Payment process failed");
   }
-}
+} 
 // ------------------- CART -------------------
 async function addToCart(p){
 
@@ -418,36 +418,96 @@ function updateCartTotal(){
 }
 
 async function payCart(){
+
   const vehicle = cartVehicle.value;
-  if(!vehicle) return alert("Select vehicle first");
-  const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-  if(!profile.mobile) return alert("Save profile first");
+  if(!vehicle){
+    alert("🚚 Select vehicle first");
+    return;
+  }
+
+  const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+  if(!profile.mobile){
+    alert("👤 Save profile first");
+    return;
+  }
 
   const delivery = deliveryChargeByVehicle(vehicle);
-  const subtotal = cart.reduce((s,i)=>s+i.price,0);
+  const subtotal = cart.reduce((s,i)=>s + i.price, 0);
   const total = subtotal + delivery;
 
   try{
+
+    // 🔹 STEP 1: CREATE RAZORPAY ORDER
     const res = await fetch(`${API}/api/orders/pay-and-create`,{
       method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ amount: total })
+    });
+
+    const data = await res.json();
+    if(!data.success){
+      alert("❌ Payment init failed");
+      return;
+    }
+
+    // 🔹 STEP 2: OPEN RAZORPAY
+    const rzp = new Razorpay({
+      key: data.key,
+      amount: data.amount,
+      currency: "INR",
+      order_id: data.order.id,
+
+      // 🔴 VERY IMPORTANT — NOTES (WEBHOOK USES THIS)
+      notes:{
+        retailerName: profile.name,
+        retailerMobile: profile.mobile,
+        retailerAddress: profile.address,
+
+        vehicleType: vehicle,
+        deliveryCharge: delivery,
+
+        products: JSON.stringify(
+          cart.map(p => ({
+            productId: p._id,
+            productName: p.productName,
+            price: p.price,
+            wholesalerId: p.wholesalerId,
+            wholesalerName: p.shopName,
+            wholesalerMobile: p.mobile,
+            wholesalerAddress: p.address
+          }))
+        )
+      },
+
       handler: function (resp) {
 
-  localStorage.removeItem("cart");
-  cart = [];
+        // ✅ PAYMENT SUCCESS
+        localStorage.removeItem("cart");
+        cart = [];
 
-  alert(
-    "✅ Cart Payment Successful 🎉\n\n" +
-    "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
-    "Orders processing me hain 🚚"
-  );
+        alert(
+          "✅ Cart Payment Successful 🎉\n\n" +
+          "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
+          "Orders processing me hain 🚚"
+        );
 
-  closeAll();
-}
+        closeAll();
+      },
+
+      modal:{
+        ondismiss:function(){
+          alert("❌ Payment cancelled");
+        }
       }
-    }).open();
-  }catch(e){ alert("Payment failed"); }
-}
+    });
 
+    rzp.open(); // 🔥 MUST
+
+  }catch(err){
+    console.error("CART PAYMENT ERROR:", err);
+    alert("❌ Payment failed");
+  }
+}
 // ------------------- DELIVERY -------------------
 async function openDeliveryDetails(){
   deliveryModal.style.display="flex";
