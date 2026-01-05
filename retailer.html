@@ -217,16 +217,15 @@ function openDetail(p){
   detailModal.style.display = "flex";
 }
 
-async function directBuy(){
-
+async function directBuy() {
   const v = vehicleType.value;
-  if(!v){
+  if (!v) {
     alert("🚚 Please select vehicle");
     return;
   }
 
   const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-  if(!profile.mobile){
+  if (!profile.mobile) {
     alert("👤 Please save profile first");
     return;
   }
@@ -237,29 +236,33 @@ async function directBuy(){
   dDelivery.innerText = "Delivery ₹" + dc;
   dTotal.innerText = "Total ₹" + total;
 
-  try{
-    // 🔹 STEP 1: CREATE RAZORPAY ORDER
-    const res = await fetch(`${API}/api/orders/pay-and-create`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
+  try {
+    // ---------------- STEP 1: CREATE RAZORPAY ORDER ----------------
+    const res = await fetch(`${API}/api/orders/pay-and-create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount: total })
     });
 
     const data = await res.json();
-    if(!data.success){
+
+    if (!data.success || !data.order?.id) {
+      console.error("Order creation failed:", data);
       alert("❌ Payment initialization failed");
       return;
     }
 
-    // 🔹 STEP 2: OPEN RAZORPAY
+    console.log("Razorpay order created:", data.order.id);
+
+    // ---------------- STEP 2: OPEN RAZORPAY CHECKOUT ----------------
     const rzp = new Razorpay({
       key: data.key,
       amount: data.amount,
       currency: "INR",
       order_id: data.order.id,
 
-      // 🔴 VERY IMPORTANT — WEBHOOK DATA
-      notes:{
+      // ---------------- NOTES FOR WEBHOOK ----------------
+      notes: {
         wholesalerId: selectedProduct.wholesalerId,
         wholesalerName: selectedProduct.shopName,
         wholesalerMobile: selectedProduct.mobile,
@@ -279,8 +282,11 @@ async function directBuy(){
         deliveryCharge: dc
       },
 
+      // ---------------- HANDLER AFTER PAYMENT ----------------
       handler: function (resp) {
+        console.log("Payment handler called:", resp);
 
+        // ✅ Show user alert
         alert(
           "✅ Payment Successful 🎉\n\n" +
           "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
@@ -288,19 +294,24 @@ async function directBuy(){
           "Delivery details thodi der me show honge"
         );
 
+        // Close modal
         closeAll();
+
+        // Optional: hit backend to mark order as 'paid' immediately (before webhook)
+        // await fetch(`${API}/api/orders/mark-paid`, { ... })
       },
 
-      modal:{
-        ondismiss:function(){
+      modal: {
+        ondismiss: function () {
           alert("❌ Payment cancelled by user");
         }
       }
     });
 
-    rzp.open(); // 🔥 MOST IMPORTANT
+    // ---------------- OPEN PAYMENT WINDOW ----------------
+    rzp.open();
 
-  }catch(err){
+  } catch (err) {
     console.error("PAY ERROR:", err);
     alert("❌ Payment process failed");
   }
