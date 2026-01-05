@@ -258,37 +258,17 @@ async function directBuy(){
       currency: "INR",
       order_id: data.order.id,
 
-      handler: async function (resp) {
+      handler: function (resp) {
 
-        try{
-          // 🔹 STEP 3: CONFIRM PAYMENT & CREATE ORDER
-          const confirmRes = await fetch(`${API}/api/orders/confirm-after-payment`,{
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify({
-              paymentId: resp.razorpay_payment_id,
+  alert(
+    "✅ Payment Successful 🎉\n\n" +
+    "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
+    "Order processing me hai.\n" +
+    "Delivery details thodi der me show honge 🚚"
+       );
 
-              productId: selectedProduct._id,
-              vehicleType: v,
-              totalAmount: total,
-              deliveryCharge: dc,
-
-              retailerName: profile.name,
-              retailerMobile: profile.mobile,
-              retailerAddress: profile.address
-            })
-          });
-
-          const result = await confirmRes.json();
-
-          if(result.success){
-            alert(
-              "✅ PAYMENT SUCCESSFUL 🎉\n\n" +
-              "Order placed successfully\n" +
-              "Order ID: " + (result.orderId || "Generated") + "\n\n" +
-              "Delivery partner will be assigned soon 🚚"
-            );
-            closeAll();
+        closeAll();
+        }
           }else{
             alert("⚠️ Payment received but order not created");
           }
