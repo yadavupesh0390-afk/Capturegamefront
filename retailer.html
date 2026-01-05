@@ -261,44 +261,17 @@ async function directBuy() {
       currency: "INR",
       order_id: data.order.id,
 
-      // ---------------- NOTES FOR WEBHOOK ----------------
-      notes: {
-        wholesalerId: selectedProduct.wholesalerId,
-        wholesalerName: selectedProduct.shopName,
-        wholesalerMobile: selectedProduct.mobile,
-        wholesalerAddress: selectedProduct.address,
-
-        productId: selectedProduct._id,
-        productName: selectedProduct.productName,
-        productImg: selectedProduct.image,
-        description: selectedProduct.detail,
-        price: selectedProduct.price,
-
-        retailerName: profile.name,
-        retailerMobile: profile.mobile,
-        retailerAddress: profile.address,
-
-        vehicleType: v,
-        deliveryCharge: dc
-      },
-
       // ---------------- HANDLER AFTER PAYMENT ----------------
       handler: function (resp) {
         console.log("Payment handler called:", resp);
 
-        // ✅ Show user alert
         alert(
           "✅ Payment Successful 🎉\n\n" +
           "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
-          "Order processing me hai 🚚\n" +
-          "Delivery details thodi der me show honge"
+          "Order processing me hai 🚚"
         );
 
-        // Close modal
         closeAll();
-
-        // Optional: hit backend to mark order as 'paid' immediately (before webhook)
-        // await fetch(`${API}/api/orders/mark-paid`, { ... })
       },
 
       modal: {
