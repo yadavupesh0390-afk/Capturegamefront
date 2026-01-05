@@ -217,7 +217,9 @@ function openDetail(p){
   detailModal.style.display = "flex";
 }
 
-async function directBuy() {
+async function directBuy(e) {
+  e.preventDefault?.(); // agar form ke andar hai to prevent default
+
   const v = vehicleType.value;
   if (!v) {
     alert("🚚 Please select vehicle");
@@ -237,7 +239,6 @@ async function directBuy() {
   dTotal.innerText = "Total ₹" + total;
 
   try {
-    // ---------------- STEP 1: CREATE RAZORPAY ORDER ----------------
     const res = await fetch(`${API}/api/orders/pay-and-create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -254,15 +255,13 @@ async function directBuy() {
 
     console.log("Razorpay order created:", data.order.id);
 
-    // ---------------- STEP 2: OPEN RAZORPAY CHECKOUT ----------------
     const rzp = new Razorpay({
       key: data.key,
       amount: data.amount,
       currency: "INR",
       order_id: data.order.id,
 
-      // ---------------- HANDLER AFTER PAYMENT ----------------
-      handler: function (resp) {
+      handler: function(resp) {
         console.log("Payment handler called:", resp);
 
         alert(
@@ -271,20 +270,19 @@ async function directBuy() {
           "Order processing me hai 🚚"
         );
 
-        closeAll();
+        closeAll(); // modal close
       },
 
       modal: {
-        ondismiss: function () {
+        ondismiss: function() {
           alert("❌ Payment cancelled by user");
         }
       }
     });
 
-    // ---------------- OPEN PAYMENT WINDOW ----------------
     rzp.open();
 
-  } catch (err) {
+  } catch(err) {
     console.error("PAY ERROR:", err);
     alert("❌ Payment process failed");
   }
