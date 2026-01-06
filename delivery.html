@@ -329,7 +329,10 @@ async function submitDeliveryCode(){
       "Content-Type":"application/json",
       "Authorization":"Bearer "+TOKEN 
     },
-    body:JSON.stringify({ code })
+    body: JSON.stringify({
+  code,
+  deliveryBoyId: DBID
+})
   });  
 
   const data = await res.json();  
