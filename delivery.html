@@ -288,9 +288,15 @@ async function deliverFlow(orderId){
 
   if(order.status === "picked_up"){
     const res = await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
-      method:"POST",
-      headers:{ "Authorization":"Bearer "+TOKEN }
-    });
+  method:"POST",
+  headers:{
+    "Content-Type":"application/json",
+    "Authorization":"Bearer "+TOKEN
+  },
+  body: JSON.stringify({
+    deliveryBoyId: DBID
+  })
+});
     const data = await res.json();
 
     if(data.success){
