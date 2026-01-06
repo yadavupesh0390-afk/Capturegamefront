@@ -257,15 +257,28 @@ async function acceptOrder(id){
 }  
 // pickupOrder
 async function pickupOrder(orderId){
+  const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
+
   const res = await fetch(`${API}/api/orders/${orderId}/pickup`,{
     method:"POST",
-    headers:{ "Authorization":"Bearer "+TOKEN }
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+TOKEN
+    },
+    body: JSON.stringify({
+      deliveryBoyId: DBID,
+      deliveryBoyName: p.name || "Delivery Partner",
+      deliveryBoyMobile: p.mobile || ""
+    })
   });
+
   const data = await res.json();
   if(data.success){
     alert("Order picked up ✅");
-    loadOrders(); // Refresh so button becomes Generate Code
-  } else alert(data.message || "Pickup failed ❌");
+    loadOrders();
+  }else{
+    alert(data.message || "Pickup failed ❌");
+  }
 }
   
 /* DELIVERY FLOW */  
