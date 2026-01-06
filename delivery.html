@@ -283,40 +283,56 @@ async function pickupOrder(orderId){
   
 /* DELIVERY FLOW */  
 async function deliverFlow(orderId){
-  const order = lastOrders.find(o => o._id===orderId);
-  if(!order) return;
+  const order = lastOrders.find(o => o._id === orderId);
+  if(!order){
+    alert("Order not found");
+    return;
+  }
 
+  // 🔹 STEP 1: GENERATE DELIVERY CODE
   if(order.status === "picked_up"){
-    const res = await fetch(`${API}/api/orders/generate-delivery-code/${orderId}`,{
-  method:"POST",
-  headers:{
-    "Content-Type":"application/json",
-    "Authorization":"Bearer "+TOKEN
-  },
-  body: JSON.stringify({
-    deliveryBoyId: DBID
-  })
-});
-    const data = await res.json();
+    try{
+      const res = await fetch(
+        `${API}/api/orders/generate-delivery-code/${orderId}`,
+        {
+          method: "POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer " + TOKEN
+          },
+          body: JSON.stringify({
+            deliveryBoyId: DBID   // ✅ MUST
+          })
+        }
+      );
 
-    if(data.success){
-      alert("🔐 Delivery code generated & sent to retailer");
-      await loadOrders(); // Orders reload
-      return;
-    } else {
-      alert("❌ Code generation failed");
+      const data = await res.json();
+
+      if(data.success){
+        alert("🔐 Delivery code generated & sent to retailer");
+        loadOrders(); // refresh
+        return;
+      }else{
+        alert(data.message || "❌ Code generation failed");
+        return;
+      }
+
+    }catch(err){
+      console.error(err);
+      alert("❌ Server error while generating code");
       return;
     }
   }
 
+  // 🔹 STEP 2: VERIFY DELIVERY CODE
   if(order.status === "delivery_code_generated"){
     currentOrderId = orderId;
     deliveryCodeInput.value = "";
-    codeModal.style.display = "flex"; // Modal open
+    codeModal.style.display = "flex";
     return;
   }
 
-  alert("Order not ready for delivery ❌");
+  alert("❌ Order not ready for delivery");
 }
   
 async function submitDeliveryCode(){  
