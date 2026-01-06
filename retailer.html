@@ -220,15 +220,28 @@ function openDetail(p){
 async function directBuy(e) {
   e.preventDefault();
 
-  const total = selectedProduct.price + deliveryChargeByVehicle(vehicleType.value);
+  if (!vehicleType.value) {
+    alert("🚚 Select vehicle first");
+    return;
+  }
+
+  const retailerProfile = JSON.parse(
+    localStorage.getItem("retailerProfile") || "{}"
+  );
+
+  if (!retailerProfile.mobile) {
+    alert("👤 Please save profile first");
+    return;
+  }
+
+  const delivery = deliveryChargeByVehicle(vehicleType.value);
+  const total = selectedProduct.price + delivery;
 
   const res = await fetch(`${API}/api/orders/pay-and-create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       amount: total,
-
-      // 🔥 NOTES (WEBHOOK ke liye)
       notes: {
         productId: selectedProduct._id,
         productName: selectedProduct.productName,
@@ -244,7 +257,7 @@ async function directBuy(e) {
         retailerAddress: retailerProfile.address,
 
         vehicleType: vehicleType.value,
-        deliveryCharge: deliveryChargeByVehicle(vehicleType.value)
+        deliveryCharge: delivery
       }
     })
   });
@@ -263,10 +276,16 @@ async function directBuy(e) {
 
     handler: function (resp) {
       alert("✅ Payment Successful 🎉");
-      alert("📦 Order processing…");
-      // ❌ no reload
-      // optional redirect
-      // window.location.href = "/orders.html";
+      alert("📦 Order processing ho raha hai");
+
+      closeAll();
+      openOrderStatus(); // 🔥 direct show order
+    },
+
+    modal: {
+      ondismiss: function () {
+        alert("❌ Payment cancelled");
+      }
     }
   });
 
