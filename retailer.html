@@ -243,6 +243,8 @@ async function directBuy(e) {
     body: JSON.stringify({
       amount: total,
       notes: {
+        type: "direct", // ✅🔥 MOST IMPORTANT
+
         productId: selectedProduct._id,
         productName: selectedProduct.productName,
         price: selectedProduct.price,
@@ -274,14 +276,12 @@ async function directBuy(e) {
     currency: "INR",
     order_id: data.order.id,
 
-    handler: function (resp) {
+    handler: function () {
       alert("✅ Payment Successful 🎉");
       alert("📦 Order processing ho raha hai");
 
       closeAll();
-      setTimeout(() => {
-    openOrderStatus();
-  }, 3000); // 🔥 direct show order
+      setTimeout(openOrderStatus, 3000);
     },
 
     modal: {
