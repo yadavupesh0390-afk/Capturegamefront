@@ -399,35 +399,59 @@ function updateCartTotal(){
   cartGrandTotal.innerText = "Total ₹"+(subtotal+delivery);
 }
 
-async function payCart(){
+async function payCart() {
 
   const vehicle = cartVehicle.value;
-  if(!vehicle){
+  if (!vehicle) {
     alert("🚚 Select vehicle first");
     return;
   }
 
   const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-  if(!profile.mobile){
+  if (!profile.mobile) {
     alert("👤 Save profile first");
     return;
   }
 
   const delivery = deliveryChargeByVehicle(vehicle);
-  const subtotal = cart.reduce((s,i)=>s + i.price, 0);
+  const subtotal = cart.reduce((s, i) => s + i.price, 0);
   const total = subtotal + delivery;
 
-  try{
+  try {
+    // 🔹 STEP 1: CREATE PAYMENT
+    const res = await fetch(`${API}/api/orders/pay-and-create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: total,
+        notes: {
+          type: "cart", // ✅🔥 CRITICAL (backend uses this)
 
-    // 🔹 STEP 1: CREATE RAZORPAY ORDER
-    const res = await fetch(`${API}/api/orders/pay-and-create`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ amount: total })
+          retailerName: profile.name,
+          retailerMobile: profile.mobile,
+          retailerAddress: profile.address,
+
+          vehicleType: vehicle,
+          deliveryCharge: delivery,
+
+          products: JSON.stringify(
+            cart.map(p => ({
+              productId: p._id,
+              productName: p.productName,
+              price: p.price,
+
+              wholesalerId: p.wholesalerId,
+              wholesalerName: p.shopName,
+              wholesalerMobile: p.mobile,
+              wholesalerAddress: p.address
+            }))
+          )
+        }
+      })
     });
 
     const data = await res.json();
-    if(!data.success){
+    if (!data.success) {
       alert("❌ Payment init failed");
       return;
     }
@@ -439,53 +463,27 @@ async function payCart(){
       currency: "INR",
       order_id: data.order.id,
 
-      // 🔴 VERY IMPORTANT — NOTES (WEBHOOK USES THIS)
-      notes:{
-        retailerName: profile.name,
-        retailerMobile: profile.mobile,
-        retailerAddress: profile.address,
-
-        vehicleType: vehicle,
-        deliveryCharge: delivery,
-
-        products: JSON.stringify(
-          cart.map(p => ({
-            productId: p._id,
-            productName: p.productName,
-            price: p.price,
-            wholesalerId: p.wholesalerId,
-            wholesalerName: p.shopName,
-            wholesalerMobile: p.mobile,
-            wholesalerAddress: p.address
-          }))
-        )
-      },
-
-      handler: function (resp) {
-
+      handler: function () {
         // ✅ PAYMENT SUCCESS
         localStorage.removeItem("cart");
         cart = [];
 
-        alert(
-          "✅ Cart Payment Successful 🎉\n\n" +
-          "Payment ID: " + resp.razorpay_payment_id + "\n\n" +
-          "Orders processing me hain 🚚"
-        );
+        alert("✅ Cart Payment Successful 🎉\n📦 Orders processing me hain");
 
         closeAll();
+        setTimeout(openOrderStatus, 3000);
       },
 
-      modal:{
-        ondismiss:function(){
+      modal: {
+        ondismiss: function () {
           alert("❌ Payment cancelled");
         }
       }
     });
 
-    rzp.open(); // 🔥 MUST
+    rzp.open();
 
-  }catch(err){
+  } catch (err) {
     console.error("CART PAYMENT ERROR:", err);
     alert("❌ Payment failed");
   }
