@@ -275,21 +275,41 @@ async function saveWholesalerProfileToServer() {
  }
 
 async function updateProduct() {
-  const images = await filesToBase64(edit_images.files);
+  if (!editProductId) return alert("No product selected");
 
-  await fetch(API + "/api/products/" + editProductId, {
+  const files = [...edit_images.files];
+  let images = [];
+
+  for (const file of files) {
+    const base64 = await new Promise(res => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.readAsDataURL(file);
+    });
+    images.push(base64);
+  }
+
+  const res = await fetch(API + "/api/products/" + editProductId, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + TOKEN
+    },
     body: JSON.stringify({
       productName: edit_name.value,
       price: edit_price.value,
       detail: edit_detail.value,
-      images
+      ...(images.length && { images })
     })
   });
 
-  closeAll();
-  loadProducts();
+  const d = await res.json();
+  if (d.success) {
+    alert("✅ Product updated");
+    editProductId = null;
+    closeAll();
+    loadProducts();
+  }
 }
   
  
