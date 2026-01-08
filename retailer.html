@@ -290,39 +290,56 @@ async function loadProducts(){
 function openDetail(p){
   selectedProduct = p;
 
-  dName.innerText  = p.productName;
-  dDesc.innerText  = p.detail || "No description";
-  dPrice.innerText = "Price ₹" + p.price;
+  /* ================= BASIC DETAILS ================= */
+  dName.innerText  = p.productName || "";
+  dPrice.innerText = "Price ₹" + (p.price || 0);
 
+  /* ================= DESCRIPTION (READ MORE RESET) ================= */
+  dDesc.innerText = p.detail || "No description available";
+  dDesc.classList.add("short");
+  document.getElementById("descToggle").innerText = "More ⬇";
+
+  /* ================= DELIVERY RESET ================= */
   dDelivery.innerText = "";
   dTotal.innerText = "";
   vehicleType.value = "";
 
-  // 🔥 MULTIPLE IMAGES
+  /* ================= MULTIPLE IMAGES ================= */
   dImages.innerHTML = "";
   dDots.innerHTML   = "";
 
-  (p.images || []).forEach((img, i) => {
+  const images = (p.images && p.images.length)
+    ? p.images
+    : (p.image ? [p.image] : []);
+
+  images.forEach((img, i) => {
     dImages.innerHTML += `
-  <img src="${img}" onclick="openImage('${img}')">
-`;
-    dDots.innerHTML   += `<div class="dot ${i===0?'active':''}"></div>`;
+      <img 
+        src="${img}" 
+        onclick="openImage('${img}')"
+        style="min-width:100%;object-fit:contain;cursor:zoom-in"
+      >
+    `;
+
+    dDots.innerHTML += `
+      <div class="dot ${i === 0 ? "active" : ""}"></div>
+    `;
   });
 
-  // 🔥 DOT MOVE LOGIC
+  /* ================= DOT ACTIVE ON SCROLL ================= */
   dImages.onscroll = () => {
     const index = Math.round(
       dImages.scrollLeft / dImages.clientWidth
     );
 
-    [...dDots.children].forEach((dot,i)=>{
-      dot.classList.toggle("active", i===index);
+    [...dDots.children].forEach((dot, i) => {
+      dot.classList.toggle("active", i === index);
     });
   };
 
+  /* ================= OPEN MODAL ================= */
   detailModal.style.display = "flex";
 }
-
 
   function openImage(src){
   document.getElementById("fullImg").src = src;
