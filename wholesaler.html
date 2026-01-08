@@ -226,9 +226,8 @@ async function addProduct(){
     localStorage.getItem("wholesalerProfile_" + WID) || "{}"
   );
 
-  // 🔁 EDIT MODE
+  /* ===== EDIT MODE ===== */
   if (editProductId) {
-
     const res = await fetch(API + "/api/products/" + editProductId, {
       method: "PUT",
       headers: {
@@ -252,39 +251,45 @@ async function addProduct(){
     return;
   }
 
-  // ➕ ADD MODE
-  const img = pimg.files[0];
-  if (!img) return alert("Image required");
+  /* ===== ADD MODE ===== */
+  const files = [...pimg.files];
+  if (!files.length) return alert("Images required");
 
-  const r = new FileReader();
-  r.onload = async () => {
+  const images = [];
 
-    const res = await fetch(API + "/api/products", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + TOKEN
-      },
-      body: JSON.stringify({
-        wholesalerId: WID,
-        productName: pname.value,
-        price: pprice.value,
-        detail: pdetail.value,
-        image: r.result,
-        shopName: prof.shopName,
-        mobile: prof.mobile,
-        address: prof.address
-      })
+  for (const file of files) {
+    const base64 = await new Promise(res=>{
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.readAsDataURL(file);
     });
+    images.push(base64);
+  }
 
-    const d = await res.json();
-    if (d.success) {
-      alert("✅ Product added");
-      closeAll();
-      loadProducts();
-    }
-  };
-  r.readAsDataURL(img);
+  const res = await fetch(API + "/api/products", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + TOKEN
+    },
+    body: JSON.stringify({
+      wholesalerId: WID,
+      productName: pname.value,
+      price: pprice.value,
+      detail: pdetail.value,
+      images,                     // ✅ MULTIPLE
+      shopName: prof.shopName,
+      mobile: prof.mobile,
+      address: prof.address
+    })
+  });
+
+  const d = await res.json();
+  if (d.success) {
+    alert("✅ Product added");
+    closeAll();
+    loadProducts();
+  }
 }
 
 /* LOAD PRODUCTS */
