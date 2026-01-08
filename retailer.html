@@ -186,18 +186,20 @@ async function loadProducts(){
     const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
     const data = await res.json();
     products.innerHTML = data.products.map(p => {
-      const pdata = encodeURIComponent(JSON.stringify(p));
-      return `
-        <div class="product-card">
-          <img src="${p.image}">
-          <div>${p.productName}</div>
-          <div class="price">₹${p.price}</div>
-          <div class="actions">
-            <button class="cart-btn" onclick='addToCart(JSON.parse(decodeURIComponent("${pdata}")))'>🛒</button>
-            <button class="buy-btn" onclick='openDetail(JSON.parse(decodeURIComponent("${pdata}")))'>⚡</button>
-          </div>
-        </div>`;
-    }).join("");
+  const pdata = encodeURIComponent(JSON.stringify(p));
+  return `
+    <div class="product-card">
+      <img src="${p.images?.[0] || ''}">
+      <div>${p.productName}</div>
+      <div class="price">₹${p.price}</div>
+      <div class="actions">
+        <button class="cart-btn"
+          onclick='addToCart(JSON.parse(decodeURIComponent("${pdata}")))'>🛒</button>
+        <button class="buy-btn"
+          onclick='openDetail(JSON.parse(decodeURIComponent("${pdata}")))'>⚡</button>
+      </div>
+    </div>`;
+}).join("");
   }catch(e){
     alert("Products load failed");
   }
