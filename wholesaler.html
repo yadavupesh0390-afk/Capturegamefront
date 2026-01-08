@@ -20,7 +20,36 @@ input,textarea,select{width:100%;padding:10px;margin:8px 0;border-radius:8px;bor
 button.primary{background:#2563eb;color:#fff;border:none;padding:10px 15px;border-radius:10px;cursor:pointer}    
 button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:6px}    
 .card{background:#f8fafc;padding:12px;border-radius:10px;margin-bottom:12px}    
-.status{font-size:12px;margin-top:4px}    
+.status{font-size:12px;margin-top:4px}  
+.slider{
+  display:flex;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  gap:10px;
+}
+.slider img{
+  width:100%;
+  border-radius:10px;
+  scroll-snap-align:center;
+  flex-shrink:0;
+}
+.dots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin:8px 0;
+}
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#cbd5e1;
+}
+.dot.active{
+  background:#2563eb;
+}
+
+ 
 </style>  </head>  <body>    
 <div class="main">    <div class="icon-bar">    
     <button class="icon-btn" onclick="openProfile()"><i class="bi bi-shop"></i></button>    
