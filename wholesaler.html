@@ -361,49 +361,7 @@ async function addProduct(){
   }
 }
 
-/* LOAD PRODUCTS */
-async function loadProducts(){
-  const r = await fetch(API + "/api/products/wholesaler/" + WID);
-  const d = await r.json();
 
-  const grouped = {};
-
-  d.products.forEach(p=>{
-    const cat = p.category || "Other";
-    if(!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push(p);
-  });
-
-  categories.innerHTML = Object.keys(grouped).map(cat => `
-    <div class="card">
-      <h3 style="margin-bottom:10px;color:#0f172a">
-        📦 ${cat}
-      </h3>
-
-      <div class="products-grid">
-        ${grouped[cat].map(p => `
-          <div class="product-card" onclick="openProductDetail('${p._id}')">
-            <img src="${p.images?.[0]}">
-            <h4>${p.productName}</h4>
-            <div class="price">₹${p.price}</div>
-
-            <div style="display:flex;gap:6px;justify-content:center;margin-top:6px">
-              <button class="success"
-                onclick="event.stopPropagation();openEditProduct('${p._id}')">
-                <i class="bi bi-pencil"></i>
-              </button>
-
-              <button class="success" style="background:#dc2626"
-                onclick="event.stopPropagation();deleteProduct('${p._id}')">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `).join("");
-}
   async function openProductDetail(id){
   productDetailModal.style.display = "flex";
 
