@@ -355,7 +355,7 @@ async function loadProducts(){
 
   const res = await fetch(API + "/api/products/" + id);
   const data = await res.json();
-  if(!data.success) return alert("Product not found");
+  if(!data.success) return;
 
   const p = data.product;
 
@@ -363,10 +363,23 @@ async function loadProducts(){
   d_price.innerText = "₹" + p.price;
   d_detail.innerText = p.detail || "";
 
-  d_images.innerHTML = (p.images || [p.image]).map(img => `
-    <img src="${img}" style="width:100%;margin-bottom:8px;border-radius:8px">
-  `).join("");
-  }
+  d_images.innerHTML = p.images.map(img =>
+    `<img src="${img}">`
+  ).join("");
+
+  d_dots.innerHTML = p.images.map((_,i)=>
+    `<div class="dot ${i===0?'active':''}"></div>`
+  ).join("");
+
+  d_images.onscroll = () => {
+    const index = Math.round(
+      d_images.scrollLeft / d_images.clientWidth
+    );
+    [...d_dots.children].forEach((d,i)=>
+      d.classList.toggle("active", i===index)
+    );
+  };
+}
  
  async function openEditProduct(id){
   editProductId = id;
