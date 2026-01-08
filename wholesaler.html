@@ -59,7 +59,10 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
 const API="https://shopbacked-vmhs.onrender.com";    
 const TOKEN=localStorage.getItem("token");    
 const WID=localStorage.getItem("userId");    
-const ROLE=localStorage.getItem("role");    if(!TOKEN||!WID||ROLE!=="wholesaler"){
+const ROLE=localStorage.getItem("role");    
+ let editProductId = null;
+ 
+ if(!TOKEN||!WID||ROLE!=="wholesaler"){
 alert("Login again"); location.href="index.html";
 }
 widText.innerText=WID.substring(0,8).toUpperCase();
