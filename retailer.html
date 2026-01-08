@@ -210,7 +210,7 @@ async function loadProducts(){
 function openDetail(p){
   selectedProduct = p;
   dName.innerText = p.productName;
-  dImg.src = p.image;
+  dImg.src = p.images?.[0] || "";
   dDesc.innerText = p.detail || "No description";
   dPrice.innerText = "Price ₹"+p.price;
   dDelivery.innerText = "";
