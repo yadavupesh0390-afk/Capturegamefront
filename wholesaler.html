@@ -293,23 +293,27 @@ async function loadProducts(){
   const d = await r.json();
 
   products.innerHTML = d.products.map(p => `
-    <div class="product-card">
-      <img src="${p.image}">
+    <div class="product-card" onclick="openProductDetail('${p._id}')">
+
+      <img src="${p.images?.[0] || p.image}">
       <h4>${p.productName}</h4>
       <div class="price">₹${p.price}</div>
 
       <div style="display:flex;gap:6px;justify-content:center;margin-top:6px">
-        <button class="success" onclick="openEditProduct('${p._id}')">
+        <button class="success"
+          onclick="event.stopPropagation(); openEditProduct('${p._id}')">
           <i class="bi bi-pencil"></i>
         </button>
+
         <button class="success" style="background:#dc2626"
-          onclick="deleteProduct('${p._id}')">
+          onclick="event.stopPropagation(); deleteProduct('${p._id}')">
           <i class="bi bi-trash"></i>
         </button>
       </div>
+
     </div>
   `).join("");
-}    
+}
  
  
  async function openEditProduct(id){
