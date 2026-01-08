@@ -440,20 +440,25 @@ async function openEditProduct(id) {
 
   const p = data.product;
 
-  // ✅ OLD DATA AUTO FILL
-  document.getElementById("edit_name").value = p.productName || "";
-  document.getElementById("edit_price").value = p.price || "";
-  document.getElementById("edit_detail").value = p.detail || "";
+  // 📝 old data fill
+  edit_name.value   = p.productName || "";
+  edit_price.value  = p.price || "";
+  edit_detail.value = p.detail || "";
 
-  // 🖼️ OLD IMAGES PREVIEW
-  const box = document.getElementById("edit_images_preview");
+  // 🖼️ old images preview
+  const box = edit_images_preview;
   box.innerHTML = "";
 
   (p.images || []).forEach(img => {
-    box.innerHTML += `<img src="${img}" class="preview-img">`;
+    const i = document.createElement("img");
+    i.src = img;
+    i.style.width = "70px";
+    i.style.borderRadius = "6px";
+    box.appendChild(i);
   });
 
-  openModal("editProductModal");
+  // ✅ OPEN EDIT MODAL
+  document.getElementById("editProductModal").style.display = "flex";
 }
 
  async function deleteProduct(id){
