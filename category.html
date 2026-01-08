@@ -51,15 +51,28 @@ button.delete{background:#dc2626;color:#fff;border:none;padding:6px 10px;border-
   </div>
 </div>
 
+<!-- EDIT PRODUCT MODAL -->
+<div class="modal" id="editProductModal">
+  <div class="modal-content">
+    <h3>Edit Product</h3>
+    <input id="edit_name" placeholder="Product Name">
+    <input id="edit_price" type="number" placeholder="Price">
+    <textarea id="edit_detail" placeholder="Detail"></textarea>
+    <input type="file" id="edit_images" multiple>
+    <div id="edit_images_preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <button class="primary" onclick="updateProduct()">Update</button>
+    <button onclick="closeAll()">Cancel</button>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
 const API="https://shopbacked-vmhs.onrender.com";
 const TOKEN=localStorage.getItem("token");
 const WID=localStorage.getItem("userId");
 const ROLE=localStorage.getItem("role");
 
-if(!TOKEN || !WID || ROLE!=="wholesaler"){
-  alert("Login again"); location.href="index.html";
-}
+if(!TOKEN || !WID || ROLE!=="wholesaler"){ alert("Login again"); location.href="index.html"; }
 
 const params = new URLSearchParams(window.location.search);
 const category = params.get("cat") || "Other";
@@ -72,7 +85,6 @@ const d_images = document.getElementById("d_images");
 const d_dots = document.getElementById("d_dots");
 const d_price = document.getElementById("d_price");
 const d_detail = document.getElementById("d_detail");
-
 let editProductId = null;
 
 function goBack(){ window.history.back(); }
@@ -108,15 +120,12 @@ async function openProductDetail(id){
   const res = await fetch(`${API}/api/products/${id}`);
   const data = await res.json();
   if(!data.success) return;
-
   const p = data.product;
   d_name.innerText = p.productName;
   d_price.innerText = "₹" + p.price;
   d_detail.innerText = p.detail || "";
-
   d_images.innerHTML = (p.images || []).map(img => `<img src="${img}">`).join("");
   d_dots.innerHTML = (p.images || []).map((_,i)=>`<div class="dot ${i===0?'active':''}"></div>`).join("");
-
   d_images.onscroll = () => {
     const index = Math.round(d_images.scrollLeft / d_images.clientWidth);
     [...d_dots.children].forEach((d,i)=>d.classList.toggle("active", i===index));
@@ -130,19 +139,50 @@ async function openEditProduct(id){
   const data = await res.json();
   if(!data.success){ alert("Failed to load product"); return; }
   const p = data.product;
-  const newName = prompt("Edit Name:", p.productName);
-  if(newName===null) return;
-  const newPrice = prompt("Edit Price:", p.price);
-  if(newPrice===null) return;
-  const newDetail = prompt("Edit Detail:", p.detail||"");
-  if(newPrice!==null && newName!==null){
-    await fetch(`${API}/api/products/${id}`,{
-      method:"PUT",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-      body:JSON.stringify({ productName:newName, price:newPrice, detail:newDetail })
+
+  edit_name.value = p.productName;
+  edit_price.value = p.price;
+  edit_detail.value = p.detail || "";
+
+  // Preview images
+  const box = edit_images_preview;
+  box.innerHTML = "";
+  (p.images || []).forEach(img=>{
+    const i = document.createElement("img");
+    i.src = img;
+    i.style.width = "70px";
+    i.style.borderRadius = "6px";
+    box.appendChild(i);
+  });
+  document.getElementById("editProductModal").style.display = "flex";
+}
+
+// Update Product
+async function updateProduct(){
+  if(!editProductId) return alert("No product selected");
+  const files = [...edit_images.files];
+  let images = [];
+  for(const file of files){
+    const base64 = await new Promise(res=>{
+      const r = new FileReader();
+      r.onload=()=>res(r.result);
+      r.readAsDataURL(file);
     });
-    loadCategoryProducts();
+    images.push(base64);
   }
+  await fetch(`${API}/api/products/${editProductId}`,{
+    method:"PUT",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+    body:JSON.stringify({
+      productName: edit_name.value,
+      price: edit_price.value,
+      detail: edit_detail.value,
+      ...(images.length && {images})
+    })
+  });
+  editProductId = null;
+  closeAll();
+  loadCategoryProducts();
 }
 
 // Delete Product
