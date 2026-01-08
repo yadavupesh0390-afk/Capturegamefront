@@ -298,6 +298,17 @@ function openDetail(p){
   detailModal.style.display = "flex";
 }
 
+
+  function openImage(src){
+  document.getElementById("fullImg").src = src;
+  document.getElementById("imageModal").style.display = "flex";
+}
+
+function closeImage(){
+  document.getElementById("imageModal").style.display = "none";
+}
+
+  
 async function directBuy(e) {
   e.preventDefault();
 
