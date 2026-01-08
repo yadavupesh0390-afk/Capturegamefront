@@ -314,7 +314,10 @@ async function addProduct(){
     localStorage.getItem("wholesalerProfile_" + WID) || "{}"
   );
 
-
+ if(!pcategory.value.trim()){
+  alert("Category required");
+  return;
+     }
 
   /* ===== ADD MODE ===== */
   const files = [...pimg.files];
@@ -338,16 +341,16 @@ async function addProduct(){
       "Authorization": "Bearer " + TOKEN
     },
     body: JSON.stringify({
-      wholesalerId: WID,
-      productName: pname.value,
-      price: pprice.value,
-      detail: pdetail.value,
-      images,                     // ✅ MULTIPLE
-      shopName: prof.shopName,
-      mobile: prof.mobile,
-      address: prof.address
-    })
-  });
+  wholesalerId: WID,
+  productName: pname.value,
+  price: pprice.value,
+  detail: pdetail.value,
+  images,
+  category: pcategory.value.trim(),   // ✅ CUSTOM CATEGORY
+  shopName: prof.shopName,
+  mobile: prof.mobile,
+  address: prof.address
+});
 
   const d = await res.json();
   if (d.success) {
