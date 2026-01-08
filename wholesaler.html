@@ -247,7 +247,40 @@ async function loadProducts(){
       </div>
     </div>
   `).join("");
-}    /* CONFIRM ORDER WITH VEHICLE TYPE */
+}    
+ 
+ 
+ async function openEditProduct(id){
+  editProductId = id;
+  productModal.style.display = "flex";
+
+  const r = await fetch(API + "/api/products/" + id);
+  const p = await r.json();
+
+  pname.value = p.productName;
+  pprice.value = p.price;
+  pdetail.value = p.detail;
+ }
+
+ async function deleteProduct(id){
+  if (!confirm("Delete this product?")) return;
+
+  const res = await fetch(API + "/api/products/" + id, {
+    method: "DELETE",
+    headers: {
+      "Authorization": "Bearer " + TOKEN
+    }
+  });
+
+  const d = await res.json();
+  if (d.success) {
+    alert("🗑️ Product deleted");
+    loadProducts();
+  }
+ }
+ 
+ 
+                    /* CONFIRM ORDER WITH VEHICLE TYPE */
 async function confirmOrder(id){
 const vehicle = prompt("Enter Vehicle Type: two_wheeler / three_wheeler / four_wheeler");
 if(!vehicle) return alert("Vehicle type required");
