@@ -320,30 +320,7 @@ async function addProduct(){
     localStorage.getItem("wholesalerProfile_" + WID) || "{}"
   );
 
-  /* ===== EDIT MODE ===== */
-  if (editProductId) {
-    const res = await fetch(API + "/api/products/" + editProductId, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + TOKEN
-      },
-      body: JSON.stringify({
-        productName: pname.value,
-        price: pprice.value,
-        detail: pdetail.value
-      })
-    });
 
-    const d = await res.json();
-    if (d.success) {
-      alert("✅ Product updated");
-      editProductId = null;
-      closeAll();
-      loadProducts();
-    }
-    return;
-  }
 
   /* ===== ADD MODE ===== */
   const files = [...pimg.files];
