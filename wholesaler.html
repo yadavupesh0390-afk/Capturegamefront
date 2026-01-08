@@ -257,6 +257,24 @@ async function saveWholesalerProfileToServer() {
   }
  }
 
+async function updateProduct() {
+  const images = await filesToBase64(edit_images.files);
+
+  await fetch(API + "/api/products/" + editProductId, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      productName: edit_name.value,
+      price: edit_price.value,
+      detail: edit_detail.value,
+      images
+    })
+  });
+
+  closeAll();
+  loadProducts();
+}
+  
  
 /* ADD PRODUCT */
 async function addProduct(){
