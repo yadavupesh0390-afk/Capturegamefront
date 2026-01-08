@@ -11,12 +11,14 @@
 body{margin:0;background:#f3f6fb}
 .main{padding:20px;max-width:900px;margin:auto}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.1)}
-.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:20px}
-.product-card{background:#fff;padding:10px;border-radius:12px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08);transition:.2s}
-.product-card:hover{transform:translateY(-4px)}
-.product-card img{width:100%;height:100px;object-fit:cover;border-radius:8px}
-.product-card h4{margin:8px 0;font-size:14px}
-.price{color:#2563eb;font-weight:600;font-size:13px}
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.product-card{background:#fff;padding:5px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08);transition:.2s}
+.product-card:hover{transform:translateY(-3px)}
+.product-card img{width:100%;height:80px;object-fit:cover;border-radius:8px}
+.product-card h4{font-size:12px;margin:5px 0}
+.price{color:#2563eb;font-weight:600;font-size:12px}
+button.success{background:#16a34a;color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px}
+button.delete{background:#dc2626;color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;margin-left:4px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
 .modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
 .slider{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin-top:10px}
@@ -34,7 +36,7 @@ body{margin:0;background:#f3f6fb}
     <button class="back-btn" onclick="goBack()">⬅ Back</button>
   </div>
 
-  <div class="products-grid" id="products"></div>
+  <div id="products" class="products-grid"></div>
 </div>
 
 <!-- PRODUCT DETAIL MODAL -->
@@ -55,13 +57,10 @@ const TOKEN=localStorage.getItem("token");
 const WID=localStorage.getItem("userId");
 const ROLE=localStorage.getItem("role");
 
-// Auth check
 if(!TOKEN || !WID || ROLE!=="wholesaler"){
-  alert("Login again");
-  location.href="index.html";
+  alert("Login again"); location.href="index.html";
 }
 
-// Get category from URL
 const params = new URLSearchParams(window.location.search);
 const category = params.get("cat") || "Other";
 document.getElementById("catTitle").innerText = category;
@@ -74,35 +73,36 @@ const d_dots = document.getElementById("d_dots");
 const d_price = document.getElementById("d_price");
 const d_detail = document.getElementById("d_detail");
 
-function goBack(){
-  window.history.back();
-}
-function closeAll(){
-  document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
-}
+let editProductId = null;
 
-// Load products of this category
+function goBack(){ window.history.back(); }
+function closeAll(){ document.querySelectorAll(".modal").forEach(m=>m.style.display="none"); }
+
 async function loadCategoryProducts(){
   const res = await fetch(`${API}/api/products/wholesaler/${WID}`);
   const d = await res.json();
-
   const filtered = (d.products || []).filter(p => (p.category || "Other") === category);
 
-  if(!filtered.length){
-    productsEl.innerHTML = "<p>No products in this category</p>";
-    return;
-  }
+  if(!filtered.length){ productsEl.innerHTML = "<p>No products in this category</p>"; return; }
 
   productsEl.innerHTML = filtered.map(p=>`
     <div class="product-card" onclick="openProductDetail('${p._id}')">
       <img src="${p.images?.[0] || ''}">
       <h4>${p.productName}</h4>
       <div class="price">₹${p.price}</div>
+      <div style="display:flex;justify-content:center;margin-top:4px">
+        <button class="success" onclick="event.stopPropagation();openEditProduct('${p._id}')">
+          <i class="bi bi-pencil"></i> Edit
+        </button>
+        <button class="delete" onclick="event.stopPropagation();deleteProduct('${p._id}')">
+          <i class="bi bi-trash"></i> Delete
+        </button>
+      </div>
     </div>
   `).join("");
 }
 
-// Product detail modal
+// Product Detail Modal
 async function openProductDetail(id){
   productDetailModal.style.display = "flex";
   const res = await fetch(`${API}/api/products/${id}`);
@@ -110,7 +110,6 @@ async function openProductDetail(id){
   if(!data.success) return;
 
   const p = data.product;
-
   d_name.innerText = p.productName;
   d_price.innerText = "₹" + p.price;
   d_detail.innerText = p.detail || "";
@@ -122,6 +121,35 @@ async function openProductDetail(id){
     const index = Math.round(d_images.scrollLeft / d_images.clientWidth);
     [...d_dots.children].forEach((d,i)=>d.classList.toggle("active", i===index));
   };
+}
+
+// Edit Product
+async function openEditProduct(id){
+  editProductId = id;
+  const res = await fetch(`${API}/api/products/${id}`);
+  const data = await res.json();
+  if(!data.success){ alert("Failed to load product"); return; }
+  const p = data.product;
+  const newName = prompt("Edit Name:", p.productName);
+  if(newName===null) return;
+  const newPrice = prompt("Edit Price:", p.price);
+  if(newPrice===null) return;
+  const newDetail = prompt("Edit Detail:", p.detail||"");
+  if(newPrice!==null && newName!==null){
+    await fetch(`${API}/api/products/${id}`,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
+      body:JSON.stringify({ productName:newName, price:newPrice, detail:newDetail })
+    });
+    loadCategoryProducts();
+  }
+}
+
+// Delete Product
+async function deleteProduct(id){
+  if(!confirm("Delete this product?")) return;
+  await fetch(`${API}/api/products/${id}`,{ method:"DELETE", headers:{"Authorization":"Bearer "+TOKEN} });
+  loadCategoryProducts();
 }
 
 // Initial load
