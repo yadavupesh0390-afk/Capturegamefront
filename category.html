@@ -11,14 +11,16 @@
 body{margin:0;background:#f3f6fb}
 .main{padding:20px;max-width:900px;margin:auto}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.1)}
-.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
-.product-card{background:#fff;padding:5px;border-radius:10px;text-align:center;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08);transition:.2s}
-.product-card:hover{transform:translateY(-3px)}
-.product-card img{width:100%;height:80px;object-fit:cover;border-radius:8px}
-.product-card h4{font-size:12px;margin:5px 0}
-.price{color:#2563eb;font-weight:600;font-size:12px}
+.back-btn{background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:10px}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:20px}
+.product-card{background:#fff;padding:10px;border-radius:12px;text-align:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.08);transition:.2s;display:flex;flex-direction:column;justify-content:space-between}
+.product-card:hover{transform:translateY(-4px)}
+.product-card img{width:100%;height:100px;object-fit:cover;border-radius:8px}
+.product-card h4{font-size:14px;margin:6px 0;color:#111;font-weight:500}
+.price{color:#2563eb;font-weight:600;font-size:13px;margin-bottom:6px}
+.product-actions{display:flex;justify-content:center;gap:6px;margin-top:6px}
 button.success{background:#16a34a;color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px}
-button.delete{background:#dc2626;color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;margin-left:4px}
+button.delete{background:#dc2626;color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
 .modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}
 .slider{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin-top:10px}
@@ -26,7 +28,6 @@ button.delete{background:#dc2626;color:#fff;border:none;padding:6px 10px;border-
 .dots{display:flex;justify-content:center;gap:6px;margin:8px 0}
 .dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1}
 .dot.active{background:#2563eb}
-.back-btn{background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:10px}
 </style>
 </head>
 <body>
@@ -35,7 +36,6 @@ button.delete{background:#dc2626;color:#fff;border:none;padding:6px 10px;border-
     <h3 id="catTitle">Category</h3>
     <button class="back-btn" onclick="goBack()">⬅ Back</button>
   </div>
-
   <div id="products" class="products-grid"></div>
 </div>
 
@@ -102,7 +102,7 @@ async function loadCategoryProducts(){
       <img src="${p.images?.[0] || ''}">
       <h4>${p.productName}</h4>
       <div class="price">₹${p.price}</div>
-      <div style="display:flex;justify-content:center;margin-top:4px">
+      <div class="product-actions">
         <button class="success" onclick="event.stopPropagation();openEditProduct('${p._id}')">
           <i class="bi bi-pencil"></i> Edit
         </button>
@@ -144,7 +144,6 @@ async function openEditProduct(id){
   edit_price.value = p.price;
   edit_detail.value = p.detail || "";
 
-  // Preview images
   const box = edit_images_preview;
   box.innerHTML = "";
   (p.images || []).forEach(img=>{
@@ -192,7 +191,6 @@ async function deleteProduct(id){
   loadCategoryProducts();
 }
 
-// Initial load
 loadCategoryProducts();
 </script>
 </body>
