@@ -333,6 +333,18 @@ function closeImage(){
   document.getElementById("imageModal").style.display = "none";
 }
 
+ function toggleDesc(){
+  const desc = document.getElementById("dDesc");
+  const toggle = document.getElementById("descToggle");
+
+  if(desc.classList.contains("short")){
+    desc.classList.remove("short");
+    toggle.innerText = "Less ⬆";
+  }else{
+    desc.classList.add("short");
+    toggle.innerText = "More ⬇";
+  }
+ } 
   
 async function directBuy(e) {
   e.preventDefault();
