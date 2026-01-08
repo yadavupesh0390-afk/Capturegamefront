@@ -314,7 +314,25 @@ async function loadProducts(){
     </div>
   `).join("");
 }
- 
+
+
+  async function openProductDetail(id){
+  productDetailModal.style.display = "flex";
+
+  const res = await fetch(API + "/api/products/" + id);
+  const data = await res.json();
+  if(!data.success) return alert("Product not found");
+
+  const p = data.product;
+
+  d_name.innerText = p.productName;
+  d_price.innerText = "₹" + p.price;
+  d_detail.innerText = p.detail || "";
+
+  d_images.innerHTML = (p.images || [p.image]).map(img => `
+    <img src="${img}" style="width:100%;margin-bottom:8px;border-radius:8px">
+  `).join("");
+  }
  
  async function openEditProduct(id){
   editProductId = id;
