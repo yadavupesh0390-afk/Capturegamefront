@@ -246,13 +246,35 @@ async function loadProducts(){
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
   selectedProduct = p;
-  dName.innerText = p.productName;
-  dImg.src = p.images?.[0] || "";
-  dDesc.innerText = p.detail || "No description";
-  dPrice.innerText = "Price ₹"+p.price;
+
+  dName.innerText  = p.productName;
+  dDesc.innerText  = p.detail || "No description";
+  dPrice.innerText = "Price ₹" + p.price;
+
   dDelivery.innerText = "";
   dTotal.innerText = "";
   vehicleType.value = "";
+
+  // 🔥 MULTIPLE IMAGES
+  dImages.innerHTML = "";
+  dDots.innerHTML   = "";
+
+  (p.images || []).forEach((img, i) => {
+    dImages.innerHTML += `<img src="${img}">`;
+    dDots.innerHTML   += `<div class="dot ${i===0?'active':''}"></div>`;
+  });
+
+  // 🔥 DOT MOVE LOGIC
+  dImages.onscroll = () => {
+    const index = Math.round(
+      dImages.scrollLeft / dImages.clientWidth
+    );
+
+    [...dDots.children].forEach((dot,i)=>{
+      dot.classList.toggle("active", i===index);
+    });
+  };
+
   detailModal.style.display = "flex";
 }
 
