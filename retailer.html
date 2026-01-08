@@ -280,7 +280,9 @@ function openDetail(p){
   dDots.innerHTML   = "";
 
   (p.images || []).forEach((img, i) => {
-    dImages.innerHTML += `<img src="${img}">`;
+    dImages.innerHTML += `
+  <img src="${img}" onclick="openImage('${img}')">
+`;
     dDots.innerHTML   += `<div class="dot ${i===0?'active':''}"></div>`;
   });
 
