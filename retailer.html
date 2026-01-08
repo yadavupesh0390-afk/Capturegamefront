@@ -87,6 +87,28 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
   max-height:80vh;
   object-fit:contain;
 }
+.desc{
+  font-size:14px;
+  line-height:1.5;
+  color:#333;
+}
+
+.desc.short{
+  display:-webkit-box;
+  -webkit-line-clamp:3;   /* 👈 kitni line dikhani hai */
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+.desc-toggle{
+  display:inline-block;
+  color:#2563eb;
+  font-size:13px;
+  cursor:pointer;
+  margin-top:4px;
+  user-select:none;
+}
+  
 </style>
 </head>
 <body>
