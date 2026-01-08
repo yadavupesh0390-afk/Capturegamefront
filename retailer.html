@@ -76,6 +76,17 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
 .dot.active{
   background:#16a34a;
 }
+
+  #imageModal .modal-content{
+  max-width:95%;
+  max-height:90vh;
+  text-align:center;
+}
+
+#imageModal img{
+  max-height:80vh;
+  object-fit:contain;
+}
 </style>
 </head>
 <body>
@@ -174,7 +185,16 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
     <button class="primary" onclick="closeAll()">Close</button>
   </div>
 </div>
-
+<!-- FULL IMAGE VIEW -->
+<div class="modal" id="imageModal">
+  <div class="modal-content" style="padding:10px;background:#000">
+    <img id="fullImg" style="width:100%;height:auto;border-radius:10px">
+    <button onclick="closeImage()"
+      style="margin-top:10px;background:#fff;border:none;padding:8px 14px;border-radius:8px">
+      ❌ Close
+    </button>
+  </div>
+</div>
   
 <script>
 const API = "https://shopbacked-vmhs.onrender.com";
