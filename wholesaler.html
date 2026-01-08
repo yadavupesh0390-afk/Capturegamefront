@@ -204,25 +204,70 @@ async function saveWholesalerProfileToServer() {
  
 /* ADD PRODUCT */
 async function addProduct(){
-const img=pimg.files[0]; if(!img) return alert("Image required");
-const prof=JSON.parse(localStorage.getItem("wholesalerProfile_"+WID)||"{}");
-const r=new FileReader();
-r.onload=async()=>{
-const res=await fetch(API+"/api/products",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-body:JSON.stringify({
-wholesalerId:WID,
-productName:pname.value,
-price:pprice.value,
-detail:pdetail.value,
-image:r.result,
-shopName:prof.shopName,
-mobile:prof.mobile,
-address:prof.address
-})});
-const d=await res.json();
-if(d.success){alert("Product added");closeAll();loadProducts();}
-};
-r.readAsDataURL(img);
+
+  const prof = JSON.parse(
+    localStorage.getItem("wholesalerProfile_" + WID) || "{}"
+  );
+
+  // 🔁 EDIT MODE
+  if (editProductId) {
+
+    const res = await fetch(API + "/api/products/" + editProductId, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + TOKEN
+      },
+      body: JSON.stringify({
+        productName: pname.value,
+        price: pprice.value,
+        detail: pdetail.value
+      })
+    });
+
+    const d = await res.json();
+    if (d.success) {
+      alert("✅ Product updated");
+      editProductId = null;
+      closeAll();
+      loadProducts();
+    }
+    return;
+  }
+
+  // ➕ ADD MODE
+  const img = pimg.files[0];
+  if (!img) return alert("Image required");
+
+  const r = new FileReader();
+  r.onload = async () => {
+
+    const res = await fetch(API + "/api/products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + TOKEN
+      },
+      body: JSON.stringify({
+        wholesalerId: WID,
+        productName: pname.value,
+        price: pprice.value,
+        detail: pdetail.value,
+        image: r.result,
+        shopName: prof.shopName,
+        mobile: prof.mobile,
+        address: prof.address
+      })
+    });
+
+    const d = await res.json();
+    if (d.success) {
+      alert("✅ Product added");
+      closeAll();
+      loadProducts();
+    }
+  };
+  r.readAsDataURL(img);
 }
 
 /* LOAD PRODUCTS */
