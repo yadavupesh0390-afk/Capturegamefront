@@ -55,7 +55,21 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
   <div id="orders"></div>    
   <button onclick="closeAll()">Close</button>    
  </div>    
-</div>  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  <script>    
+</div>  
+ <!-- PRODUCT DETAIL -->
+<div class="modal" id="productDetailModal">
+  <div class="modal-content">
+    <h3 id="d_name"></h3>
+
+    <div id="d_images"></div>
+
+    <p id="d_price"></p>
+    <p id="d_detail"></p>
+
+    <button onclick="closeAll()">Close</button>
+  </div>
+</div>
+ <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  <script>    
 const API="https://shopbacked-vmhs.onrender.com";    
 const TOKEN=localStorage.getItem("token");    
 const WID=localStorage.getItem("userId");    
