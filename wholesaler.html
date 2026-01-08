@@ -238,6 +238,33 @@ async function saveWholesalerProfileToServer() {
   }
 }
 
+async function loadCategories(){
+
+  const r = await fetch(API + "/api/products/wholesaler/" + WID);
+  const d = await r.json();
+
+  const map = {};
+
+  d.products.forEach(p=>{
+    const cat = p.category || "Other";
+    map[cat] = true;
+  });
+
+  categories.innerHTML = Object.keys(map).map(cat=>`
+    <div class="category-card"
+         onclick="openCategory('${cat}')">
+      <i class="bi bi-box-seam"></i>
+      <h4>${cat}</h4>
+    </div>
+  `).join("");
+}
+
+  function openCategory(cat){
+  location.href =
+    "category.html?cat=" + encodeURIComponent(cat)
+    + "&wid=" + WID;
+  }
+  
  async function loadWholesalerProfileFromServer(){
 
   try{
