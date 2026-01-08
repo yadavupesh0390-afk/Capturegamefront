@@ -12,10 +12,32 @@ body{margin:0;background:#f3f6fb}
 .main{padding:20px;max-width:900px;margin:auto}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.1)}
 .back-btn{background:#2563eb;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;margin-top:10px}
-.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:20px}
-.product-card{background:#fff;padding:10px;border-radius:12px;text-align:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.08);transition:.2s;display:flex;flex-direction:column;justify-content:space-between}
+.products-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr); /* 3 products per row */
+  gap:12px;
+  margin-top:20px;
+}
+@media(max-width:768px){
+  .products-grid{grid-template-columns:repeat(2, 1fr);} /* Tablet 2 per row */
+}
+@media(max-width:500px){
+  .products-grid{grid-template-columns:repeat(1, 1fr);} /* Mobile 1 per row */
+}
+.product-card{
+  background:#fff;
+  padding:10px;
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+  transition:.2s;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
 .product-card:hover{transform:translateY(-4px)}
-.product-card img{width:100%;height:100px;object-fit:cover;border-radius:8px}
+.product-card img{width:100%;height:120px;object-fit:cover;border-radius:8px}
 .product-card h4{font-size:14px;margin:6px 0;color:#111;font-weight:500}
 .price{color:#2563eb;font-weight:600;font-size:13px;margin-bottom:6px}
 .product-actions{display:flex;justify-content:center;gap:6px;margin-top:6px}
@@ -51,21 +73,6 @@ button.delete{background:#dc2626;color:#fff;border:none;padding:6px 10px;border-
   </div>
 </div>
 
-<!-- EDIT PRODUCT MODAL -->
-<div class="modal" id="editProductModal">
-  <div class="modal-content">
-    <h3>Edit Product</h3>
-    <input id="edit_name" placeholder="Product Name">
-    <input id="edit_price" type="number" placeholder="Price">
-    <textarea id="edit_detail" placeholder="Detail"></textarea>
-    <input type="file" id="edit_images" multiple>
-    <div id="edit_images_preview" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-    <button class="primary" onclick="updateProduct()">Update</button>
-    <button onclick="closeAll()">Cancel</button>
-  </div>
-</div>
-
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
 const API="https://shopbacked-vmhs.onrender.com";
 const TOKEN=localStorage.getItem("token");
@@ -83,9 +90,6 @@ const productDetailModal = document.getElementById("productDetailModal");
 const d_name = document.getElementById("d_name");
 const d_images = document.getElementById("d_images");
 const d_dots = document.getElementById("d_dots");
-const d_price = document.getElementById("d_price");
-const d_detail = document.getElementById("d_detail");
-let editProductId = null;
 
 function goBack(){ window.history.back(); }
 function closeAll(){ document.querySelectorAll(".modal").forEach(m=>m.style.display="none"); }
@@ -102,14 +106,6 @@ async function loadCategoryProducts(){
       <img src="${p.images?.[0] || ''}">
       <h4>${p.productName}</h4>
       <div class="price">₹${p.price}</div>
-      <div class="product-actions">
-        <button class="success" onclick="event.stopPropagation();openEditProduct('${p._id}')">
-          <i class="bi bi-pencil"></i> Edit
-        </button>
-        <button class="delete" onclick="event.stopPropagation();deleteProduct('${p._id}')">
-          <i class="bi bi-trash"></i> Delete
-        </button>
-      </div>
     </div>
   `).join("");
 }
@@ -130,65 +126,6 @@ async function openProductDetail(id){
     const index = Math.round(d_images.scrollLeft / d_images.clientWidth);
     [...d_dots.children].forEach((d,i)=>d.classList.toggle("active", i===index));
   };
-}
-
-// Edit Product
-async function openEditProduct(id){
-  editProductId = id;
-  const res = await fetch(`${API}/api/products/${id}`);
-  const data = await res.json();
-  if(!data.success){ alert("Failed to load product"); return; }
-  const p = data.product;
-
-  edit_name.value = p.productName;
-  edit_price.value = p.price;
-  edit_detail.value = p.detail || "";
-
-  const box = edit_images_preview;
-  box.innerHTML = "";
-  (p.images || []).forEach(img=>{
-    const i = document.createElement("img");
-    i.src = img;
-    i.style.width = "70px";
-    i.style.borderRadius = "6px";
-    box.appendChild(i);
-  });
-  document.getElementById("editProductModal").style.display = "flex";
-}
-
-// Update Product
-async function updateProduct(){
-  if(!editProductId) return alert("No product selected");
-  const files = [...edit_images.files];
-  let images = [];
-  for(const file of files){
-    const base64 = await new Promise(res=>{
-      const r = new FileReader();
-      r.onload=()=>res(r.result);
-      r.readAsDataURL(file);
-    });
-    images.push(base64);
-  }
-  await fetch(`${API}/api/products/${editProductId}`,{
-    method:"PUT",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},
-    body:JSON.stringify({
-      productName: edit_name.value,
-      price: edit_price.value,
-      detail: edit_detail.value,
-      ...(images.length && {images})
-    })
-  });
-  editProductId = null;
-  closeAll();
-  loadCategoryProducts();
-}
-
-// Delete Product
-async function deleteProduct(id){
-  if(!confirm("Delete this product?")) return;
-  await fetch(`${API}/api/products/${id}`,{ method:"DELETE", headers:{"Authorization":"Bearer "+TOKEN} });
-  loadCategoryProducts();
 }
 
 loadCategoryProducts();
