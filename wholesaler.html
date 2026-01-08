@@ -104,7 +104,7 @@ const API="https://shopbacked-vmhs.onrender.com";
 const TOKEN=localStorage.getItem("token");    
 const WID=localStorage.getItem("userId");    
 const ROLE=localStorage.getItem("role");    
- let editProductId = null;
+ 
  
  if(!TOKEN||!WID||ROLE!=="wholesaler"){
 alert("Login again"); location.href="index.html";
@@ -381,17 +381,36 @@ async function loadProducts(){
   };
 }
  
- async function openEditProduct(id){
+let editProductId = null;
+
+async function openEditProduct(id) {
   editProductId = id;
-  productModal.style.display = "flex";
 
-  const r = await fetch(API + "/api/products/" + id);
-  const p = await r.json();
+  const res = await fetch(API + "/api/products/" + id);
+  const data = await res.json();
 
-  pname.value = p.productName;
-  pprice.value = p.price;
-  pdetail.value = p.detail;
- }
+  if (!data.success) {
+    alert("Product load failed");
+    return;
+  }
+
+  const p = data.product;
+
+  // ✅ OLD DATA AUTO FILL
+  document.getElementById("edit_name").value = p.productName || "";
+  document.getElementById("edit_price").value = p.price || "";
+  document.getElementById("edit_detail").value = p.detail || "";
+
+  // 🖼️ OLD IMAGES PREVIEW
+  const box = document.getElementById("edit_images_preview");
+  box.innerHTML = "";
+
+  (p.images || []).forEach(img => {
+    box.innerHTML += `<img src="${img}" class="preview-img">`;
+  });
+
+  openModal("editProductModal");
+}
 
  async function deleteProduct(id){
   if (!confirm("Delete this product?")) return;
