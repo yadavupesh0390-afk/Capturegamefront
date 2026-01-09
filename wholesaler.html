@@ -48,43 +48,41 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
 .dot.active{
   background:#2563eb;
 }
-/* CATEGORY GRID – FINAL */
 .category-grid{
-  max-width:650px;              /* 👈 dashboard popup ke barabar */
-  margin:20px auto;             /* 👈 center align */
+  max-width:650px;          /* dashboard ke barabar */
+  margin:20px auto;
 
   display:grid;
-  grid-template-columns:repeat(2, 1fr); /* 👈 ek line me 2 */
-  gap:16px;                      /* 👈 gap between popups */
+  grid-template-columns:repeat(2, 1fr);  /* 👈 ek line me 2 */
+  gap:16px;                               /* 👈 gap */
 }
 
-/* CATEGORY CARD */
 .category-card{
   background:#ffffff;
-  border-radius:14px;
-  padding:16px 10px;
+  border-radius:16px;
+  padding:22px 10px;
   text-align:center;
   cursor:pointer;
 
-  box-shadow:0 4px 10px rgba(0,0,0,.08);
-  transition:0.2s ease;
+  box-shadow:0 6px 14px rgba(0,0,0,.08);
+  transition:.2s ease;
 }
 
 .category-card:hover{
   transform:translateY(-3px);
 }
 
-/* ICON */
 .category-card i{
-  font-size:26px;
+  font-size:30px;
   color:#2563eb;
+  display:block;
+  margin-bottom:6px;
 }
 
-/* TEXT */
 .category-card h4{
-  margin-top:6px;
-  font-size:14px;
+  font-size:15px;
   font-weight:600;
+  margin:0;
 }
  
 </style>  </head>  <body>    
@@ -155,7 +153,7 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
     <button onclick="closeAll()">Cancel</button>
   </div>
 </div>
- 
+ <div id="categories" class="category-grid"></div>
  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  <script>    
 const API="https://shopbacked-vmhs.onrender.com";    
 const TOKEN=localStorage.getItem("token");    
