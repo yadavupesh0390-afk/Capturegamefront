@@ -171,10 +171,81 @@ function addToCart(p){
 }
 
 // BUY DIRECT (simplified)
-async function directBuy(e){
+async function directBuy(e) {
   e.preventDefault();
-  if(!vehicleType.value){ alert("Select vehicle"); return; }
-  alert("Buy triggered for "+selectedProduct.productName+" (Vehicle: "+vehicleType.value+")");
+
+  if (!vehicleType.value) {
+    alert("🚚 Select vehicle first");
+    return;
+  }
+
+  const retailerProfile = JSON.parse(
+    localStorage.getItem("retailerProfile") || "{}"
+  );
+
+  if (!retailerProfile.mobile) {
+    alert("👤 Please save profile first");
+    return;
+  }
+
+  const delivery = deliveryChargeByVehicle(vehicleType.value);
+  const total = selectedProduct.price + delivery;
+
+  const res = await fetch(`${API}/api/orders/pay-and-create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      amount: total,
+      notes: {
+        type: "direct", // ✅🔥 MOST IMPORTANT
+
+        productId: selectedProduct._id,
+        productName: selectedProduct.productName,
+        price: selectedProduct.price,
+
+        wholesalerId: selectedProduct.wholesalerId,
+        wholesalerName: selectedProduct.shopName,
+        wholesalerMobile: selectedProduct.mobile,
+        wholesalerAddress: selectedProduct.address,
+
+        retailerName: retailerProfile.name,
+        retailerMobile: retailerProfile.mobile,
+        retailerAddress: retailerProfile.address,
+
+        vehicleType: vehicleType.value,
+        deliveryCharge: delivery
+      }
+    })
+  });
+
+  const data = await res.json();
+  if (!data.success) {
+    alert("❌ Order create failed");
+    return;
+  }
+
+  const rzp = new Razorpay({
+    key: data.key,
+    amount: data.amount,
+    currency: "INR",
+    order_id: data.order.id,
+
+    handler: function () {
+      alert("✅ Payment Successful 🎉");
+      alert("📦 Order processing ho raha hai");
+
+      closeAll();
+      setTimeout(openOrderStatus, 3000);
+    },
+
+    modal: {
+      ondismiss: function () {
+        alert("❌ Payment cancelled");
+      }
+    }
+  });
+
+  rzp.open();
 }
 
 loadProducts();
