@@ -602,36 +602,30 @@ async function addToCart(p){
   }
 }
 
-async function openCart(){
-  try{
-    const retailerId = localStorage.getItem("userId");
-    const res = await fetch(`${API}/api/cart/${retailerId}`);
-    const data = await res.json();
-    cart = data.cart ? data.cart.items : [];
-    localStorage.setItem("cart", JSON.stringify(cart));
+async function loadCart(){
 
-    if(cart.length===0){
-      cartItems.innerHTML="🛒 Cart empty";
-      cartSubtotal.innerText="";
-      cartDelivery.innerText="";
-      cartGrandTotal.innerText="";
-      cartVehicle.value="";
-      cartModal.style.display="flex";
-      return;
-    }
+  const retailerId = localStorage.getItem("userId");
 
-    let subtotal = 0;
-    cartItems.innerHTML = cart.map((c,i)=>{
-      subtotal += c.price;
-      return `<div class="cart-item">${c.productName} ₹${c.price} <button onclick="removeCart(${i})">❌</button></div>`;
-    }).join("");
-    cartSubtotal.innerText = "Subtotal ₹"+subtotal;
-    cartDelivery.innerText = "Delivery ₹0";
-    cartGrandTotal.innerText = "Total ₹"+subtotal;
-    cartVehicle.value="";
-    cartModal.style.display="flex";
-  }catch(e){ alert("Failed to load cart"); }
+  const res = await fetch(`${API}/api/cart/${retailerId}`);
+  const data = await res.json();
+
+  const cartDiv = document.getElementById("cartItems");
+
+  if(!data.items.length){
+    cartDiv.innerHTML = "<p>Cart is empty</p>";
+    return;
+  }
+
+  cartDiv.innerHTML = data.items.map(i=>`
+    <div class="cart-card">
+      <img src="${i.image}">
+      <div>${i.productName}</div>
+      <div>₹${i.price}</div>
+    </div>
+  `).join("");
 }
+
+window.onload = loadCart;
 
 async function removeCart(i){
   cart.splice(i,1);
