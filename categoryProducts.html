@@ -165,23 +165,26 @@ function closeAll(){
 let cart = JSON.parse(localStorage.getItem("cart")||"[]");
 
 function addToCart(p){
-  if(cart.find(i=>i._id===p._id)){
+  let cart = JSON.parse(localStorage.getItem("retailer_cart") || "[]");
+
+  const exists = cart.find(item => item._id === p._id);
+  if(exists){
     alert("Already in cart");
     return;
   }
-  cart.push(p);
-  localStorage.setItem("cart",JSON.stringify(cart));
-  alert("Added to cart ✅");
-}
 
-// ---------------- DELIVERY ----------------
-function deliveryChargeByVehicle(v){
-  if(v==="two_wheeler") return 30;
-  if(v==="three_wheeler") return 50;
-  if(v==="four_wheeler") return 80;
-  return 0;
-}
+  cart.push({
+    _id: p._id,
+    productName: p.productName,
+    price: p.price,
+    image: p.images?.[0] || "",
+    wholesalerId: p.wholesalerId,
+    shopName: p.shopName
+  });
 
+  localStorage.setItem("retailer_cart", JSON.stringify(cart));
+  alert("✅ Added to cart");
+}
 // ---------------- DIRECT BUY ----------------
 async function directBuy(e){
   e.preventDefault();
