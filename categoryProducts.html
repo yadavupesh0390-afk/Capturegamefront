@@ -177,7 +177,7 @@ async function addToCart(p){
     body: JSON.stringify({
       retailerId,
       item:{
-        productId: p._id,
+        productId: p._id || p.id,
         productName: p.productName,
         price: p.price,
         image: p.images?.[0] || "",
