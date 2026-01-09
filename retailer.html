@@ -149,6 +149,49 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
   font-weight:700;
   color:#14532d;
 }
+  /* CATEGORY GRID (Retailer Dashboard) */
+.category-card{
+  background: linear-gradient(135deg,#ecfeff,#f0fdf4);
+  border:1px solid #bbf7d0;
+  border-radius:16px;
+  padding:20px 12px;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.08);
+  transition:all .25s ease;
+  position:relative;
+}
+
+.category-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 12px 24px rgba(0,0,0,.15);
+}
+
+.category-icon{
+  width:52px;
+  height:52px;
+  margin:auto;
+  border-radius:50%;
+  background:#16a34a;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  margin-bottom:10px;
+}
+
+.category-name{
+  font-size:15px;
+  font-weight:600;
+  color:#14532d;
+  letter-spacing:.3px;
+}
+
+/* grid spacing improvement */
+.products-grid{
+  gap:16px;
+}
 </style>
 </head>
 <body>
@@ -328,10 +371,19 @@ async function loadProducts(){
     });
 
     categoriesContainer.innerHTML = Object.keys(map).map(cat=>`
-      <div class="product-card" onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
-        <div style="font-weight:600">${cat}</div>
-      </div>
-    `).join("");
+  <div class="category-card"
+       onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
+
+    <div class="category-icon">
+      <i class="bi bi-box-seam"></i>
+    </div>
+
+    <div class="category-name">
+      ${cat}
+    </div>
+
+  </div>
+`).join("");
 
   }catch(e){
     console.error(e);
