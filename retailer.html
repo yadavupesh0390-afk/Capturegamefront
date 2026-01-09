@@ -336,7 +336,10 @@ async function loadProducts(){
     console.error(e);
   }
 }
-
+function openCategory(categoryId, wid){
+  // Query params ke saath redirect
+  window.location.href = `categoryProducts.html?wid=${wid}&category=${categoryId}`;
+}
 
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
