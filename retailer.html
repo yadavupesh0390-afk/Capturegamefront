@@ -313,12 +313,14 @@ async function loadProducts(){
     const res = await fetch(`${API}/api/categories/wholesaler/${wid}`);
     const data = await res.json();
 
+    const categoriesContainer = document.getElementById("categories");
+
     if(!data.success || !data.categories.length){
-      document.getElementById("categories").innerHTML = "<p>No categories found</p>";
+      categoriesContainer.innerHTML = "<p>No categories found</p>";
       return;
     }
 
-    document.getElementById("categories").innerHTML = data.categories.map(cat=>{
+    categoriesContainer.innerHTML = data.categories.map(cat=>{
       return `
         <div class="product-card" onclick="openCategory('${cat.id}', '${wid}')">
           <img src="${cat.image || ''}">
@@ -326,9 +328,6 @@ async function loadProducts(){
         </div>
       `;
     }).join("");
-
-    // Products area empty
-    products.innerHTML = "";
 
   }catch(e){
     alert("Failed to load categories");
