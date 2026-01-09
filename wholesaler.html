@@ -377,59 +377,83 @@ async function updateProduct() {
 }
   
  
-/* ADD PRODUCT */
+// 🔹 Load categories into select box
+async function loadCategoriesSelect(){
+  const r = await fetch(API + "/api/products/wholesaler/" + WID);
+  const d = await r.json();
+
+  const map = {};
+  d.products.forEach(p => {
+    const cat = p.category || "Other";
+    map[cat] = true;  // unique
+  });
+
+  const select = document.getElementById("pcategorySelect");
+  select.innerHTML = '<option value="">Select Existing Category</option>';
+  Object.keys(map).forEach(cat=>{
+    const option = document.createElement("option");
+    option.value = cat;
+    option.text = cat;
+    select.appendChild(option);
+  });
+}
+
+// 🔹 Add product with either selected or new category
 async function addProduct(){
+  const prof = JSON.parse(localStorage.getItem("wholesalerProfile_" + WID) || "{}");
 
-  const prof = JSON.parse(
-    localStorage.getItem("wholesalerProfile_" + WID) || "{}"
-  );
+  // Category: prioritize new input, else select
+  const newCat = document.getElementById("pcategoryNew").value.trim();
+  const selectCat = document.getElementById("pcategorySelect").value;
+  const category = newCat || selectCat;
 
- if(!pcategory.value.trim()){
-  alert("Category required");
-  return;
-     }
+  if(!category){
+    alert("Category required");
+    return;
+  }
 
-  /* ===== ADD MODE ===== */
   const files = [...pimg.files];
-  if (!files.length) return alert("Images required");
+  if(!files.length) return alert("Images required");
 
   const images = [];
-
-  for (const file of files) {
+  for(const file of files){
     const base64 = await new Promise(res=>{
       const r = new FileReader();
-      r.onload = () => res(r.result);
+      r.onload = ()=>res(r.result);
       r.readAsDataURL(file);
     });
     images.push(base64);
   }
 
-  const res = await fetch(API + "/api/products", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + TOKEN
+  const res = await fetch(API+"/api/products",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+TOKEN
     },
     body: JSON.stringify({
-  wholesalerId: WID,
-  productName: pname.value,
-  price: pprice.value,
-  detail: pdetail.value,
-  images,
-  category: pcategory.value.trim(),   // ✅ CUSTOM CATEGORY
-  shopName: prof.shopName,
-  mobile: prof.mobile,
-  address: prof.address
-})
- });
+      wholesalerId: WID,
+      productName: pname.value,
+      price: pprice.value,
+      detail: pdetail.value,
+      images,
+      category,
+      shopName: prof.shopName,
+      mobile: prof.mobile,
+      address: prof.address
+    })
+  });
 
   const d = await res.json();
-  if (d.success) {
+  if(d.success){
     alert("✅ Product added");
     closeAll();
     loadProducts();
+    loadCategoriesSelect();  // 🔁 refresh select box with new category
   }
 }
+
+// Call initially
 
 
   async function openProductDetail(id){
@@ -587,6 +611,7 @@ async function loadOrders(){
     </div>
   `).join("");
 }    loadCategories();
+     loadCategoriesSelect();
 </script>  </body>
 
 </html>
