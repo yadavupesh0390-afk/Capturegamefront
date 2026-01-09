@@ -309,26 +309,31 @@ function deliveryChargeByVehicle(v){ return v==="two_wheeler"?1:v==="three_wheel
 async function loadProducts(){
   const wid = document.getElementById("wid").value.trim();
   if(!wid) return alert("Enter Wholesaler ID");
+
   try{
-    const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
+    const res = await fetch(`${API}/api/categories/wholesaler/${wid}`);
     const data = await res.json();
-    products.innerHTML = data.products.map(p => {
-  const pdata = encodeURIComponent(JSON.stringify(p));
-  return `
-    <div class="product-card">
-      <img src="${p.images?.[0] || ''}">
-      <div>${p.productName}</div>
-      <div class="price">₹${p.price}</div>
-      <div class="actions">
-        <button class="cart-btn"
-          onclick='addToCart(JSON.parse(decodeURIComponent("${pdata}")))'>🛒</button>
-        <button class="buy-btn"
-          onclick='openDetail(JSON.parse(decodeURIComponent("${pdata}")))'>⚡</button>
-      </div>
-    </div>`;
-}).join("");
+
+    if(!data.success || !data.categories.length){
+      document.getElementById("categories").innerHTML = "<p>No categories found</p>";
+      return;
+    }
+
+    document.getElementById("categories").innerHTML = data.categories.map(cat=>{
+      return `
+        <div class="product-card" onclick="openCategory('${cat.id}', '${wid}')">
+          <img src="${cat.image || ''}">
+          <div>${cat.name}</div>
+        </div>
+      `;
+    }).join("");
+
+    // Products area empty
+    products.innerHTML = "";
+
   }catch(e){
-    alert("Products load failed");
+    alert("Failed to load categories");
+    console.error(e);
   }
 }
 
