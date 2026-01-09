@@ -163,26 +163,39 @@ function closeAll(){
 // ---------------- CART ----------------
 let cart = JSON.parse(localStorage.getItem("cart")||"[]");
 
-function addToCart(p){
-  let cart = JSON.parse(localStorage.getItem("retailer_cart") || "[]");
+async function addToCart(p){
 
-  const exists = cart.find(item => item._id === p._id);
-  if(exists){
-    alert("Already in cart");
+  const retailerId = localStorage.getItem("userId");
+  if(!retailerId){
+    alert("🔐 Please login first");
     return;
   }
 
-  cart.push({
-    _id: p._id,
-    productName: p.productName,
-    price: p.price,
-    image: p.images?.[0] || "",
-    wholesalerId: p.wholesalerId,
-    shopName: p.shopName
+  const res = await fetch(`${API}/api/cart/save`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      retailerId,
+      item:{
+        productId: p._id,
+        productName: p.productName,
+        price: p.price,
+        image: p.images?.[0] || "",
+        wholesalerId: p.wholesalerId,
+        shopName: p.shopName,
+        mobile: p.mobile,
+        address: p.address
+      }
+    })
   });
 
-  localStorage.setItem("retailer_cart", JSON.stringify(cart));
-  alert("✅ Added to cart");
+  const data = await res.json();
+
+  if(data.success){
+    alert("🛒 Added to cart successfully");
+  }else{
+    alert("❌ Failed to add to cart");
+  }
 }
 // ---------------- DIRECT BUY ----------------
 async function directBuy(e){
