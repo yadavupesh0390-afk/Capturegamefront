@@ -48,24 +48,25 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
 .dot.active{
   background:#2563eb;
 }
-/* CATEGORY GRID */
+/* CATEGORY GRID – FINAL */
 .category-grid{
+  max-width:650px;              /* 👈 dashboard popup ke barabar */
+  margin:20px auto;             /* 👈 center align */
+
   display:grid;
-  grid-template-columns:1fr 1fr; /* 🔥 2 per row */
-  gap:18px 18px;                 /* row & column gap */
-  margin:20px auto;
-  max-width:460px;               /* dashboard width */
-  padding:5px;
+  grid-template-columns:repeat(2, 1fr); /* 👈 ek line me 2 */
+  gap:16px;                      /* 👈 gap between popups */
 }
 
 /* CATEGORY CARD */
 .category-card{
   background:#ffffff;
   border-radius:14px;
-  padding:18px 10px;
+  padding:16px 10px;
   text-align:center;
   cursor:pointer;
-  box-shadow:0 4px 12px rgba(0,0,0,.12);
+
+  box-shadow:0 4px 10px rgba(0,0,0,.08);
   transition:0.2s ease;
 }
 
@@ -77,16 +78,13 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
 .category-card i{
   font-size:26px;
   color:#2563eb;
-  display:block;
-  margin-bottom:6px;
 }
 
 /* TEXT */
 .category-card h4{
+  margin-top:6px;
   font-size:14px;
-  margin:0;
   font-weight:600;
-  color:#0f172a;
 }
  
 </style>  </head>  <body>    
