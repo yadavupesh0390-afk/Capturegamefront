@@ -626,7 +626,10 @@ async function loadCart(){
 }
 
 
-
+function openCart(){
+  document.getElementById("cartModal").style.display = "flex";
+  loadCart(); // ✅ yahin se cart load hoga
+}
 async function removeCart(i){
   cart.splice(i,1);
   try{
