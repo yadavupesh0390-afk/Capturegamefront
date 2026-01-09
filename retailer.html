@@ -310,28 +310,32 @@ async function loadProducts(){
   if(!wid) return alert("Enter Wholesaler ID");
 
   try{
-    const res = await fetch(`${API}/api/categories/wholesaler/${wid}`);
+    const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
     const data = await res.json();
 
     const categoriesContainer = document.getElementById("categories");
 
-    if(!data.success || !data.categories.length){
+    if(!data.products || !data.products.length){
       categoriesContainer.innerHTML = "<p>No categories found</p>";
       return;
     }
 
-    categoriesContainer.innerHTML = data.categories.map(cat=>{
-      return `
-        <div class="product-card" onclick="openCategory('${cat.id}', '${wid}')">
-          <img src="${cat.image || ''}">
-          <div>${cat.name}</div>
-        </div>
-      `;
-    }).join("");
+    // 🔥 product se unique categories nikalo
+    const map = {};
+    data.products.forEach(p=>{
+      const cat = p.category || "Other";
+      map[cat] = true;
+    });
+
+    categoriesContainer.innerHTML = Object.keys(map).map(cat=>`
+      <div class="product-card" onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
+        <div style="font-weight:600">${cat}</div>
+      </div>
+    `).join("");
 
   }catch(e){
-    alert("Failed to load categories");
     console.error(e);
+    alert("Failed to load categories");
   }
 }
 function openCategory(categoryId, wid){
