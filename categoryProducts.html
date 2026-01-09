@@ -84,10 +84,12 @@ body{margin:0;background:#f3f6fb}
 const API = "https://shopbacked-vmhs.onrender.com";
 
 // Get params
+// Get params
 const params = new URLSearchParams(window.location.search);
 const wid = params.get("wid");
-const category = params.get("cat");
-document.getElementById("catTitle").innerText = category;
+const category = params.get("category");
+
+document.getElementById("catTitle").innerText = category || "Category Products";
 
 // ------------------- PRODUCTS -------------------
 async function loadProducts(){
