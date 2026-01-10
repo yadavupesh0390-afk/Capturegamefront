@@ -40,9 +40,22 @@ body{margin:0;background:#f3f6fb}
 <body>
 
 <div class="main">
-  <div class="header">
-    <h3 id="catTitle">Category Products</h3>
-  </div>
+  <div class="header" style="display:flex;align-items:center;gap:10px">
+  <button onclick="goBack()" style="
+    background:#e5e7eb;
+    border:none;
+    border-radius:8px;
+    padding:6px 10px;
+    cursor:pointer;
+    font-size:14px
+  ">
+    ⬅ Back
+  </button>
+
+  <h3 id="catTitle" style="flex:1;margin:0;text-align:center">
+    Category Products
+  </h3>
+</div>
   <div class="products-grid" id="products"></div>
 </div>
 
@@ -159,7 +172,10 @@ function closeAll(){
   document.getElementById("imageModal").style.display="none";
   selectedProduct = null;
 }
-
+function goBack(){
+  // Fake Retailer Dashboard ka path
+  window.location.href = "retailer-dashboard.html";
+}
 // ---------------- CART ----------------
 let cart = JSON.parse(localStorage.getItem("cart")||"[]");
 
