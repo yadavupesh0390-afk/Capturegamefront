@@ -621,9 +621,18 @@ async function addToCart(p){
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        retailerId: retailerId,
-        items: cart
-      })
+  retailerId,
+  item:{
+    productId: p._id,
+    productName: p.productName,
+    price: p.price,
+    image: p.images?.[0] || "",
+    wholesalerId: p.wholesalerId,
+    shopName: p.shopName,
+    mobile: p.mobile,
+    address: p.address
+  }
+})
     });
 
     const data = await res.json();
@@ -652,7 +661,6 @@ async function addToCart(p){
 }
 
 async function loadCart(){
-
   const retailerId = localStorage.getItem("userId");
 
   const res = await fetch(`${API}/api/cart/${retailerId}`);
@@ -660,18 +668,32 @@ async function loadCart(){
 
   const cartDiv = document.getElementById("cartItems");
 
-  if(!data.items.length){
-    cartDiv.innerHTML = "<p>Cart is empty</p>";
+  if(!data.items || !data.items.length){
+    cartDiv.innerHTML = "<p style='text-align:center'>🛒 Cart is empty</p>";
     return;
   }
 
   cartDiv.innerHTML = data.items.map(i=>`
     <div class="cart-card">
-      <img src="${i.image}">
-      <div>${i.productName}</div>
-      <div>₹${i.price}</div>
+
+      <img src="${i.image}" class="cart-img">
+
+      <div class="cart-info">
+        <div class="cart-name">${i.productName}</div>
+        <div class="cart-price">₹${i.price}</div>
+        <div class="cart-qty">Qty: ${i.quantity}</div>
+      </div>
+
+      <div class="cart-actions">
+        <button onclick="removeFromCart('${i.productId}')">❌</button>
+      </div>
+
     </div>
   `).join("");
+
+  // 🔄 local cart sync
+  cart = data.items;
+  updateCartTotal();
 }
 
 
