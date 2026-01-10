@@ -38,15 +38,16 @@ body{margin:0;background:#f3f6fb}
   position:sticky;
   top:0;
   z-index:20;
+  height:56px;
   display:flex;
   align-items:center;
-  gap:12px;
-  padding:14px 16px;
+  padding:0 16px;
   background:linear-gradient(135deg,#2563eb,#1e40af);
   border-radius:14px;
   box-shadow:0 8px 20px rgba(37,99,235,.35);
 }
 
+/* back button left */
 .back-btn{
   width:38px;
   height:38px;
@@ -59,20 +60,20 @@ body{margin:0;background:#f3f6fb}
   align-items:center;
   justify-content:center;
   cursor:pointer;
+  z-index:2;
 }
 
-.back-btn:hover{
-  background:rgba(255,255,255,.35);
-}
-
+/* 🔥 TITLE TRUE CENTER */
 .title{
-  flex:1;
-  text-align:center;
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
   margin:0;
   color:#fff;
   font-size:18px;
   font-weight:600;
   letter-spacing:.4px;
+  white-space:nowrap;
 }
 </style>
 </head>
