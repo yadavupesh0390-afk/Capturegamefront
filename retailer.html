@@ -685,17 +685,12 @@ function closeImage(){
 
 
   async function getDeliveryFromServer({ orderAmount, vehicleType }) {
+  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
+  if (!retailerLoc) throw new Error("Retailer location missing");
 
-  const retailerLoc =
-    JSON.parse(localStorage.getItem("retailer_location"));
-
-  const wholesalerLoc =
-  selectedProduct?.wholesalerLocation ||
-  cart?.[0]?.wholesalerLocation;
-
-  if (!retailerLoc || !wholesalerLoc) {
-    throw new Error("Location missing");
-  }
+  // Cart me multiple products ho sakte hain, lekin first product se wholesalerLocation le lete hain
+  const wholesalerLoc = cart?.[0]?.wholesalerLocation;
+  if (!wholesalerLoc) throw new Error("Wholesaler location missing");
 
   const res = await fetch(`${API}/api/delivery/calculate`, {
     method: "POST",
