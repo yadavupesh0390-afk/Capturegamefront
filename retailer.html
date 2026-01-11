@@ -796,7 +796,7 @@ async function directBuy(e) {
         deliveryCharge: deliveryData.totalDelivery,
         retailerDeliveryPay: deliveryData.retailerPays,
         wholesalerDeliveryPay: deliveryData.wholesalerPays,
-        distanceKm: deliveryData.distanceKm
+        distanceKm: deliveryRes.distanceKm
       }
     })
   });
