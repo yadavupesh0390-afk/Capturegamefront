@@ -680,7 +680,31 @@ function closeImage(){
     toggle.innerText = "More ⬇";
   }
  } 
-  
+
+
+  async function getDeliveryFromServer({ orderAmount, vehicleType }) {
+
+  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
+  const wholesalerLoc =
+    selectedProduct?.location || selectedProduct?.wholesalerLocation;
+
+  if (!retailerLoc || !wholesalerLoc) {
+    throw new Error("Location missing");
+  }
+
+  const res = await fetch(`${API}/api/delivery/calculate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      orderAmount,
+      vehicleType,
+      retailerLocation: retailerLoc,
+      wholesalerLocation: wholesalerLoc
+    })
+  });
+
+  return await res.json();
+  }
 async function directBuy(e) {
   e.preventDefault();
 
