@@ -728,7 +728,7 @@ dDelivery.innerText =
 
 dTotal.innerText =
   `Total ₹${selectedProduct.price + deliveryData.retailerPays}`;
-  const total = selectedProduct.price + delivery;
+  
 
   const res = await fetch(`${API}/api/orders/pay-and-create`, {
     method: "POST",
