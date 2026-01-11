@@ -863,15 +863,18 @@ async function addToCart(p){
       body: JSON.stringify({
   retailerId,
   item:{
-    productId: p._id,
-    productName: p.productName,
-    price: p.price,
-    image: p.images?.[0] || "",
-    wholesalerId: p.wholesalerId,
-    shopName: p.shopName,
-    mobile: p.mobile,
-    address: p.address
-  }
+  productId: p._id,
+  productName: p.productName,
+  price: p.price,
+  image: p.images?.[0] || "",
+  wholesalerId: p.wholesalerId,
+  shopName: p.shopName,
+  mobile: p.mobile,
+  address: p.address,
+
+  // 🔥 ADD THIS
+  wholesalerLocation: p.wholesalerLocation
+}
 })
     });
 
