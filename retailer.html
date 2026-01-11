@@ -688,7 +688,8 @@ function closeImage(){
     JSON.parse(localStorage.getItem("retailer_location"));
 
   const wholesalerLoc =
-    selectedProduct.wholesalerLocation;
+  selectedProduct?.wholesalerLocation ||
+  cart?.[0]?.wholesalerLocation;
 
   if (!retailerLoc || !wholesalerLoc) {
     throw new Error("Location missing");
