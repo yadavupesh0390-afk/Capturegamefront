@@ -139,27 +139,46 @@ dbId.innerText = DBID ? DBID.slice(0,8).toUpperCase() : "N/A";
 /* PROFILE */  
   
 async function openProfile(){  
-  profileModal.style.display="flex";  
+  profileModal.style.display = "flex";  
   
   try{  
-    const res = await fetch(`${API}/api/delivery/profile/${DBID}`,{  
-      headers:{ "Authorization":"Bearer "+TOKEN }  
-    });  
+    const res = await fetch(
+      `${API}/api/delivery/profile/${DBID}`,
+      {
+        headers:{ "Authorization":"Bearer "+TOKEN }
+      }
+    );  
   
     const data = await res.json();  
-    if(!data.profile) return;  
+    if(!data.success || !data.profile) return;  
   
     const p = data.profile;  
-    pName.value = p.name || "";  
-    pMobile.value = p.mobile || "";  
-    pVehicle.value = p.vehicle || "";  
+
+    // BASIC DETAILS
+    pName.value      = p.name || "";  
+    pMobile.value    = p.mobile || "";  
+    pVehicle.value   = p.vehicle || "";  
     pVehicleNo.value = p.vehicleNo || "";  
-    pCity.value = p.city || "";  
-  
+    pCity.value      = p.city || "";  
+
+    // ✅ LIVE LOCATION LOAD
+    if(p.location && p.location.lat && p.location.lng){
+      liveLat = p.location.lat;
+      liveLng = p.location.lng;
+
+      document.getElementById("pLocation").value =
+        liveLat.toFixed(6) + ", " + liveLng.toFixed(6);
+    }else{
+      document.getElementById("pLocation").value = "";
+      liveLat = null;
+      liveLng = null;
+    }
+
   }catch(err){  
-    console.error(err);  
+    console.error("Open profile error:", err);  
+    alert("❌ Profile load failed");
   }  
-}  
+}
   
   
   
