@@ -164,21 +164,25 @@ async function openProfile(){
   
   
 async function saveProfile(){    
-  
+
   if(!pMobile.value.trim()){    
     alert("Mobile number required");    
     return;    
   }    
-  
+
   const payload = {    
     deliveryBoyId: DBID,  
     name: pName.value.trim(),    
     mobile: pMobile.value.trim(),    
     vehicle: pVehicle.value,    
     vehicleNo: pVehicleNo.value.trim(),    
-    city: pCity.value.trim()    
+    city: pCity.value.trim(),
+    location: liveLat && liveLng ? {
+      lat: liveLat,
+      lng: liveLng
+    } : null
   };    
-  
+
   try{    
     const res = await fetch(`${API}/api/delivery/profile/save`,{    
       method:"POST",    
@@ -188,36 +192,28 @@ async function saveProfile(){
       },    
       body: JSON.stringify(payload)    
     });    
-  
+
     const data = await res.json();    
-  
+
     if(data.success){
 
-  // ✅ LOCAL STORAGE ME PROFILE SAVE KARO
-  localStorage.setItem(
-    "deliveryProfile_"+DBID,
-    JSON.stringify({
-      name: pName.value.trim(),
-      mobile: pMobile.value.trim(),
-      vehicle: pVehicle.value,
-      vehicleNo: pVehicleNo.value.trim(),
-      city: pCity.value.trim()
-    })
-  );
+      localStorage.setItem(
+        "deliveryProfile_"+DBID,
+        JSON.stringify(payload)
+      );
 
-  alert("✅ Profile server + local dono me save ho gaya");
-  closeProfile();
+      alert("✅ Profile + Live location saved");
+      closeProfile();
 
-}else{
-  alert("❌ Profile save failed");
-}    
-  
+    }else{
+      alert("❌ Profile save failed");
+    }    
+
   }catch(err){    
-    console.error(err);    
     alert("❌ Server error");    
   }    
-}  
-  
+}
+        
   
 window.closeProfile = function(){  
   const modal = document.getElementById("profileModal");  
