@@ -173,7 +173,7 @@ async function openProfile(){
       liveLat = null;
       liveLng = null;
     }
-
+   setLiveLocation();
   }catch(err){  
     console.error("Open profile error:", err);  
     alert("❌ Profile load failed");
