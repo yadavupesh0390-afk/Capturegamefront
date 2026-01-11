@@ -407,14 +407,16 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
   <span id="dPrice" class="price-value">0</span>
 </div>
 </div>
-    <select id="vehicleType">
-      <option value="">Select Vehicle</option>
-      <option value="two_wheeler">Two Wheeler</option>
-      <option value="three_wheeler">Three Wheeler</option>
-      <option value="four_wheeler">Four Wheeler</option>
-    </select>
-    <p id="dDelivery"></p>
-    <p id="dTotal"></p>
+    <!-- VEHICLE DROPDOWN -->
+<select id="vehicleType" onchange="updateDelivery()">  
+  <option value="">Select Vehicle</option>  
+  <option value="two_wheeler">Two Wheeler</option>  
+  <option value="three_wheeler">Three Wheeler</option>  
+  <option value="four_wheeler">Four Wheeler</option>  
+</select>
+
+<p id="dDelivery"></p>
+<p id="dTotal"></p>
     <button class="buy-btn" onclick="directBuy(event)">
   <i class="bi bi-lightning-fill"></i>
   Buy Now
