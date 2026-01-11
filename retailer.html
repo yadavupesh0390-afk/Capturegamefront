@@ -922,7 +922,7 @@ async function removeFromCart(productId){
 function updateCartTotal(){
   const vehicle = cartVehicle.value;
   let subtotal = cart.reduce((s,i)=>s+i.price,0);
-  let delivery = vehicle ? deliveryChargeByVehicle(vehicle) : 0;
+  
   cartDelivery.innerText = "Delivery ₹"+delivery;
   cartGrandTotal.innerText = "Total ₹"+(subtotal+delivery);
 }
