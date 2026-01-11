@@ -473,7 +473,8 @@ async function submitDeliveryCode(){
 function closeCodeModal(){ codeModal.style.display="none"; }  
   
 /* INIT */  
-loadOrders();  
-setInterval(loadOrders,8000);  
+loadOrders();
+setInterval(loadOrders,8000);
+setInterval(setLiveLocation, 15000); 
 </script>  </body>  
 </html>
