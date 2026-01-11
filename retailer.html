@@ -1027,7 +1027,6 @@ async function removeFromCart(productId){
   }
 }
 async function updateCartTotal() {
-
   if (!cartVehicle.value || cart.length === 0) {
     cartSubtotal.innerText = "";
     cartDelivery.innerText = "";
@@ -1048,19 +1047,15 @@ async function updateCartTotal() {
     return;
   }
 
-  // ✅ UI update
   cartSubtotal.innerText = `Subtotal ₹${subtotal}`;
   cartDelivery.innerText = `Delivery ₹${deliveryData.retailerPays}`;
-  cartGrandTotal.innerText =
-    `Total ₹${subtotal + deliveryData.retailerPays}`;
+  cartGrandTotal.innerText = `Total ₹${subtotal + deliveryData.retailerPays}`;
 
-  // ✅ IMPORTANT: store for payment
   window.__cartDelivery = {
     subtotal,
     ...deliveryData
   };
 }
-
 async function payCart() {
 
   const vehicle = cartVehicle.value;
