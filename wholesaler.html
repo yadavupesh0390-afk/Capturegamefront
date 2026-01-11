@@ -236,34 +236,52 @@ async function openProfile(){
 
     if (data.success && data.profile) {
 
-      shopName.value   = data.profile.shopName || "";
-      shopMobile.value = data.profile.mobile || "";
-      shopAddress.value= data.profile.address || "";
+      /* ===== BASIC PROFILE ===== */
+      shopName.value    = data.profile.shopName || "";
+      shopMobile.value  = data.profile.mobile || "";
+      shopAddress.value = data.profile.address || "";
 
-      // 🔁 optional local backup
+      /* ===== LOCATION LOAD ===== */
+      if (data.profile.location?.lat && data.profile.location?.lng) {
+        document.getElementById("locationText").value =
+          `${data.profile.location.lat}, ${data.profile.location.lng}`;
+      } else {
+        document.getElementById("locationText").value = "";
+      }
+
+      /* ===== LOCAL BACKUP ===== */
       localStorage.setItem(
         "wholesalerProfile_" + WID,
         JSON.stringify(data.profile)
       );
 
     } else {
-      // agar server par profile na mile
-      shopName.value   = "";
-      shopMobile.value = "";
-      shopAddress.value= "";
+      // ❌ profile nahi mili
+      shopName.value    = "";
+      shopMobile.value  = "";
+      shopAddress.value = "";
+      document.getElementById("locationText").value = "";
     }
 
   } catch (err) {
+
     console.error("Load profile error:", err);
 
-    // 🔴 fallback to local (safe)
+    /* ===== FALLBACK: LOCAL STORAGE ===== */
     const p = JSON.parse(
       localStorage.getItem("wholesalerProfile_" + WID) || "{}"
     );
 
-    shopName.value   = p.shopName || "";
-    shopMobile.value = p.mobile || "";
-    shopAddress.value= p.address || "";
+    shopName.value    = p.shopName || "";
+    shopMobile.value  = p.mobile || "";
+    shopAddress.value = p.address || "";
+
+    if (p.location?.lat && p.location?.lng) {
+      document.getElementById("locationText").value =
+        `${p.location.lat}, ${p.location.lng}`;
+    } else {
+      document.getElementById("locationText").value = "";
+    }
   }
 }
 function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}
