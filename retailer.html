@@ -1152,35 +1152,22 @@ async function sendProfile(payload){
     alert("Server error");
   }
 }
-  function getRetailerLocation(){
-
-  if (!navigator.geolocation) {
-    alert("❌ Location not supported");
-    return;
+  function getRetailerLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude.toFixed(6);
+        const lng = position.coords.longitude.toFixed(6);
+        document.getElementById("profileLocation").value = `${lat}, ${lng}`;
+      },
+      (err) => {
+        alert("Unable to fetch location: " + err.message);
+      }
+    );
+  } else {
+    alert("Geolocation not supported by your browser");
   }
-
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-
-      document.getElementById("profileLocation").value =
-        lat.toFixed(6) + ", " + lng.toFixed(6);
-
-      // optional cache
-      localStorage.setItem(
-        "retailer_location",
-        JSON.stringify({ lat, lng })
-      );
-    },
-    err => {
-      if (err.code === 1) alert("❌ Location permission denied");
-      else if (err.code === 2) alert("❌ Location unavailable");
-      else alert("❌ Location error");
-    },
-    { enableHighAccuracy:true }
-  );
-  }
+}
 // ------------------- NOTIFY -------------------
 setInterval(async()=>{
   const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
