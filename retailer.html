@@ -837,7 +837,58 @@ async function directBuy(e) {
   rzp.open();
 }
 
-  
+  // ------------------- DELIVERY UPDATE ON VEHICLE SELECT -------------------
+async function updateDelivery() {
+  if (!selectedProduct) return; // safety
+
+  const vehicle = vehicleType.value;
+  if (!vehicle) {
+    dDelivery.innerText = "";
+    dTotal.innerText = "";
+    return;
+  }
+
+  // ✅ check retailer location
+  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
+  const wholesalerLoc = selectedProduct.wholesalerLocation;
+
+  if (!retailerLoc || !wholesalerLoc) {
+    dDelivery.innerText = "📍 Location missing";
+    dTotal.innerText = "";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/delivery/calculate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderAmount: selectedProduct.price,
+        vehicleType: vehicle,
+        retailerLocation: retailerLoc,
+        wholesalerLocation: wholesalerLoc
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      dDelivery.innerText = "⚠️ Delivery calculation failed";
+      dTotal.innerText = "";
+      return;
+    }
+
+    // ✅ Update UI
+    dDelivery.innerText = `Delivery ₹${data.retailerPays} (${data.retailerPercent}% retailer)`;
+    const total = selectedProduct.price + data.retailerPays;
+    dTotal.innerText = `Total ₹${total}`;
+
+  } catch (err) {
+    console.error("Delivery fetch error:", err);
+    dDelivery.innerText = "⚠️ Delivery fetch error";
+    dTotal.innerText = "";
+  }
+}
   
   // ------------------- CART -------------------
 async function addToCart(p){
