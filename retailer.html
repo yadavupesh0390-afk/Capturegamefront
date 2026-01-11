@@ -327,8 +327,8 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
 /* ===== CURRENT LOCATION SECTION ===== */
 #profileModal .location-group {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: column; /* vertical layout */
+  gap: 8px;              /* space between input & button */
   margin: 12px 0;
 }
 
@@ -338,28 +338,25 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
   color: #14532d;
 }
 
-#profileModal .location-group div {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-#profileModal input#profileLocation {
-  flex: 1;
+#profileModal .location-group input {
+  width: 100%;
   padding: 12px;
   font-size: 14px;
   border: 1px solid #16a34a;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #f8fafc;
+  box-sizing: border-box;
 }
 
 #profileModal .location-group button {
+  width: 100%;            /* button full width like input */
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
   background: #16a34a;
   color: #fff;
-  border: none;
-  font-size: 14px;
-  border-radius: 8px;
-  padding: 10px 16px;
   cursor: pointer;
   transition: background 0.2s;
 }
