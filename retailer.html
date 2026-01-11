@@ -633,6 +633,28 @@ function openDetail(p){
     });
   };
 
+async function fetchDeliveryEstimate(orderAmount, vehicleType){
+  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
+  const wholesalerLoc = selectedProduct?.wholesalerLocation; // backend se aayega
+
+  if(!retailerLoc || !wholesalerLoc) return;
+
+  const res = await fetch(`${API}/api/delivery/calculate`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      orderAmount,
+      vehicleType,
+      retailerLocation: retailerLoc,
+      wholesalerLocation: wholesalerLoc
+    })
+  });
+
+  return await res.json();
+}
+
+
+  
   /* ================= OPEN MODAL ================= */
   detailModal.style.display = "flex";
 }
