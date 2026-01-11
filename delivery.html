@@ -225,6 +225,30 @@ window.closeProfile = function(){
     modal.style.display = "none";  
   }  
 }  
+
+  let liveLat = null;
+let liveLng = null;
+
+function getLiveLocation(){
+  if(!navigator.geolocation){
+    alert("❌ Location not supported");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      liveLat = pos.coords.latitude;
+      liveLng = pos.coords.longitude;
+
+      document.getElementById("pLocation").value =
+        liveLat.toFixed(6) + ", " + liveLng.toFixed(6);
+    },
+    err=>{
+      alert("❌ Location permission denied");
+    },
+    { enableHighAccuracy:true }
+  );
+}
    
 /* LOAD ORDERS */  
 async function loadOrders(){  
