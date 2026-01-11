@@ -289,15 +289,33 @@ function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.displ
 async function saveWholesalerProfileToServer() {
 
   if (!shopMobile.value.trim()) {
-    alert("Mobile number required");
+    alert("📱 Mobile number required");
     return;
   }
 
+  /* ===== LOCATION READ ===== */
+  let location = null;
+  const locText = document.getElementById("locationText")?.value || "";
+
+  if (locText.includes(",")) {
+    const parts = locText.split(",");
+    const lat = parseFloat(parts[0].trim());
+    const lng = parseFloat(parts[1].trim());
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+      location = { lat, lng };
+    }
+  }
+
+  /* ===== PAYLOAD ===== */
   const payload = {
     wholesalerId: WID,              // 🔑 primary key
     shopName: shopName.value.trim(),
     mobile: shopMobile.value.trim(),
-    address: shopAddress.value.trim()
+    address: shopAddress.value.trim(),
+
+    // 📍 NEW FIELD
+    location: location              // null ya {lat,lng}
   };
 
   try {
@@ -314,13 +332,13 @@ async function saveWholesalerProfileToServer() {
 
     if (data.success) {
 
-      // optional local sync
+      /* ===== LOCAL SYNC ===== */
       localStorage.setItem(
         "wholesalerProfile_" + WID,
         JSON.stringify(payload)
       );
 
-      alert("✅ Profile server par save ho gaya");
+      alert("✅ Profile & location server par save ho gaya");
       closeAll();
 
     } else {
