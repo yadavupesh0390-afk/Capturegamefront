@@ -431,18 +431,20 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
     <h3 style="text-align:center">🧺 My Cart</h3>
     <div id="cartItems" style="margin-top:10px"></div>
     <div style="margin-top:12px">
-      <select id="cartVehicle" onchange="updateCartTotal()">
-  <option value="">🚚 Select Vehicle</option>
-  <option value="two_wheeler">Two Wheeler</option>
-  <option value="three_wheeler">Three Wheeler</option>
-  <option value="four_wheeler">Four Wheeler</option>
-</select>
-    </div>
-    <div style="background:#f8fafc;padding:12px;border-radius:10px;margin-top:12px">
-      <div id="cartSubtotal" class="small"></div>
-      <div id="cartDelivery" class="small"></div>
-      <hr>
-      <b id="cartGrandTotal"></b>
+  <select id="cartVehicle" onchange="updateCartTotal()">
+    <option value="">🚚 Select Vehicle</option>
+    <option value="two_wheeler">Two Wheeler</option>
+    <option value="three_wheeler">Three Wheeler</option>
+    <option value="four_wheeler">Four Wheeler</option>
+  </select>
+</div>
+
+<!-- DELIVERY BOX (hidden initially) -->
+<div id="cartDeliveryBox" style="display:none; background:#f0fdf4; border-left:4px solid #16a34a; padding:12px; border-radius:10px; margin-top:12px; box-shadow:0 4px 10px rgba(0,0,0,0.08)">
+  <div id="cartSubtotal" class="small"></div>
+  <div id="cartDelivery" class="small"></div>
+  <hr>
+  <b id="cartGrandTotal"></b>
     </div>
     <button class="primary" style="margin-top:12px" onclick="payCart()">💳 Pay & Order</button>
     <button onclick="closeAll()">Close</button>
@@ -1022,7 +1024,11 @@ async function removeFromCart(productId){
   }
 }
 async function updateCartTotal() {
+
+  const deliveryBox = document.getElementById("cartDeliveryBox");
+
   if (!cartVehicle.value || cart.length === 0) {
+    deliveryBox.style.display = "none";  // hide box
     cartSubtotal.innerText = "";
     cartDelivery.innerText = "";
     cartGrandTotal.innerText = "";
@@ -1042,10 +1048,15 @@ async function updateCartTotal() {
     return;
   }
 
+  // ✅ Update UI
   cartSubtotal.innerText = `Subtotal ₹${subtotal}`;
   cartDelivery.innerText = `Delivery ₹${deliveryData.retailerPays}`;
   cartGrandTotal.innerText = `Total ₹${subtotal + deliveryData.retailerPays}`;
 
+  // ✅ Show the box
+  deliveryBox.style.display = "block";
+
+  // ✅ store for payment
   window.__cartDelivery = {
     subtotal,
     ...deliveryData
