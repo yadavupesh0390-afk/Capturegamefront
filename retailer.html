@@ -241,10 +241,10 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
   font-size:12px;
   cursor:pointer;
 }
-  /* ===== PROFILE MODAL ===== */
+/* ===== PROFILE MODAL ===== */
 #profileModal .modal-content {
   background: #fff;
-  padding: 20px;
+  padding: 20px 20px 30px 20px;
   width: 90%;
   max-width: 450px;
   border-radius: 15px;
@@ -253,79 +253,122 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
   box-shadow: 0 6px 14px rgba(0,0,0,0.08);
 }
 
+/* Heading */
 #profileModal h3 {
   text-align: center;
-  margin-bottom: 16px;
-  font-size: 20px;
+  margin-bottom: 20px;
+  font-size: 22px;
   color: #14532d;
+  font-weight: 600;
 }
 
+/* Inputs & Textarea */
 #profileModal input,
 #profileModal textarea {
   width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
+  padding: 12px 10px;
+  margin: 10px 0;
+  border-radius: 10px;
   border: 1px solid #ccc;
   font-size: 14px;
   font-family: Poppins, sans-serif;
   box-sizing: border-box;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+#profileModal input:focus,
+#profileModal textarea:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 5px rgba(22,163,74,0.3);
 }
 
 #profileModal textarea {
   resize: vertical;
-  min-height: 60px;
+  min-height: 70px;
 }
 
+/* Buttons */
 #profileModal button.primary {
   background: #16a34a;
   color: #fff;
   border: none;
-  padding: 10px;
+  padding: 12px;
   border-radius: 10px;
   cursor: pointer;
   width: 100%;
-  margin-top: 12px;
-  font-size: 15px;
+  margin-top: 15px;
+  font-size: 16px;
   font-weight: 600;
+  transition: background 0.2s;
+}
+
+#profileModal button.primary:hover {
+  background: #14532d;
 }
 
 #profileModal button:not(.primary) {
   background: #f3f6fb;
   color: #111;
   border: none;
-  padding: 10px;
+  padding: 12px;
   border-radius: 10px;
   cursor: pointer;
   width: 100%;
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 14px;
+  transition: background 0.2s;
+}
+
+#profileModal button:not(.primary):hover {
+  background: #e0e7ff;
+}
+
+/* ===== CURRENT LOCATION SECTION ===== */
+#profileModal .location-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+#profileModal .location-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #14532d;
+}
+
+#profileModal .location-group div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 #profileModal input#profileLocation {
-  background: #f8fafc;
-  border: 1px solid #16a34a;
+  flex: 1;
+  padding: 12px;
   font-size: 14px;
-  padding: 8px;
+  border: 1px solid #16a34a;
   border-radius: 8px;
+  background: #f8fafc;
 }
 
-#profileModal div[style*="display:flex"] button {
+#profileModal .location-group button {
   background: #16a34a;
   color: #fff;
   border: none;
   font-size: 14px;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 16px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-#profileModal div[style*="display:flex"] button:hover {
+#profileModal .location-group button:hover {
   background: #14532d;
 }
 
-/* responsive modal scroll for smaller screens */
+/* Responsive tweaks for small height screens */
 @media (max-height: 500px) {
   #profileModal .modal-content {
     max-height: 90vh;
