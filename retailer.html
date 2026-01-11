@@ -833,30 +833,7 @@ async function directBuy(e) {
   rzp.open();
 }
 
-  async function updateCartTotal(){
-
-  if(!cartVehicle.value || cart.length===0){
-    cartSubtotal.innerText = "";
-    cartDelivery.innerText = "";
-    cartGrandTotal.innerText = "";
-    return;
-  }
-
-  const subtotal = cart.reduce((s,i)=>s+i.price,0);
-
-  const deliveryData = await getDeliveryFromServer({
-    orderAmount: subtotal,
-    vehicleType: cartVehicle.value
-  });
-
-  cartSubtotal.innerText = "Subtotal ₹" + subtotal;
-  cartDelivery.innerText = "Delivery ₹" + deliveryData.retailerPays;
-  cartGrandTotal.innerText =
-    "Total ₹" + (subtotal + deliveryData.retailerPays);
-
-  // cache for payment
-  window.__cartDelivery = deliveryData;
-  }
+  
   
   // ------------------- CART -------------------
 async function addToCart(p){
