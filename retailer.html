@@ -684,11 +684,13 @@ function closeImage(){
 async function directBuy(e) {
   e.preventDefault();
 
+  // 🚚 Vehicle check
   if (!vehicleType.value) {
     alert("🚚 Select vehicle first");
     return;
   }
 
+  // 👤 Retailer profile check
   const retailerProfile = JSON.parse(
     localStorage.getItem("retailerProfile") || "{}"
   );
@@ -698,45 +700,56 @@ async function directBuy(e) {
     return;
   }
 
+  // 📍 Locations
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-const wholesalerLoc = selectedProduct.location; // backend se aayega
+  const wholesalerLoc = selectedProduct.location;
 
-const distanceKm = calculateDistanceKm(
-  retailerLoc.lat,
-  retailerLoc.lng,
-  wholesalerLoc.lat,
-  wholesalerLoc.lng
-);
+  if (!retailerLoc || !wholesalerLoc) {
+    alert("📍 Location missing");
+    return;
+  }
 
-const timeMinutes = Math.ceil(distanceKm * 4); // approx
+  // ===============================
+  // ✅ DELIVERY FROM BACKEND
+  // ===============================
+  const deliveryRes = await fetch(`${API}/api/delivery/calculate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      orderAmount: selectedProduct.price,
+      vehicleType: vehicleType.value,
+      retailerLocation: retailerLoc,
+      wholesalerLocation: wholesalerLoc
+    })
+  });
 
-const deliveryData = calculateDeliveryCharge({
-  orderAmount: selectedProduct.price,
-  vehicleType: vehicleType.value,
-  distanceKm,
-  timeMinutes
-});
+  const deliveryData = await deliveryRes.json();
 
-if(deliveryData.error){
-  alert(deliveryData.error);
-  return;
-}
+  if (!deliveryData.success) {
+    alert(deliveryData.message || "Delivery calculation failed");
+    return;
+  }
 
-dDelivery.innerText =
-  `Delivery ₹${deliveryData.retailerPays}
-   (${deliveryData.retailerPercent}% retailer)`;
+  // 🧾 UI update
+  dDelivery.innerText =
+    `Delivery ₹${deliveryData.retailerPays}
+     (${deliveryData.retailerPercent}% retailer)`;
 
-dTotal.innerText =
-  `Total ₹${selectedProduct.price + deliveryData.retailerPays}`;
-  
+  const totalAmount =
+    selectedProduct.price + deliveryData.retailerPays;
 
+  dTotal.innerText = `Total ₹${totalAmount}`;
+
+  // ===============================
+  // ✅ CREATE ORDER + PAYMENT
+  // ===============================
   const res = await fetch(`${API}/api/orders/pay-and-create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      amount: total,
+      amount: totalAmount,
       notes: {
-        type: "direct", // ✅🔥 MOST IMPORTANT
+        type: "direct", // 🔥 IMPORTANT
 
         productId: selectedProduct._id,
         productName: selectedProduct.productName,
@@ -752,17 +765,26 @@ dTotal.innerText =
         retailerAddress: retailerProfile.address,
 
         vehicleType: vehicleType.value,
-        deliveryCharge: delivery
+
+        // ✅ DELIVERY BREAKUP (VERY IMPORTANT)
+        deliveryCharge: deliveryData.totalDelivery,
+        retailerDeliveryPay: deliveryData.retailerPays,
+        wholesalerDeliveryPay: deliveryData.wholesalerPays,
+        distanceKm: deliveryData.distanceKm
       }
     })
   });
 
   const data = await res.json();
+
   if (!data.success) {
     alert("❌ Order create failed");
     return;
   }
 
+  // ===============================
+  // ✅ RAZORPAY
+  // ===============================
   const rzp = new Razorpay({
     key: data.key,
     amount: data.amount,
