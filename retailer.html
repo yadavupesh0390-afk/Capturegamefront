@@ -941,9 +941,9 @@ async function payCart() {
     return;
   }
 
-  const delivery = deliveryChargeByVehicle(vehicle);
+  
   const subtotal = cart.reduce((s, i) => s + i.price, 0);
-  const total = subtotal + delivery;
+  
 
   try {
     // 🔹 STEP 1: CREATE PAYMENT
