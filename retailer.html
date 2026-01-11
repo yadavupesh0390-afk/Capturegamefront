@@ -684,9 +684,11 @@ function closeImage(){
 
   async function getDeliveryFromServer({ orderAmount, vehicleType }) {
 
-  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
+  const retailerLoc =
+    JSON.parse(localStorage.getItem("retailer_location"));
+
   const wholesalerLoc =
-    selectedProduct?.location || selectedProduct?.wholesalerLocation;
+    selectedProduct.wholesalerLocation;
 
   if (!retailerLoc || !wholesalerLoc) {
     throw new Error("Location missing");
@@ -704,7 +706,7 @@ function closeImage(){
   });
 
   return await res.json();
-  }
+}
 async function directBuy(e) {
   e.preventDefault();
 
