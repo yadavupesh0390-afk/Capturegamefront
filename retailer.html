@@ -459,12 +459,12 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
     <input id="profileMobile" placeholder="Mobile">
     <textarea id="profileAddress" placeholder="Address"></textarea>
 
-    <!-- ✅ Current Location -->
-    <div style="margin:8px 0; display:flex; gap:6px; align-items:center;">
-      <input id="profileLocation" placeholder="📍 Current Location (lat, lng)" readonly style="flex:1;">
-      <button style="padding:8px 12px; cursor:pointer;" onclick="getRetailerLocation()">📌 Get Location</button>
-    </div>
-
+    <!-- ✅ Current Location (Modified) -->
+<div class="location-group">
+  <label>📍 Current Location (lat, lng)</label>
+  <input id="profileLocation" placeholder="Fetching location..." readonly>
+  <button onclick="getRetailerLocation()">📌 Set Current Location</button>
+</div>
     <button class="primary" onclick="saveProfile()">Save</button>
     <button onclick="closeAll()">Close</button>
   </div>
