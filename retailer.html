@@ -676,7 +676,36 @@ async function directBuy(e) {
     return;
   }
 
-  const delivery = deliveryChargeByVehicle(vehicleType.value);
+  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
+const wholesalerLoc = selectedProduct.location; // backend se aayega
+
+const distanceKm = calculateDistanceKm(
+  retailerLoc.lat,
+  retailerLoc.lng,
+  wholesalerLoc.lat,
+  wholesalerLoc.lng
+);
+
+const timeMinutes = Math.ceil(distanceKm * 4); // approx
+
+const deliveryData = calculateDeliveryCharge({
+  orderAmount: selectedProduct.price,
+  vehicleType: vehicleType.value,
+  distanceKm,
+  timeMinutes
+});
+
+if(deliveryData.error){
+  alert(deliveryData.error);
+  return;
+}
+
+dDelivery.innerText =
+  `Delivery ₹${deliveryData.retailerPays}
+   (${deliveryData.retailerPercent}% retailer)`;
+
+dTotal.innerText =
+  `Total ₹${selectedProduct.price + deliveryData.retailerPays}`;
   const total = selectedProduct.price + delivery;
 
   const res = await fetch(`${API}/api/orders/pay-and-create`, {
