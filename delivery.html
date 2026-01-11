@@ -244,24 +244,47 @@ window.closeProfile = function(){
   let liveLat = null;
 let liveLng = null;
 
-function getLiveLocation(){
+async function setLiveLocation(){
   if(!navigator.geolocation){
-    alert("❌ Location not supported");
+    console.log("Geolocation not supported");
     return;
   }
 
   navigator.geolocation.getCurrentPosition(
-    pos=>{
-      liveLat = pos.coords.latitude;
-      liveLng = pos.coords.longitude;
+    async (pos)=>{
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
 
-      document.getElementById("pLocation").value =
-        liveLat.toFixed(6) + ", " + liveLng.toFixed(6);
+      // 🔥 Location box me dikhao
+      if(document.getElementById("liveLocationBox")){
+        liveLocationBox.value = lat.toFixed(6)+", "+lng.toFixed(6);
+      }
+
+      // 🔥 Server pe bhejo
+      try{
+        await fetch(`${API}/api/delivery/profile/save`,{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer "+TOKEN
+          },
+          body: JSON.stringify({
+            deliveryBoyId: DBID,
+            location:{ lat, lng }
+          })
+        });
+      }catch(err){
+        console.log("Location save error");
+      }
     },
-    err=>{
-      alert("❌ Location permission denied");
+    (err)=>{
+      console.log("Location error", err.message);
     },
-    { enableHighAccuracy:true }
+    {
+      enableHighAccuracy:true,
+      maximumAge:0,
+      timeout:10000
+    }
   );
 }
    
