@@ -321,9 +321,17 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
 <div class="modal" id="profileModal">
   <div class="modal-content">
     <h3>Retailer Profile</h3>
+
     <input id="profileName" placeholder="Name">
     <input id="profileMobile" placeholder="Mobile">
     <textarea id="profileAddress" placeholder="Address"></textarea>
+
+    <!-- ✅ Current Location -->
+    <div style="margin:8px 0; display:flex; gap:6px; align-items:center;">
+      <input id="profileLocation" placeholder="📍 Current Location (lat, lng)" readonly style="flex:1;">
+      <button style="padding:8px 12px; cursor:pointer;" onclick="getCurrentLocation()">📌 Get Location</button>
+    </div>
+
     <button class="primary" onclick="saveProfile()">Save</button>
     <button onclick="closeAll()">Close</button>
   </div>
