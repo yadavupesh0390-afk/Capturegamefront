@@ -255,13 +255,13 @@ async function setLiveLocation(){
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
 
-      // 🔥 Location box me dikhao
-      if(document.getElementById("pLocation").value =
-  lat.toFixed(6) + ", " + lng.toFixed(6);){
-        liveLocationBox.value = lat.toFixed(6)+", "+lng.toFixed(6);
+      // 📍 BOX ME SHOW
+      const locInput = document.getElementById("pLocation");
+      if(locInput){
+        locInput.value = lat.toFixed(6) + ", " + lng.toFixed(6);
       }
 
-      // 🔥 Server pe bhejo
+      // 🌍 SERVER PE SAVE
       try{
         await fetch(`${API}/api/delivery/profile/save`,{
           method:"POST",
@@ -279,7 +279,7 @@ async function setLiveLocation(){
       }
     },
     (err)=>{
-      console.log("Location error", err.message);
+      console.log("Location error:", err.message);
     },
     {
       enableHighAccuracy:true,
