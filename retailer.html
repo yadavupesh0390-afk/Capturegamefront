@@ -920,7 +920,7 @@ async function openOrderStatus(){
 // ------------------- PROFILE -------------------
 /* PROFILE */
 
-async function openRetailerProfile(){
+async function openRetailerProfile() {
 
   profileModal.style.display = "flex";
 
@@ -940,19 +940,37 @@ async function openRetailerProfile(){
       profileMobile.value  = data.profile.mobile || "";
       profileAddress.value = data.profile.address || "";
 
-      // ✅ IMPORTANT — cache for order/delivery
+      // ✅ Current Location
+      if(data.profile.location){
+        profileLocation.value =
+          data.profile.location.lat.toFixed(6) + ", " +
+          data.profile.location.lng.toFixed(6);
+      } else {
+        profileLocation.value = "";
+      }
+
+      // ✅ Cache for order/delivery
       localStorage.setItem(
         "retailerProfile",
         JSON.stringify(data.profile)
       );
 
-    }else{
-      profileName.value="";
-      profileMobile.value="";
-      profileAddress.value="";
+      // ✅ Cache location separately (optional)
+      if(data.profile.location){
+        localStorage.setItem(
+          "retailer_location",
+          JSON.stringify(data.profile.location)
+        );
+      }
+
+    } else {
+      profileName.value = "";
+      profileMobile.value = "";
+      profileAddress.value = "";
+      profileLocation.value = "";
     }
 
-  }catch(err){
+  } catch(err){
     alert("Server error");
   }
 }
