@@ -69,22 +69,34 @@ body{margin:0;background:#eef2f7}
     <b>ID:</b> <span id="dbId"></span><br>  
     <span class="badge green">ACTIVE</span>  
   </div>    <div id="orders"></div>  
-</div>  <!-- PROFILE MODAL -->  <div class="modal" id="profileModal">  
- <div class="modal-box">  
-  <h3>👤 Delivery Profile</h3>  
-  <input id="pName" placeholder="Full Name">  
-  <input id="pMobile" placeholder="Mobile Number">  
-  <select id="pVehicle">  
-   <option value="">Vehicle Type</option>  
-   <option value="two_wheeler">Two Wheeler</option>  
-   <option value="three_wheeler">Three Wheeler</option>  
-   <option value="four_wheeler">Four Wheeler</option>  
-  </select>  
-  <input id="pVehicleNo" placeholder="Vehicle Number">  
-  <input id="pCity" placeholder="City">  
-  <button class="btn accept" onclick="saveProfile()">Save Profile</button>  
-  <button class="btn" onclick="closeProfile()">Close</button>  
- </div>  
+</div>  <!-- PROFILE MODAL -->
+<div class="modal" id="profileModal">
+ <div class="modal-box">
+  <h3>👤 Delivery Profile</h3>
+
+  <input id="pName" placeholder="Full Name">
+  <input id="pMobile" placeholder="Mobile Number">
+
+  <select id="pVehicle">
+   <option value="">Vehicle Type</option>
+   <option value="two_wheeler">Two Wheeler</option>
+   <option value="three_wheeler">Three Wheeler</option>
+   <option value="four_wheeler">Four Wheeler</option>
+  </select>
+
+  <input id="pVehicleNo" placeholder="Vehicle Number">
+  <input id="pCity" placeholder="City">
+
+  <!-- ✅ LIVE LOCATION -->
+  <div class="location-group">
+    <label>📍 Live Location (lat, lng)</label>
+    <input id="pLocation" placeholder="Live location not set" readonly>
+    <button class="btn accept" onclick="getLiveLocation()">📡 Set Live Location</button>
+  </div>
+
+  <button class="btn accept" onclick="saveProfile()">Save Profile</button>
+  <button class="btn" onclick="closeProfile()">Close</button>
+ </div>
 </div>  <!-- DELIVERY CODE MODAL -->  <div class="modal" id="codeModal">  
  <div class="modal-box">  
   <h3>🔐 Enter Delivery Code</h3>  
