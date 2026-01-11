@@ -352,25 +352,40 @@ async function saveWholesalerProfileToServer() {
 }
 
  function getCurrentLocation(){
-  if(!navigator.geolocation){
-    alert("❌ Location not supported");
+
+  if (!navigator.geolocation) {
+    alert("❌ Location not supported in this device");
     return;
   }
 
+  // optional: loading feel
+  const locInput = document.getElementById("locationText");
+  if (locInput) locInput.value = "📍 Fetching location...";
+
   navigator.geolocation.getCurrentPosition(
-    pos=>{
+    (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
 
-      document.getElementById("locationText").value =
-        lat.toFixed(6)+", "+lng.toFixed(6);
+      if (locInput) {
+        locInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      }
+
+      console.log("📍 Location set:", lat, lng);
     },
-    ()=>{
-      alert("❌ Location permission denied");
+    (err) => {
+      console.error("Location error:", err);
+      alert("❌ Location permission denied or unavailable");
+
+      if (locInput) locInput.value = "";
     },
-    { enableHighAccuracy:true }
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    }
   );
- } 
+}
 
 async function loadCategories(){
 
