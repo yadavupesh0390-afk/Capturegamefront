@@ -728,8 +728,7 @@ async function directBuy(e) {
 
   // 📍 Locations
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-  const wholesalerLoc = selectedProduct.location;
-
+  const wholesalerLoc = selectedProduct.wholesalerLocation;
   if (!retailerLoc || !wholesalerLoc) {
     alert("📍 Location missing");
     return;
