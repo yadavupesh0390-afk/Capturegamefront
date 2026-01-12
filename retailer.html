@@ -588,78 +588,60 @@ function openCategory(categoryId, wid){
 
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p) {
-  // 🔥 DEEP COPY (NO STALE LOCATION)
-  const selectedProduct = JSON.parse(JSON.stringify(p));
+
+  // ✅ GLOBAL variable (VERY IMPORTANT)
+  selectedProduct = JSON.parse(JSON.stringify(p));
 
   if (!selectedProduct.wholesalerLocation) {
     console.warn("⚠️ Wholesaler location missing", selectedProduct);
   }
 
-  // Modal show
-  const detailModal = document.getElementById("detailModal");
-  if (detailModal) detailModal.style.display = "flex";
+  document.getElementById("detailModal").style.display = "flex";
 
-  /* ================= GET ELEMENTS SAFELY ================= */
-  const dName       = document.getElementById("dName");
-  const dPrice      = document.getElementById("dPrice");
-  const dDesc       = document.getElementById("dDesc");
-  const dImages     = document.getElementById("dImages");
-  const dDots       = document.getElementById("dDots");
-  const deliveryBox = document.getElementById("deliveryBox");
-  const deliveryText= document.getElementById("deliveryText");
-  const totalText   = document.getElementById("totalText");
-  const vehicleType = document.getElementById("vehicleType");
-  const descToggle  = document.getElementById("descToggle");
+  const dName   = document.getElementById("dName");
+  const dPrice  = document.getElementById("dPrice");
+  const dDesc   = document.getElementById("dDesc");
+  const dImages = document.getElementById("dImages");
+  const dDots   = document.getElementById("dDots");
+  const vehicle = document.getElementById("vehicleType");
+  const dDelivery = document.getElementById("dDelivery");
+  const dTotal = document.getElementById("dTotal");
+  const descToggle = document.getElementById("descToggle");
 
-  /* ================= BASIC DETAILS ================= */
-  if (dName)  dName.innerText  = selectedProduct.productName || "";
-  if (dPrice) dPrice.innerText = "Price ₹" + (selectedProduct.price || 0);
+  dName.innerText  = selectedProduct.productName || "";
+  dPrice.innerText = "₹" + (selectedProduct.price || 0);
 
-  /* ================= DESCRIPTION RESET ================= */
-  if (dDesc) {
-    dDesc.innerText = selectedProduct.detail || "No description available";
-    dDesc.classList.add("short");
-  }
-  if (descToggle) descToggle.innerText = "More ⬇";
+  dDesc.innerText = selectedProduct.detail || "No description";
+  dDesc.classList.add("short");
+  descToggle.innerText = "More ⬇";
 
-  /* ================= DELIVERY RESET ================= */
-  if (deliveryBox) deliveryBox.style.display = "none";
-  if (deliveryText) deliveryText.innerText = "";
-  if (totalText)    totalText.innerText = "";
-  if (vehicleType)  vehicleType.value = "";
+  dDelivery.innerText = "";
+  dTotal.innerText = "";
+  vehicle.value = "";
 
-  /* ================= MULTIPLE IMAGES ================= */
-  if (dImages) dImages.innerHTML = "";
-  if (dDots)   dDots.innerHTML = "";
+  dImages.innerHTML = "";
+  dDots.innerHTML = "";
 
-  const images = (selectedProduct.images && selectedProduct.images.length)
+  const images = selectedProduct.images?.length
     ? selectedProduct.images
-    : (selectedProduct.image ? [selectedProduct.image] : []);
+    : selectedProduct.image ? [selectedProduct.image] : [];
 
   images.forEach((img, i) => {
-    if(dImages) dImages.innerHTML += `
-      <img 
-        src="${img}" 
-        onclick="openImage('${img}')"
-        style="min-width:100%;object-fit:contain;cursor:zoom-in"
-      >
+    dImages.innerHTML += `
+      <img src="${img}" onclick="openImage('${img}')"
+           style="min-width:100%;object-fit:contain">
     `;
-    if(dDots) dDots.innerHTML += `<div class="dot ${i === 0 ? "active" : ""}"></div>`;
+    dDots.innerHTML += `<div class="dot ${i === 0 ? "active" : ""}"></div>`;
   });
 
-  /* ================= DOT ACTIVE ON SCROLL ================= */
-  if(dImages && dDots) {
-    dImages.onscroll = () => {
-      const index = Math.round(dImages.scrollLeft / dImages.clientWidth);
-      [...dDots.children].forEach((dot, i) => {
-        dot.classList.toggle("active", i === index);
-      });
-    };
-  }
+  dImages.onscroll = () => {
+    const index = Math.round(dImages.scrollLeft / dImages.clientWidth);
+    [...dDots.children].forEach((dot, i) =>
+      dot.classList.toggle("active", i === index)
+    );
+  };
 
-  /* ================= DEBUG (VERY IMPORTANT) ================= */
-  console.log("📦 Product:", selectedProduct.productName);
-  console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
+  console.log("✅ openDetail OK:", selectedProduct.productName);
 }
 async function fetchDeliveryEstimate(orderAmount, vehicleType){
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
