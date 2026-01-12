@@ -353,25 +353,29 @@ async function directBuy(e){
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         amount: total,
-        notes:{
-          type:"direct",
+        notes: {
+  type: "direct",
 
-          productId: selectedProduct._id,
-          productName: selectedProduct.productName,
-          price: selectedProduct.price,
+  productId: selectedProduct._id,
+  productName: selectedProduct.productName,
+  price: selectedProduct.price,
 
-          wholesalerId: selectedProduct.wholesalerId,
-          wholesalerName: selectedProduct.shopName,
-          wholesalerMobile: selectedProduct.mobile,
-          wholesalerAddress: selectedProduct.address,
+  wholesalerId: selectedProduct.wholesalerId,
+  wholesalerName: selectedProduct.shopName,
+  wholesalerMobile: selectedProduct.mobile,
+  wholesalerAddress: selectedProduct.address,
 
-          retailerName: retailerProfile.name,
-          retailerMobile: retailerProfile.mobile,
-          retailerAddress: retailerProfile.address,
+  retailerName: retailerProfile.name,
+  retailerMobile: retailerProfile.mobile,
+  retailerAddress: retailerProfile.address,
 
-          vehicleType: vehicle,
-          deliveryCharge: delivery
-        }
+  vehicleType: vehicle,
+
+  // ✅ MUST MATCH BACKEND
+  totalDelivery: lastDeliveryCharge,
+  retailerPays: lastDeliveryCharge,
+  wholesalerPays: 0
+}
       })
     });
 
