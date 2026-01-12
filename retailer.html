@@ -588,8 +588,6 @@ function openCategory(categoryId, wid){
 
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
-
-  // 🔥 DEEP COPY (NO STALE LOCATION)
   selectedProduct = JSON.parse(JSON.stringify(p));
 
   if(!selectedProduct.wholesalerLocation){
@@ -608,10 +606,9 @@ function openDetail(p){
   document.getElementById("descToggle").innerText = "More ⬇";
 
   /* ================= DELIVERY RESET ================= */
-  document.getElementById("deliveryBox").style.display = "none";
-  document.getElementById("deliveryText").innerText = "";
-  document.getElementById("totalText").innerText = "";
-  document.getElementById("vehicleType").value = "";
+  dDelivery.innerText = "";
+  dTotal.innerText = "";
+  vehicleType.value = "";
 
   /* ================= MULTIPLE IMAGES ================= */
   dImages.innerHTML = "";
@@ -635,22 +632,18 @@ function openDetail(p){
     `;
   });
 
-  /* ================= DOT ACTIVE ON SCROLL ================= */
   dImages.onscroll = () => {
     const index = Math.round(
       dImages.scrollLeft / dImages.clientWidth
     );
-
     [...dDots.children].forEach((dot, i) => {
       dot.classList.toggle("active", i === index);
     });
   };
 
-  /* ================= DEBUG (VERY IMPORTANT) ================= */
   console.log("📦 Product:", selectedProduct.productName);
   console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
 }
-
 async function fetchDeliveryEstimate(orderAmount, vehicleType){
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
   const wholesalerLoc = selectedProduct?.wholesalerLocation; // backend se aayega
