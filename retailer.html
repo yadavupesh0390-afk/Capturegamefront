@@ -588,7 +588,15 @@ function openCategory(categoryId, wid){
 
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
-  selectedProduct = p;
+  selectedProduct = JSON.parse(JSON.stringify(p));
+
+  // ❗ Force refresh wholesaler location
+  if(!selectedProduct.wholesalerLocation){
+    console.warn("Wholesaler location missing for this product");
+  }
+
+  document.getElementById("detailModal").style.display="flex";
+}
 
   /* ================= BASIC DETAILS ================= */
   dName.innerText  = p.productName || "";
