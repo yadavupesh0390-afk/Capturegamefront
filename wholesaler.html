@@ -543,16 +543,20 @@ async function addProduct(){
       "Authorization":"Bearer "+TOKEN
     },
     body: JSON.stringify({
-      wholesalerId: WID,
-      productName: pname.value,
-      price: pprice.value,
-      detail: pdetail.value,
-      images,
-      category,
-      shopName: prof.shopName,
-      mobile: prof.mobile,
-      address: prof.address
-    })
+  wholesalerId: WID,
+  productName: pname.value,
+  price: pprice.value,
+  detail: pdetail.value,
+  images,
+  category,
+
+  shopName: prof.shopName,
+  mobile: prof.mobile,
+  address: prof.address,
+
+  // ✅ ADD THIS
+  wholesalerLocation: prof.location || null
+})
   });
 
   const d = await res.json();
