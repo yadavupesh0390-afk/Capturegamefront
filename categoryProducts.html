@@ -262,7 +262,15 @@ async function addToCart(p){
 }
 
 
-  async function updateDelivery(){
+  let deliveryTimer = null;
+
+function updateDelivery(){
+  clearTimeout(deliveryTimer);
+  deliveryTimer = setTimeout(runDeliveryCalc, 400); // debounce
+}
+
+async function runDeliveryCalc(){
+
   if(!selectedProduct) return;
 
   const vehicle = document.getElementById("vehicleType").value;
@@ -272,17 +280,34 @@ async function addToCart(p){
 
   if(!vehicle){
     box.style.display = "none";
+    lastDeliveryCharge = 0;
     return;
   }
 
-  // 🔹 Retailer & Wholesaler location
-  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-  const wholesalerLoc = selectedProduct.wholesalerLocation;
+  // ✅ Retailer location (safe fallback)
+  const retailerProfile =
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-  if(!retailerLoc || !wholesalerLoc){
+  const retailerLoc =
+    JSON.parse(localStorage.getItem("retailer_location")) ||
+    retailerProfile.location;
+
+  // ✅ Wholesaler location (safe fallback)
+  const wholesalerLoc =
+    selectedProduct.wholesalerLocation ||
+    selectedProduct.location;
+
+  // ❌ Location validation
+  if(
+    !retailerLoc?.lat ||
+    !retailerLoc?.lng ||
+    !wholesalerLoc?.lat ||
+    !wholesalerLoc?.lng
+  ){
     box.style.display = "block";
     dText.innerText = "📍 Location missing";
     tText.innerText = "";
+    lastDeliveryCharge = 0;
     return;
   }
 
@@ -291,7 +316,7 @@ async function addToCart(p){
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        orderAmount: selectedProduct.price,
+        orderAmount: Number(selectedProduct.price),
         vehicleType: vehicle,
         retailerLocation: retailerLoc,
         wholesalerLocation: wholesalerLoc
@@ -301,29 +326,37 @@ async function addToCart(p){
     const data = await res.json();
 
     if(!data.success){
+      box.style.display = "block";
       dText.innerText = "❌ Delivery calculation failed";
       tText.innerText = "";
-      box.style.display = "block";
+      lastDeliveryCharge = 0;
       return;
     }
 
-    // ✅ SHOW RESULT
+    // ✅ SAVE FOR PAYMENT
+    lastDeliveryCharge = Number(data.retailerPays);
+
+    // ✅ SHOW DELIVERY
     box.style.display = "block";
-dText.innerText =
+    dText.innerText =
 `🚚 Delivery ₹${data.totalDelivery}
-(Retailer Pays ₹${data.retailerPays},
-${data.retailerPercent}% of base)
-📍 ${data.distanceKm ?? 0} km`; 
-    const total = selectedProduct.price + data.retailerPays;
+(Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)
+⏱️ ${data.timeMinutes} min
+📍 ${data.distanceKm} km`;
+
+    const total =
+      Number(selectedProduct.price) + Number(data.retailerPays);
+
     tText.innerText = `💰 Total ₹${total}`;
 
   }catch(err){
-    console.error(err);
+    console.error("Delivery calc error:", err);
     box.style.display = "block";
-    dText.innerText = "⚠️ Server error";
+    dText.innerText = "⚠️ Server error (check location)";
     tText.innerText = "";
+    lastDeliveryCharge = 0;
   }
-  }
+}
 // ---------------- DIRECT BUY ----------------
 async function directBuy(e){
   e.preventDefault();
