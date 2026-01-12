@@ -588,51 +588,61 @@ function openCategory(categoryId, wid){
 
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
-selectedProduct = p;
+  selectedProduct = p;
 
-/* ================= BASIC DETAILS ================= */
-dName.innerText  = p.productName || "";
-dPrice.innerText = "Price ₹" + (p.price || 0);
+  /* ================= BASIC DETAILS ================= */
+  dName.innerText  = p.productName || "";
+  dPrice.innerText = "₹" + (p.price || 0);
 
-/* ================= DESCRIPTION (READ MORE RESET) ================= */
-dDesc.innerText = p.detail || "No description available";
-dDesc.classList.add("short");
-document.getElementById("descToggle").innerText = "More ⬇";
+  /* ================= DESCRIPTION ================= */
+  dDesc.innerText = p.detail || "No description available";
+  dDesc.classList.add("short");
+  document.getElementById("descToggle").innerText = "More ⬇";
 
-/* ================= DELIVERY RESET ================= */
-dDelivery.innerText = "";
-dTotal.innerText = "";
-vehicleType.value = "";
+  /* ================= DELIVERY RESET ================= */
+  dDelivery.innerText = "";
+  dTotal.innerText = "";
+  vehicleType.value = "";
 
-/* ================= MULTIPLE IMAGES ================= */
-dImages.innerHTML = "";
-dDots.innerHTML   = "";
+  /* ================= IMAGES RESET ================= */
+  dImages.innerHTML = "";
+  dDots.innerHTML   = "";
 
-const images = (p.images && p.images.length)
-? p.images
-: (p.image ? [p.image] : []);
+  const images = (p.images && p.images.length)
+    ? p.images
+    : (p.image ? [p.image] : []);
 
-images.forEach((img, i) => {
-dImages.innerHTML +=   <img    src="${img}"    onclick="openImage('${img}')"   style="min-width:100%;object-fit:contain;cursor:zoom-in"   >  ;
+  images.forEach((img, i) => {
 
-dDots.innerHTML += `  
-  <div class="dot ${i === 0 ? "active" : ""}"></div>  
-`;
+    /* ✅ IMAGE ADD (FIXED) */
+    dImages.innerHTML += `
+      <img 
+        src="${img}" 
+        onclick="openImage('${img}')"
+        style="min-width:100%;object-fit:contain;cursor:zoom-in"
+      >
+    `;
 
-});
+    /* DOTS */
+    dDots.innerHTML += `
+      <div class="dot ${i === 0 ? "active" : ""}"></div>
+    `;
+  });
 
-/* ================= DOT ACTIVE ON SCROLL ================= */
-dImages.onscroll = () => {
-const index = Math.round(
-dImages.scrollLeft / dImages.clientWidth
-);
+  /* ================= DOT ACTIVE ON SCROLL ================= */
+  dImages.onscroll = () => {
+    const index = Math.round(
+      dImages.scrollLeft / dImages.clientWidth
+    );
 
-[...dDots.children].forEach((dot, i) => {  
-  dot.classList.toggle("active", i === index);  
-});
+    [...dDots.children].forEach((dot, i) => {
+      dot.classList.toggle("active", i === index);
+    });
+  };
 
-};
-
+  /* ================= OPEN MODAL ================= */
+  document.getElementById("detailModal").style.display = "flex";
+}
 
 async function fetchDeliveryEstimate(orderAmount, vehicleType){
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
