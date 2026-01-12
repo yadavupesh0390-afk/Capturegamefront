@@ -655,7 +655,7 @@ function openDetail(p){
 
 async function fetchDeliveryEstimate(orderAmount, vehicleType){
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-  const wholesalerLoc = selectedProduct?.wholesalerLocation; // backend se aayega
+  const wholesalerLoc = product.wholesalerLocation; // API se live aaya // backend se aayega
 
   if(!retailerLoc || !wholesalerLoc) return;
 
