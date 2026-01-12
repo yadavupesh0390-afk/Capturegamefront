@@ -107,15 +107,45 @@ body{margin:0;background:#f3f6fb}
     <div class="price-value" id="dPrice"></div>
 
     <select id="vehicleType">
-      <option value="">Select Vehicle</option>
-      <option value="two_wheeler">Two Wheeler</option>
-      <option value="three_wheeler">Three Wheeler</option>
-      <option value="four_wheeler">Four Wheeler</option>
-    </select>
+      <div id="deliveryBox" style="
+  margin-top:12px;
+  padding:12px;
+  border-radius:12px;
+  background:#f8fafc;
+  box-shadow:0 6px 14px rgba(0,0,0,.08);
+  display:none;
+">
+  <div id="deliveryText">Delivery: ₹0</div>
+  <div id="totalText" style="font-weight:600;margin-top:4px">
+    Total: ₹0
+  </div>
+      </div>
+      
+      <select id="vehicleType" onchange="updateDelivery()">
+  <option value="">Select Vehicle</option>
+  <option value="two_wheeler">Two Wheeler</option>
+  <option value="three_wheeler">Three Wheeler</option>
+  <option value="four_wheeler">Four Wheeler</option>
+</select>
 
-    <br><br>
-    <button class="buy-btn" onclick="directBuy(event)">⚡ Buy Now</button>
-    <button onclick="closeAll()">❌ Close</button>
+<!-- ✅ DELIVERY BOX ALAG -->
+<div id="deliveryBox" style="
+  margin-top:12px;
+  padding:12px;
+  border-radius:12px;
+  background:#f8fafc;
+  box-shadow:0 6px 14px rgba(0,0,0,.08);
+  display:none;
+">
+  <div id="deliveryText">🚚 Delivery: ₹0</div>
+  <div id="totalText" style="font-weight:600;margin-top:4px">
+    💰 Total: ₹0
+  </div>
+</div>
+
+<br>
+<button class="buy-btn" onclick="directBuy(event)">⚡ Buy Now</button>
+<button onclick="closeAll()">❌ Close</button>
   </div>
 </div>
 
