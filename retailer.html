@@ -1388,36 +1388,34 @@ async function sendProfile(payload){
     const data = await res.json();
 
     if(data.success){
-      // ✅ Save to localStorage
-      localStorage.setItem("retailerProfile", JSON.stringify(payload));
-      if(payload.location){
-        localStorage.setItem("retailer_location", JSON.stringify(payload.location));
+
+      // ✅ ALWAYS SAVE SERVER PROFILE
+      localStorage.setItem(
+        "retailerProfile",
+        JSON.stringify(data.profile)
+      );
+
+      // ✅ HANDLE LOCATION SAFELY
+      if(data.profile.location){
+        localStorage.setItem(
+          "retailer_location",
+          JSON.stringify(data.profile.location)
+        );
+      } else {
+        // 🔥 IMPORTANT: remove old location
+        localStorage.removeItem("retailer_location");
       }
 
-      alert("✅ Profile server me save ho gaya");
+      alert("✅ Profile save ho gaya");
       closeAll();
+
     } else {
       alert("❌ Save failed");
     }
+
   }catch(err){
     console.error("SaveProfile Error:", err);
     alert("Server error");
-  }
-}
-  function getRetailerLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude.toFixed(6);
-        const lng = position.coords.longitude.toFixed(6);
-        document.getElementById("profileLocation").value = `${lat}, ${lng}`;
-      },
-      (err) => {
-        alert("Unable to fetch location: " + err.message);
-      }
-    );
-  } else {
-    alert("Geolocation not supported by your browser");
   }
 }
 // ------------------- NOTIFY -------------------
