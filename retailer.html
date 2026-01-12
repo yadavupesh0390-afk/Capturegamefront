@@ -588,33 +588,40 @@ function openCategory(categoryId, wid){
 
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
-  selectedProduct = p;
+
+  // 🔥 DEEP COPY (NO STALE LOCATION)
+  selectedProduct = JSON.parse(JSON.stringify(p));
+
+  if(!selectedProduct.wholesalerLocation){
+    console.warn("⚠️ Wholesaler location missing", selectedProduct);
+  }
+
+  document.getElementById("detailModal").style.display = "flex";
 
   /* ================= BASIC DETAILS ================= */
-  dName.innerText  = p.productName || "";
-  dPrice.innerText = "₹" + (p.price || 0);
+  dName.innerText  = selectedProduct.productName || "";
+  dPrice.innerText = "Price ₹" + (selectedProduct.price || 0);
 
-  /* ================= DESCRIPTION ================= */
-  dDesc.innerText = p.detail || "No description available";
+  /* ================= DESCRIPTION RESET ================= */
+  dDesc.innerText = selectedProduct.detail || "No description available";
   dDesc.classList.add("short");
   document.getElementById("descToggle").innerText = "More ⬇";
 
   /* ================= DELIVERY RESET ================= */
-  dDelivery.innerText = "";
-  dTotal.innerText = "";
-  vehicleType.value = "";
+  document.getElementById("deliveryBox").style.display = "none";
+  document.getElementById("deliveryText").innerText = "";
+  document.getElementById("totalText").innerText = "";
+  document.getElementById("vehicleType").value = "";
 
-  /* ================= IMAGES RESET ================= */
+  /* ================= MULTIPLE IMAGES ================= */
   dImages.innerHTML = "";
   dDots.innerHTML   = "";
 
-  const images = (p.images && p.images.length)
-    ? p.images
-    : (p.image ? [p.image] : []);
+  const images = (selectedProduct.images && selectedProduct.images.length)
+    ? selectedProduct.images
+    : (selectedProduct.image ? [selectedProduct.image] : []);
 
   images.forEach((img, i) => {
-
-    /* ✅ IMAGE ADD (FIXED) */
     dImages.innerHTML += `
       <img 
         src="${img}" 
@@ -623,7 +630,6 @@ function openDetail(p){
       >
     `;
 
-    /* DOTS */
     dDots.innerHTML += `
       <div class="dot ${i === 0 ? "active" : ""}"></div>
     `;
@@ -640,9 +646,12 @@ function openDetail(p){
     });
   };
 
-  /* ================= OPEN MODAL ================= */
-  document.getElementById("detailModal").style.display = "flex";
+  /* ================= DEBUG (VERY IMPORTANT) ================= */
+  console.log("📦 Product:", selectedProduct.productName);
+  console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
 }
+
+  
 
 async function fetchDeliveryEstimate(orderAmount, vehicleType){
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
