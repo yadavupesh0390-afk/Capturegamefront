@@ -361,9 +361,8 @@ async function directBuy(e){
     return;
   }
 
-  const delivery = deliveryChargeByVehicle(vehicle);
+  const delivery = lastDeliveryCharge;
   const total = selectedProduct.price + delivery;
-
   try{
     const res = await fetch(`${API}/api/orders/pay-and-create`,{
       method:"POST",
