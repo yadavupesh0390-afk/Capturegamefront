@@ -309,7 +309,11 @@ async function addToCart(p){
 
     // ✅ SHOW RESULT
     box.style.display = "block";
-    dText.innerText = `🚚 Delivery ₹${data.totalDelivery} (Retailer Pays ${data.retailerPays}, ${data.retailerPercent}% of base)`;
+dText.innerText =
+`🚚 Delivery ₹${data.totalDelivery}
+(Retailer Pays ₹${data.retailerPays},
+${data.retailerPercent}% of base)
+📍 ${data.distanceKm ?? 0} km`; 
     const total = selectedProduct.price + data.retailerPays;
     tText.innerText = `💰 Total ₹${total}`;
 
