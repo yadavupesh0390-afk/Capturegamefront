@@ -588,37 +588,38 @@ function openCategory(categoryId, wid){
 
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
+
+  // 🔥 DEEP COPY (NO STALE LOCATION)
   selectedProduct = JSON.parse(JSON.stringify(p));
 
-  // ❗ Force refresh wholesaler location
   if(!selectedProduct.wholesalerLocation){
-    console.warn("Wholesaler location missing for this product");
+    console.warn("⚠️ Wholesaler location missing", selectedProduct);
   }
 
-  document.getElementById("detailModal").style.display="flex";
-}
+  document.getElementById("detailModal").style.display = "flex";
 
   /* ================= BASIC DETAILS ================= */
-  dName.innerText  = p.productName || "";
-  dPrice.innerText = "Price ₹" + (p.price || 0);
+  dName.innerText  = selectedProduct.productName || "";
+  dPrice.innerText = "Price ₹" + (selectedProduct.price || 0);
 
-  /* ================= DESCRIPTION (READ MORE RESET) ================= */
-  dDesc.innerText = p.detail || "No description available";
+  /* ================= DESCRIPTION RESET ================= */
+  dDesc.innerText = selectedProduct.detail || "No description available";
   dDesc.classList.add("short");
   document.getElementById("descToggle").innerText = "More ⬇";
 
   /* ================= DELIVERY RESET ================= */
-  dDelivery.innerText = "";
-  dTotal.innerText = "";
-  vehicleType.value = "";
+  document.getElementById("deliveryBox").style.display = "none";
+  document.getElementById("deliveryText").innerText = "";
+  document.getElementById("totalText").innerText = "";
+  document.getElementById("vehicleType").value = "";
 
   /* ================= MULTIPLE IMAGES ================= */
   dImages.innerHTML = "";
   dDots.innerHTML   = "";
 
-  const images = (p.images && p.images.length)
-    ? p.images
-    : (p.image ? [p.image] : []);
+  const images = (selectedProduct.images && selectedProduct.images.length)
+    ? selectedProduct.images
+    : (selectedProduct.image ? [selectedProduct.image] : []);
 
   images.forEach((img, i) => {
     dImages.innerHTML += `
@@ -644,6 +645,11 @@ function openDetail(p){
       dot.classList.toggle("active", i === index);
     });
   };
+
+  /* ================= DEBUG (VERY IMPORTANT) ================= */
+  console.log("📦 Product:", selectedProduct.productName);
+  console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
+}
 
 async function fetchDeliveryEstimate(orderAmount, vehicleType){
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
