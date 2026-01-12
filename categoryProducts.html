@@ -276,6 +276,67 @@ async function addToCart(p){
     alert("❌ Failed to add to cart");
   }
 }
+
+
+  async function updateDelivery(){
+  if(!selectedProduct) return;
+
+  const vehicle = document.getElementById("vehicleType").value;
+  const box = document.getElementById("deliveryBox");
+  const dText = document.getElementById("deliveryText");
+  const tText = document.getElementById("totalText");
+
+  if(!vehicle){
+    box.style.display = "none";
+    return;
+  }
+
+  // 🔹 Retailer & Wholesaler location
+  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
+  const wholesalerLoc = selectedProduct.wholesalerLocation;
+
+  if(!retailerLoc || !wholesalerLoc){
+    box.style.display = "block";
+    dText.innerText = "📍 Location missing";
+    tText.innerText = "";
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API}/api/delivery/calculate`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        orderAmount: selectedProduct.price,
+        vehicleType: vehicle,
+        retailerLocation: retailerLoc,
+        wholesalerLocation: wholesalerLoc
+      })
+    });
+
+    const data = await res.json();
+
+    if(!data.success){
+      dText.innerText = "❌ Delivery calculation failed";
+      tText.innerText = "";
+      box.style.display = "block";
+      return;
+    }
+
+    // ✅ SHOW RESULT
+    box.style.display = "block";
+    dText.innerText = `🚚 Delivery ₹${data.retailerPays} (${data.retailerPercent}% retailer)`;
+
+    const total = selectedProduct.price + data.retailerPays;
+    tText.innerText = `💰 Total ₹${total}`;
+
+  }catch(err){
+    console.error(err);
+    box.style.display = "block";
+    dText.innerText = "⚠️ Server error";
+    tText.innerText = "";
+  }
+  }
 // ---------------- DIRECT BUY ----------------
 async function directBuy(e){
   e.preventDefault();
