@@ -1105,50 +1105,110 @@ async function updateDelivery() {
 async function calcCartDelivery(){
 
   const vehicle = document.getElementById("cartVehicle").value;
-  const deliveryBox = document.getElementById("cartDeliveryBox");
-  const cartDeliveryText = document.getElementById("cartDeliveryText");
-  const cartTotalText = document.getElementById("cartTotalText");
+  const box = document.getElementById("cartDeliveryBox");
+  const dText = document.getElementById("cartDeliveryText");
+  const tText = document.getElementById("cartTotalText");
 
   if (!vehicle || cart.length === 0) {
-    deliveryBox.style.display = "none";
-    cartDeliveryText.innerText = "";
-    cartTotalText.innerText = "";
+    box.style.display = "none";
+    dText.innerText = "";
+    tText.innerText = "";
     window.__cartDelivery = null;
     return;
   }
 
-  // 🧮 Subtotal
-  const subtotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
+  /* ================= SUBTOTAL ================= */
+  const subtotal = cart.reduce(
+    (sum, item) => sum + Number(item.price),
+    0
+  );
 
+  /* ================= RETAILER LOCATION ================= */
+  let retailerLoc =
+    JSON.parse(localStorage.getItem("retailer_location")) ||
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}").location ||
+    null;
+
+  if (retailerLoc?.latitude && retailerLoc?.longitude) {
+    retailerLoc = {
+      lat: retailerLoc.latitude,
+      lng: retailerLoc.longitude
+    };
+  }
+
+  /* ================= WHOLESALER LOCATION ================= */
+  let wholesalerLoc = null;
+
+  try {
+    const wid = cart[0].wholesalerId;
+
+    const resWh = await fetch(
+      `${API}/api/wholesalers/profile/${wid}`
+    );
+    const whData = await resWh.json();
+
+    wholesalerLoc =
+      whData?.profile?.location ||
+      whData?.wholesaler?.location ||
+      whData?.location ||
+      null;
+
+    if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {
+      wholesalerLoc = {
+        lat: wholesalerLoc.latitude,
+        lng: wholesalerLoc.longitude
+      };
+    }
+
+  } catch (e) {
+    console.error("Wholesaler location fetch failed", e);
+  }
+
+  /* ================= LOCATION CHECK ================= */
+  if (
+    !retailerLoc?.lat ||
+    !retailerLoc?.lng ||
+    !wholesalerLoc?.lat ||
+    !wholesalerLoc?.lng
+  ) {
+    box.style.display = "block";
+    dText.innerText = "📍 Location missing";
+    tText.innerText = "";
+    return;
+  }
+
+  /* ================= DELIVERY CALC ================= */
   try {
     const res = await fetch(`${API}/api/delivery/calculate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         orderAmount: subtotal,
-        vehicleType: vehicle
+        vehicleType: vehicle,
+        retailerLocation: retailerLoc,
+        wholesalerLocation: wholesalerLoc
       })
     });
 
     const data = await res.json();
 
     if (!data.success) {
-      alert("❌ Delivery calculation failed");
+      box.style.display = "block";
+      dText.innerText = "❌ Delivery calculation failed";
+      tText.innerText = "";
       return;
     }
 
-    // ✅ UI UPDATE
-    deliveryBox.style.display = "block";
+    box.style.display = "block";
 
-    cartDeliveryText.innerHTML = `
-      📦 Subtotal: ₹${subtotal}<br>
-      🚚 Delivery: ₹${data.retailerPays}
+    dText.innerHTML = `
+      📦 Subtotal ₹${subtotal}<br>
+      🚚 Delivery ₹${data.retailerPays}
     `;
 
-    cartTotalText.innerText =
+    tText.innerText =
       `💰 Total ₹${subtotal + Number(data.retailerPays)}`;
 
-    // ✅ save for payment
     window.__cartDelivery = {
       subtotal,
       delivery: data.retailerPays,
@@ -1157,7 +1217,7 @@ async function calcCartDelivery(){
 
   } catch (err) {
     console.error("Cart delivery error", err);
-    alert("⚠️ Server error");
+    dText.innerText = "⚠️ Server error";
   }
 }
   // ------------------- CART -------------------
