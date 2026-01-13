@@ -655,9 +655,19 @@ function openDetail(p){
 
 async function fetchDeliveryEstimate(orderAmount, vehicleType){
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-  const wholesalerLoc = product.wholesalerLocation; // API se live aaya // backend se aayega
 
-  if(!retailerLoc || !wholesalerLoc) return;
+  // 🔥 LIVE WHOLESALER LOCATION FETCH
+  const resWh = await fetch(
+    `${API}/api/wholesalers/profile/${selectedProduct.wholesalerId}`
+  );
+  const whData = await resWh.json();
+
+  if (!whData.success || !whData.profile.location) {
+    alert("Wholesaler location missing");
+    return;
+  }
+
+  const wholesalerLoc = whData.profile.location;
 
   const res = await fetch(`${API}/api/delivery/calculate`,{
     method:"POST",
@@ -672,7 +682,6 @@ async function fetchDeliveryEstimate(orderAmount, vehicleType){
 
   return await res.json();
 }
-
 
   
   
