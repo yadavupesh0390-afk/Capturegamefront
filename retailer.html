@@ -480,23 +480,27 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
     <div id="cartItems" style="margin-top:10px"></div>
     <!-- 🚚 CART VEHICLE SELECT -->
 <select id="cartVehicle" onchange="updateCartDelivery()">
-  <option value="">Select Vehicle</option>
+  <option value="">🚚 Select Vehicle</option>
   <option value="two_wheeler">Two Wheeler</option>
   <option value="three_wheeler">Three Wheeler</option>
   <option value="four_wheeler">Four Wheeler</option>
 </select>
 
-<!-- 📦 CART DELIVERY RESULT BOX -->
-<div id="cartDeliveryBox" style="
-  margin-top:12px;
-  padding:12px;
-  border-radius:12px;
-  background:#f8fafc;
-  box-shadow:0 6px 14px rgba(0,0,0,.08);
-  display:none;
-">
+<div
+  id="cartDeliveryBox"
+  style="
+    display:none;
+    background:#f0fdf4;
+    border-left:4px solid #16a34a;
+    padding:12px;
+    border-radius:10px;
+    margin-top:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08)
+  "
+>
   <div id="cartDeliveryText"></div>
-  <div id="cartTotalText" style="font-weight:600;margin-top:4px"></div>
+  <hr>
+  <b id="cartTotalText"></b>
 </div>
     <button class="primary" style="margin-top:12px" onclick="payCart()">💳 Pay & Order</button>
     <button onclick="closeAll()">Close</button>
