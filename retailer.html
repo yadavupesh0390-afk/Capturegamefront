@@ -1482,51 +1482,19 @@ async function openRetailerProfile() {
 
 async function saveProfile() {
 
-  if(!profileMobile.value.trim()){
+  if (!profileMobile.value.trim()) {
     alert("Mobile required");
     return;
   }
 
-  // ✅ Prepare payload
   const payload = {
     retailerId: localStorage.getItem("userId"),
     name: profileName.value.trim(),
     mobile: profileMobile.value.trim(),
-    address: profileAddress.value.trim(),
-    location: null  // default
+    address: profileAddress.value.trim()
   };
 
-  // ✅ Try to get current location if available
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        payload.location = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude
-        };
-        // Update profileLocation input for user
-        if(document.getElementById("profileLocation")){
-          document.getElementById("profileLocation").value =
-            payload.location.lat.toFixed(6) + ", " +
-            payload.location.lng.toFixed(6);
-        }
-
-        // ✅ Send payload to server after getting location
-        sendProfile(payload);
-
-      },
-      (err) => {
-        console.warn("Location not available:", err.message);
-        // Still send profile without location
-        sendProfile(payload);
-      },
-      { enableHighAccuracy: true, timeout: 5000 }
-    );
-  } else {
-    // Geolocation not supported
-    sendProfile(payload);
-  }
-
+  sendProfile(payload);
 }
 
 // ✅ Helper function to send profile to server
