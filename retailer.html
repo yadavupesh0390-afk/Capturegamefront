@@ -1142,9 +1142,7 @@ async function calcCartDelivery(){
   try {
     const wid = cart[0].wholesalerId;
 
-    const resWh = await fetch(
-      `${API}/api/wholesalers/profile/${wid}`
-    );
+    const resWh = await fetch(`${API}/api/wholesalers/profile/${wid}`);
     const whData = await resWh.json();
 
     wholesalerLoc =
@@ -1199,25 +1197,37 @@ async function calcCartDelivery(){
       return;
     }
 
+    /* 🔁 DOUBLE distance & time */
+    const doubleDistance = (Number(data.distanceKm) * 2).toFixed(2);
+    const doubleTime = Math.round(Number(data.timeMinutes) * 2);
+    const total = subtotal + Number(data.retailerPays);
+
+    /* ================= UI UPDATE ================= */
     box.style.display = "block";
 
-    dText.innerHTML = `
-      📦 Subtotal ₹${subtotal}<br>
-      🚚 Delivery ₹${data.retailerPays}
-    `;
+    dText.innerText =
+`🚚 Delivery ₹${data.totalDelivery}
+(Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)
+⏱️ ${doubleTime} min
+📍 टोटल आने जाने का = ${doubleDistance} km`;
 
-    tText.innerText =
-      `💰 Total ₹${subtotal + Number(data.retailerPays)}`;
+    tText.innerText = `💰 Total ₹${total}`;
 
+    /* ================= STORE FOR PAYMENT ================= */
     window.__cartDelivery = {
       subtotal,
-      delivery: data.retailerPays,
-      total: subtotal + Number(data.retailerPays)
+      retailerPays: Number(data.retailerPays),
+      wholesalerPays: Number(data.wholesalerPays || 0),
+      total,
+      distanceKm: doubleDistance,
+      timeMinutes: doubleTime
     };
 
   } catch (err) {
     console.error("Cart delivery error", err);
+    box.style.display = "block";
     dText.innerText = "⚠️ Server error";
+    tText.innerText = "";
   }
 }
   // ------------------- CART -------------------
