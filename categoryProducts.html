@@ -216,9 +216,16 @@ function openImage(src){
 }
 
 function closeAll(){
-  document.getElementById("detailModal").style.display="none";
-  document.getElementById("imageModal").style.display="none";
+  document.getElementById("detailModal").style.display = "none";
+  document.getElementById("imageModal").style.display = "none";
+
+  // 🔥 FULL RESET
   selectedProduct = null;
+  document.getElementById("vehicleType").value = "";
+  document.getElementById("deliveryBox").style.display = "none";
+  document.getElementById("deliveryText").innerText = "";
+  document.getElementById("totalText").innerText = "";
+  lastDeliveryCharge = 0;
 }
 function goBack(){
   window.location.href = "retailer.html";
