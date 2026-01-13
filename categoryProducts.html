@@ -228,7 +228,7 @@ function closeAll(){
   lastDeliveryCharge = 0;
 }
 function goBack(){
-  window.location.href = "retailer.html";
+  window.history.back();
 }
 // ---------------- CART ----------------
 let cart = JSON.parse(localStorage.getItem("cart")||"[]");
