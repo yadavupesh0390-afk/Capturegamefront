@@ -649,6 +649,47 @@ function openCategory(categoryId, wid){
   window.location.href = `categoryProducts.html?wid=${wid}&category=${categoryId}`;
 }
 
+  function getRetailerLocation() {
+
+  if (!navigator.geolocation) {
+    alert("❌ Geolocation supported नहीं है");
+    return;
+  }
+
+  profileLocation.value = "Fetching location...";
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const loc = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+
+      // ✅ input में दिखाओ
+      profileLocation.value =
+        loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);
+
+      // ✅ localStorage में save
+      localStorage.setItem(
+        "retailer_location",
+        JSON.stringify(loc)
+      );
+
+      alert("✅ Location set successfully");
+
+    },
+    (err) => {
+      console.error(err);
+      alert("❌ Location access denied");
+      profileLocation.value = "";
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000
+    }
+  );
+  }
+
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
 
