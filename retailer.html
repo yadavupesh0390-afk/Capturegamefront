@@ -1102,114 +1102,58 @@ async function calcCartDelivery(){
 
   const vehicle = document.getElementById("cartVehicle").value;
   const deliveryBox = document.getElementById("cartDeliveryBox");
-  const cartSubtotalEl = document.getElementById("cartSubtotal");
-  const cartDeliveryEl = document.getElementById("cartDelivery");
-  const cartGrandTotalEl = document.getElementById("cartGrandTotal");
+  const cartDeliveryText = document.getElementById("cartDeliveryText");
+  const cartTotalText = document.getElementById("cartTotalText");
 
   if (!vehicle || cart.length === 0) {
     deliveryBox.style.display = "none";
+    cartDeliveryText.innerText = "";
+    cartTotalText.innerText = "";
+    window.__cartDelivery = null;
     return;
   }
 
-  // 🧮 subtotal
+  // 🧮 Subtotal
   const subtotal = cart.reduce((sum, item) => sum + Number(item.price), 0);
 
-  /* ================= RETAILER LOCATION ================= */
-  const retailerProfile =
-    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-
-  let retailerLoc =
-    JSON.parse(localStorage.getItem("retailer_location")) ||
-    retailerProfile.location ||
-    null;
-
-  if (retailerLoc?.latitude && retailerLoc?.longitude) {
-    retailerLoc = {
-      lat: retailerLoc.latitude,
-      lng: retailerLoc.longitude
-    };
-  }
-
-  /* ================= WHOLESALER LOCATION ================= */
-  // ⚠️ CART में मान लेते हैं सब items same wholesaler के हैं
-  const firstItem = cart[0];
-  let wholesalerLoc = null;
-
-  try {
-    const resWh = await fetch(
-      `${API}/api/wholesalers/profile/${firstItem.wholesalerId}`
-    );
-    const whData = await resWh.json();
-
-    wholesalerLoc =
-      whData?.profile?.location ||
-      whData?.wholesaler?.location ||
-      whData?.location ||
-      null;
-
-    if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {
-      wholesalerLoc = {
-        lat: wholesalerLoc.latitude,
-        lng: wholesalerLoc.longitude
-      };
-    }
-
-  } catch (err) {
-    console.error("Wholesaler location error", err);
-  }
-
-  /* ================= VALIDATION ================= */
-  if (
-    !retailerLoc?.lat ||
-    !retailerLoc?.lng ||
-    !wholesalerLoc?.lat ||
-    !wholesalerLoc?.lng
-  ) {
-    deliveryBox.style.display = "block";
-    cartDeliveryEl.innerText = "📍 Location missing";
-    cartGrandTotalEl.innerText = "";
-    return;
-  }
-
-  /* ================= API CALL ================= */
   try {
     const res = await fetch(`${API}/api/delivery/calculate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         orderAmount: subtotal,
-        vehicleType: vehicle,
-        retailerLocation: retailerLoc,
-        wholesalerLocation: wholesalerLoc
+        vehicleType: vehicle
       })
     });
 
     const data = await res.json();
 
     if (!data.success) {
-      deliveryBox.style.display = "block";
-      cartDeliveryEl.innerText = "❌ Delivery failed";
+      alert("❌ Delivery calculation failed");
       return;
     }
 
-    /* ================= UI UPDATE ================= */
+    // ✅ UI UPDATE
     deliveryBox.style.display = "block";
 
-    cartSubtotalEl.innerText = `Subtotal ₹${subtotal}`;
-    cartDeliveryEl.innerText = `Delivery ₹${data.retailerPays}`;
-    cartGrandTotalEl.innerText =
-      `Total ₹${subtotal + Number(data.retailerPays)}`;
+    cartDeliveryText.innerHTML = `
+      📦 Subtotal: ₹${subtotal}<br>
+      🚚 Delivery: ₹${data.retailerPays}
+    `;
 
-    // 💾 payment ke liye store
+    cartTotalText.innerText =
+      `💰 Total ₹${subtotal + Number(data.retailerPays)}`;
+
+    // ✅ save for payment
     window.__cartDelivery = {
       subtotal,
       delivery: data.retailerPays,
-      total: subtotal + Number(data.retailerPays),
-      vehicleType: vehicle
+      total: subtotal + Number(data.retailerPays)
     };
 
   } catch (err) {
     console.error("Cart delivery error", err);
+    alert("⚠️ Server error");
   }
 }
   // ------------------- CART -------------------
