@@ -86,9 +86,37 @@ body{margin:0;background:#f3f6fb}
     <i class="bi bi-arrow-left"></i>
   </button>
 
-  <h2 id="catTitle" class="title">
-    Category Products
-  </h2>
+  <h2 id="catTitle" class="title">Category Products</h2>
+
+  <!-- 🔍 SEARCH ICON -->
+  <button class="back-btn" style="margin-left:auto" onclick="toggleSearch()">
+    <i class="bi bi-search"></i>
+  </button>
+</div>
+
+<!-- 🔍 SEARCH BOX (hidden by default) -->
+<div id="searchBox" style="
+  display:none;
+  margin-top:10px;
+  background:#fff;
+  padding:10px;
+  border-radius:10px;
+  box-shadow:0 5px 12px rgba(0,0,0,.1);
+">
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="🔍 Product name search करें..."
+    oninput="filterProducts()"
+    style="
+      width:100%;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #cbd5e1;
+      font-size:14px;
+    "
+  />
+</div>
 </div>
   <div class="products-grid" id="products"></div>
 </div>
@@ -140,42 +168,7 @@ body{margin:0;background:#f3f6fb}
     <button onclick="closeAll()" style="margin-top:10px">Close</button>
   </div>
 </div>
-<div class="topbar">
-  <button class="back-btn" onclick="goBack()">
-    <i class="bi bi-arrow-left"></i>
-  </button>
 
-  <h2 id="catTitle" class="title">Category Products</h2>
-
-  <!-- 🔍 SEARCH ICON -->
-  <button class="back-btn" style="margin-left:auto" onclick="toggleSearch()">
-    <i class="bi bi-search"></i>
-  </button>
-</div>
-
-<!-- 🔍 SEARCH BOX (hidden by default) -->
-<div id="searchBox" style="
-  display:none;
-  margin-top:10px;
-  background:#fff;
-  padding:10px;
-  border-radius:10px;
-  box-shadow:0 5px 12px rgba(0,0,0,.1);
-">
-  <input
-    type="text"
-    id="searchInput"
-    placeholder="🔍 Product name search करें..."
-    oninput="filterProducts()"
-    style="
-      width:100%;
-      padding:10px;
-      border-radius:8px;
-      border:1px solid #cbd5e1;
-      font-size:14px;
-    "
-  />
-</div>
 <script>
 const API = "https://shopbacked-vmhs.onrender.com";
 let lastDeliveryCharge = 0;
