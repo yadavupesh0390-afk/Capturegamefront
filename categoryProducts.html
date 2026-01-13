@@ -172,6 +172,7 @@ body{margin:0;background:#f3f6fb}
 <script>
 const API = "https://shopbacked-vmhs.onrender.com";
 let lastDeliveryCharge = 0;
+ let allProducts = []; 
 // URL params
 const params = new URLSearchParams(location.search);
 const wid = params.get("wid");
@@ -184,7 +185,11 @@ async function loadProducts(){
     const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
     const data = await res.json();
 
-    const list = data.products.filter(p => (p.category||"Other") === category);
+    allProducts = data.products.filter(
+  p => (p.category || "Other") === category
+);
+
+renderProducts(allProducts);
     const container = document.getElementById("products");
 
     if(!list.length){
