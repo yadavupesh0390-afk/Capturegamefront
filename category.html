@@ -249,27 +249,51 @@ function closeAll(){ document.querySelectorAll(".modal").forEach(m=>m.style.disp
 async function loadCategoryProducts(){
   const res = await fetch(`${API}/api/products/wholesaler/${WID}`);
   const d = await res.json();
-  const filtered = (d.products || []).filter(p => (p.category || "Other") === category);
 
-  if(!filtered.length){ productsEl.innerHTML = "<p>No products in this category</p>"; return; }
+  allCategoryProducts = (d.products || []).filter(
+    p => (p.category || "Other") === category
+  );
 
-  productsEl.innerHTML = filtered.map(p=>`
+  renderProducts(allCategoryProducts);
+}
+
+  function renderProducts(list){
+  if(!list.length){
+    productsEl.innerHTML = "<p>No products found</p>";
+    return;
+  }
+
+  productsEl.innerHTML = list.map(p=>`
     <div class="product-card" onclick="openProductDetail('${p._id}')">
       <img src="${p.images?.[0] || ''}">
       <h4>${p.productName}</h4>
       <div class="price">₹${p.price}</div>
       <div class="product-actions">
-        <button class="success" onclick="event.stopPropagation();openEditProduct('${p._id}')">
-          <i class="bi bi-pencil"></i> Edit
+        <button class="success"
+          onclick="event.stopPropagation();openEditProduct('${p._id}')">
+          <i class="bi bi-pencil"></i>
         </button>
-        <button class="delete" onclick="event.stopPropagation();deleteProduct('${p._id}')">
-          <i class="bi bi-trash"></i> Delete
+        <button class="delete"
+          onclick="event.stopPropagation();deleteProduct('${p._id}')">
+          <i class="bi bi-trash"></i>
         </button>
       </div>
     </div>
   `).join("");
+  }
+function toggleSearch(){
+  const box = document.getElementById("searchBox");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+  box.focus();
 }
 
+function searchProduct(text){
+  const keyword = text.toLowerCase();
+  const filtered = allCategoryProducts.filter(p =>
+    p.productName.toLowerCase().includes(keyword)
+  );
+  renderProducts(filtered);
+  }
 // Product Detail Modal
 async function openProductDetail(id){
   productDetailModal.style.display = "flex";
