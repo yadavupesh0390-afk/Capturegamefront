@@ -1299,45 +1299,7 @@ async function removeFromCart(productId){
     alert("❌ Failed to remove item");
   }
 }
-async function updateCartTotal() {
 
-  const deliveryBox = document.getElementById("cartDeliveryBox");
-
-  if (!cartVehicle.value || cart.length === 0) {
-    deliveryBox.style.display = "none";  // hide box
-    cartSubtotal.innerText = "";
-    cartDelivery.innerText = "";
-    cartGrandTotal.innerText = "";
-    window.__cartDelivery = null;
-    return;
-  }
-
-  const subtotal = cart.reduce((s, i) => s + i.price, 0);
-
-  const deliveryData = await getDeliveryFromServer({
-    orderAmount: subtotal,
-    vehicleType: cartVehicle.value
-  });
-
-  if (!deliveryData.success) {
-    alert(deliveryData.message || "Delivery calculation failed");
-    return;
-  }
-
-  // ✅ Update UI
-  cartSubtotal.innerText = `Subtotal ₹${subtotal}`;
-  cartDelivery.innerText = `Delivery ₹${deliveryData.retailerPays}`;
-  cartGrandTotal.innerText = `Total ₹${subtotal + deliveryData.retailerPays}`;
-
-  // ✅ Show the box
-  deliveryBox.style.display = "block";
-
-  // ✅ store for payment
-  window.__cartDelivery = {
-    subtotal,
-    ...deliveryData
-  };
-}
 async function payCart() {
 
   const vehicle = cartVehicle.value;
