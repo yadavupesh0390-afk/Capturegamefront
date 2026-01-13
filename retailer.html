@@ -408,13 +408,48 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
     </button>
   </div>
 
-  <div class="header"><h3>🛒 Retailer Dashboard</h3></div>
+  <!-- 🔹 DELIVERY CHARGE INFO PATTi -->
+  <div 
+    onclick="showChargeInfo(0)" 
+    style="
+      background:#16a34a; 
+      color:#fff; 
+      text-align:center; 
+      padding:8px 12px; 
+      border-radius:8px; 
+      font-weight:600; 
+      cursor:pointer;
+      margin-bottom:10px;
+      max-width:400px;
+      margin-left:auto;
+      margin-right:auto;
+      box-shadow:0 4px 8px rgba(0,0,0,0.1);
+      font-size:14px;
+    ">
+    डिलीवरी चार्ज की जानकारी
+  </div>
 
+  <!-- 🔹 HEADER / DASHBOARD TITLE -->
+  <div class="header">
+    <h3>🛒 Retailer Dashboard</h3>
+  </div>
+
+  <!-- 🔹 ICON BAR -->
+  <div class="icon-bar">
+    <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>
+    <button class="icon-btn" onclick="openOrderStatus()"><i class="bi bi-bag-check"></i></button>
+    <button class="icon-btn" onclick="openCart()"><i class="bi bi-cart"></i></button>
+    <button class="icon-btn" onclick="openDeliveryDetails()">
+      <i class="bi bi-truck"></i><span id="deliveryDot" class="notify-dot"></span>
+    </button>
+  </div>
+
+  <!-- 🔹 CATEGORY / PRODUCTS GRID -->
   <div class="header">
     <input id="wid" placeholder="Enter Wholesaler ID">
     <button class="primary" onclick="loadProducts()">Search</button>
   </div>
-<div class="products-grid" id="categories"></div>
+  <div class="products-grid" id="categories"></div>
 </div>
 
 <!-- PRODUCT DETAIL -->
