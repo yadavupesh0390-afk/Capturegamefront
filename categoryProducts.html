@@ -212,8 +212,9 @@ renderProducts(allProducts);
       `;
     }).join("");
   }catch(e){
-    alert("Failed to load products");
-    console.error(e);
+  console.warn("Products load retry / initial delay", e);
+  // ❌ alert हटा दिया
+
   }
 }
 function renderProducts(list){
