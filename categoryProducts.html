@@ -271,7 +271,10 @@ function updateDelivery(){
 
 async function runDeliveryCalc(){
 
-  if(!selectedProduct) return;
+  if(!selectedProduct){
+    console.warn("❌ No product selected");
+    return;
+  }
 
   const vehicle = document.getElementById("vehicleType").value;
   const box = document.getElementById("deliveryBox");
@@ -284,28 +287,56 @@ async function runDeliveryCalc(){
     return;
   }
 
-  // ✅ Retailer location (safe fallback)
+  /* ================= RETAILER LOCATION ================= */
+
   const retailerProfile =
     JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-  const retailerLoc =
+  let retailerLoc =
     JSON.parse(localStorage.getItem("retailer_location")) ||
-    retailerProfile.location;
+    retailerProfile.location ||
+    null;
 
-  // ✅ Wholesaler location (safe fallback)
+  // 🔄 Normalize retailer location keys
+  if(retailerLoc?.latitude && retailerLoc?.longitude){
+    retailerLoc = {
+      lat: retailerLoc.latitude,
+      lng: retailerLoc.longitude
+    };
+  }
+
+  /* ================= WHOLESALER LOCATION (LIVE) ================= */
+
   let wholesalerLoc = null;
 
-try{
-  const resWh = await fetch(
-    `${API}/api/wholesalers/profile/${selectedProduct.wholesalerId}`
-  );
-  const whData = await resWh.json();
+  try{
+    const resWh = await fetch(
+      `${API}/api/wholesalers/profile/${selectedProduct.wholesalerId}`
+    );
+    const whData = await resWh.json();
 
-  wholesalerLoc = whData?.profile?.location;
-}catch(e){
-  console.error("Wholesaler fetch failed", e);
-}
-  // ❌ Location validation
+    wholesalerLoc =
+      whData?.profile?.location ||
+      whData?.wholesaler?.location ||
+      whData?.location ||
+      null;
+
+    // 🔄 Normalize wholesaler location keys
+    if(wholesalerLoc?.latitude && wholesalerLoc?.longitude){
+      wholesalerLoc = {
+        lat: wholesalerLoc.latitude,
+        lng: wholesalerLoc.longitude
+      };
+    }
+
+    console.log("🏪 LIVE Wholesaler Location:", wholesalerLoc);
+
+  }catch(err){
+    console.error("❌ Wholesaler location fetch failed", err);
+  }
+
+  /* ================= LOCATION VALIDATION ================= */
+
   if(
     !retailerLoc?.lat ||
     !retailerLoc?.lng ||
@@ -316,8 +347,15 @@ try{
     dText.innerText = "📍 Location missing";
     tText.innerText = "";
     lastDeliveryCharge = 0;
+
+    console.warn("⚠️ Location check failed", {
+      retailerLoc,
+      wholesalerLoc
+    });
     return;
   }
+
+  /* ================= DELIVERY CALCULATION ================= */
 
   try{
     const res = await fetch(`${API}/api/delivery/calculate`,{
@@ -341,11 +379,12 @@ try{
       return;
     }
 
-    // ✅ SAVE FOR PAYMENT
+    /* ================= SAVE FOR PAYMENT ================= */
     lastDeliveryCharge = Number(data.retailerPays);
 
-    // ✅ SHOW DELIVERY
+    /* ================= UI UPDATE ================= */
     box.style.display = "block";
+
     dText.innerText =
 `🚚 Delivery ₹${data.totalDelivery}
 (Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)
@@ -358,9 +397,9 @@ try{
     tText.innerText = `💰 Total ₹${total}`;
 
   }catch(err){
-    console.error("Delivery calc error:", err);
+    console.error("❌ Delivery calc error", err);
     box.style.display = "block";
-    dText.innerText = "⚠️ Server error (check location)";
+    dText.innerText = "⚠️ Server error";
     tText.innerText = "";
     lastDeliveryCharge = 0;
   }
