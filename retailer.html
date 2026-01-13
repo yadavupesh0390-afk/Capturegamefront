@@ -371,6 +371,29 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
     max-height: 90vh;
   }
 }
+  #chargeInfoModal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+}
+#chargeInfoModal ul li {
+  padding: 6px 0;
+  border-bottom: 1px solid #444;
+}
+#chargeInfoModal ul li:last-child {
+  border-bottom: none;
+}
+#chargeInfoModal ul li.highlight {
+  background: #333;
+  font-weight: 600;
+  color: #16a34a;
+  padding-left: 6px;
+  border-radius: 4px;
+}
 </style>
 </head>
 <body>
@@ -498,7 +521,22 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
     </button>
   </div>
 </div>
-  
+ <div class="modal" id="chargeInfoModal">
+  <div class="modal-content" style="max-width:400px; padding:20px; border-radius:12px; background:#000; color:#fff;">
+    <h3 style="margin-top:0; text-align:center;">Delivery Charge Info</h3>
+    <ul id="chargeList" style="list-style:none; padding:0; margin:10px 0;"></ul>
+    <button onclick="closeChargeModal()" style="
+      display:block;
+      margin:10px auto 0 auto;
+      padding:8px 16px;
+      border:none;
+      border-radius:8px;
+      background:#fff;
+      color:#000;
+      cursor:pointer;
+    ">Close</button>
+  </div>
+ </div> 
 <script>
 const API = "https://shopbacked-vmhs.onrender.com";
 
@@ -651,7 +689,40 @@ function openDetail(p){
   console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
 }
 
-  
+  function showChargeInfo(orderAmount = 0) {
+  const slabs = [
+    {min:100, max:500, percent:70},
+    {min:501, max:3000, percent:50},
+    {min:3001, max:5000, percent:30},
+    {min:5001, max:Infinity, percent:0} // Free delivery
+  ];
+
+  const list = document.getElementById("chargeList");
+  list.innerHTML = "";
+
+  slabs.forEach(slab => {
+    const li = document.createElement("li");
+
+    if(slab.percent === 0){
+      li.innerText = `₹${slab.min}+ का order → Free Delivery ✅`;
+    } else {
+      li.innerText = `₹${slab.min} - ${slab.max} का order → ${slab.percent}% delivery charge`;
+    }
+
+    // Highlight slab based on current order amount
+    if(orderAmount >= slab.min && orderAmount <= slab.max){
+      li.classList.add("highlight");
+    }
+
+    list.appendChild(li);
+  });
+
+  document.getElementById("chargeInfoModal").style.display = "flex";
+}
+
+function closeChargeModal() {
+  document.getElementById("chargeInfoModal").style.display = "none";
+                }
 
 async function fetchDeliveryEstimate(orderAmount, vehicleType){
   const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
