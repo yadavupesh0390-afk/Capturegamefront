@@ -741,6 +741,11 @@ function openCategory(categoryId, wid){
     () => alert("Location fetch nahi ho pa rahi")
   );
   }
+
+  function updateCartDelivery(){
+  clearTimeout(cartTimer);
+  cartTimer = setTimeout(calcCartDelivery, 400);
+  }
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
 
