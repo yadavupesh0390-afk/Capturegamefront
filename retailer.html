@@ -690,6 +690,52 @@ function openCategory(categoryId, wid){
   );
   }
 
+  function saveCurrentLocation() {
+
+  if (!navigator.geolocation) {
+    alert("Location support nahi karta");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+
+      const location = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+
+      // ✅ LocalStorage save
+      localStorage.setItem(
+        "retailer_location",
+        JSON.stringify(location)
+      );
+
+      // ✅ Server save (ONLY location)
+      await fetch(`${API}/api/retailers/location`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + TOKEN
+        },
+        body: JSON.stringify({
+          retailerId: localStorage.getItem("userId"),
+          location
+        })
+      });
+
+      // ✅ UI update
+      if (document.getElementById("profileLocation")) {
+        document.getElementById("profileLocation").value =
+          location.lat.toFixed(6) + ", " +
+          location.lng.toFixed(6);
+      }
+
+      alert("📍 Location successfully save ho gayi");
+    },
+    () => alert("Location fetch nahi ho pa rahi")
+  );
+  }
 // ------------------- PRODUCT DETAIL -------------------
 function openDetail(p){
 
