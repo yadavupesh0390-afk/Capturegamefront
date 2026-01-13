@@ -293,10 +293,18 @@ async function runDeliveryCalc(){
     retailerProfile.location;
 
   // ✅ Wholesaler location (safe fallback)
-  const wholesalerLoc =
-    selectedProduct.wholesalerLocation ||
-    selectedProduct.location;
+  let wholesalerLoc = null;
 
+try{
+  const resWh = await fetch(
+    `${API}/api/wholesalers/profile/${selectedProduct.wholesalerId}`
+  );
+  const whData = await resWh.json();
+
+  wholesalerLoc = whData?.profile?.location;
+}catch(e){
+  console.error("Wholesaler fetch failed", e);
+}
   // ❌ Location validation
   if(
     !retailerLoc?.lat ||
