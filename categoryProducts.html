@@ -389,13 +389,14 @@ async function runDeliveryCalc(){
     /* ================= SAVE FOR PAYMENT ================= */
     lastDeliveryCharge = Number(data.retailerPays);
     const doubleDistance = (Number(data.distanceKm) * 2).toFixed(2);
+    const doubleTime = Math.round(Number(data.timeMinutes) * 2);
     /* ================= UI UPDATE ================= */
     box.style.display = "block";
 
     dText.innerText =
 `🚚 Delivery ₹${data.totalDelivery}
 (Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)
-⏱️ ${data.timeMinutes} min
+⏱️ ${doubleTime} min
 📍 टोटल  आने  जाने  का = ${doubleDistance} km`;
 
     const total =
