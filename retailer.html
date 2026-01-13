@@ -1090,7 +1090,79 @@ async function updateDelivery() {
     dTotal.innerText = "";
   }
 }
-  
+
+  async function calcCartDelivery(){
+
+  const vehicle = document.getElementById("cartVehicle").value;
+  const box = document.getElementById("cartDeliveryBox");
+  const deliveryText = document.getElementById("cartDeliveryText");
+  const totalText = document.getElementById("cartTotalText");
+
+  if(!vehicle){
+    box.style.display = "none";
+    cartDeliveryCharge = 0;
+    return;
+  }
+
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  if(!cart.length){
+    box.style.display = "none";
+    return;
+  }
+
+  const subtotal = cart.reduce((sum,i)=> sum + Number(i.price||0), 0);
+
+  let retailerLoc =
+    JSON.parse(localStorage.getItem("retailer_location")) ||
+    JSON.parse(localStorage.getItem("retailerProfile")||"{}").location ||
+    null;
+
+  if(retailerLoc?.latitude){
+    retailerLoc = { lat: retailerLoc.latitude, lng: retailerLoc.longitude };
+  }
+
+  let wholesalerLoc = cart[0]?.wholesalerLocation;
+  if(wholesalerLoc?.latitude){
+    wholesalerLoc = { lat: wholesalerLoc.latitude, lng: wholesalerLoc.longitude };
+  }
+
+  if(!retailerLoc || !wholesalerLoc){
+    box.style.display = "block";
+    deliveryText.innerText = "📍 Location missing";
+    totalText.innerText = "";
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API}/api/delivery/calculate`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        orderAmount: subtotal,
+        vehicleType: vehicle,
+        retailerLocation: retailerLoc,
+        wholesalerLocation: wholesalerLoc
+      })
+    });
+
+    const data = await res.json();
+    if(!data.success) throw "fail";
+
+    cartDeliveryCharge = Number(data.retailerPays);
+
+    box.style.display = "block";
+    deliveryText.innerText =
+      `🚚 Delivery ₹${cartDeliveryCharge} (${data.retailerPercent}%)`;
+
+    totalText.innerText =
+      `💰 Total ₹${subtotal + cartDeliveryCharge}`;
+
+  }catch(e){
+    box.style.display = "block";
+    deliveryText.innerText = "⚠️ Delivery error";
+    totalText.innerText = "";
+  }
+  }
   // ------------------- CART -------------------
 async function addToCart(p){
 
