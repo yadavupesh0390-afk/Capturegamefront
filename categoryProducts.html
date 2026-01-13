@@ -388,7 +388,7 @@ async function runDeliveryCalc(){
 
     /* ================= SAVE FOR PAYMENT ================= */
     lastDeliveryCharge = Number(data.retailerPays);
-
+    const doubleDistance = (Number(data.distanceKm) * 2).toFixed(2);
     /* ================= UI UPDATE ================= */
     box.style.display = "block";
 
