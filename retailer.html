@@ -1306,40 +1306,90 @@ async function addToCart(p){
 }
 
 async function loadCart(){
+
   const retailerId = localStorage.getItem("userId");
-
-  const res = await fetch(`${API}/api/cart/${retailerId}`);
-  const data = await res.json();
-
   const cartDiv = document.getElementById("cartItems");
 
-  if(!data.items || !data.items.length){
-    cartDiv.innerHTML = "<p style='text-align:center'>🛒 Cart is empty</p>";
+  if(!retailerId){
+    cartDiv.innerHTML = "<p style='text-align:center'>🔐 Please login</p>";
+    cart = [];
     return;
   }
 
-  cartDiv.innerHTML = data.items.map(i=>`
-    <div class="cart-card">
+  try{
 
-      <img src="${i.image}" class="cart-img">
+    const res = await fetch(`${API}/api/cart/${retailerId}`);
+    const data = await res.json();
 
-      <div class="cart-info">
-        <div class="cart-name">${i.productName}</div>
-        <div class="cart-price">
-  ₹${i.price} × ${i.quantity} = ₹${i.price * i.quantity}
-</div>
+    if(!data.items || !data.items.length){
+      cartDiv.innerHTML = "<p style='text-align:center'>🛒 Cart is empty</p>";
+      cart = [];
+      return;
+    }
+
+    /* 🔥 CURRENT WHOLESALER FILTER */
+    const currentWholesalerId =
+      new URLSearchParams(location.search).get("wid") ||
+      localStorage.getItem("currentWholesalerId");
+
+    const filteredItems = currentWholesalerId
+      ? data.items.filter(
+          i => i.wholesalerId === currentWholesalerId
+        )
+      : data.items;
+
+    if(!filteredItems.length){
+      cartDiv.innerHTML =
+        "<p style='text-align:center'>🛒 Is wholesaler ka cart empty hai</p>";
+      cart = [];
+      return;
+    }
+
+    /* 🧺 RENDER CART */
+    cartDiv.innerHTML = filteredItems.map(i => `
+      <div class="cart-card" style="display:flex;gap:10px;align-items:center;padding:8px;border-bottom:1px solid #eee">
+
+        <img src="${i.image || ''}"
+             class="cart-img"
+             style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:#f8fafc">
+
+        <div class="cart-info" style="flex:1">
+          <div class="cart-name" style="font-weight:600">
+            ${i.productName}
+          </div>
+
+          <div class="cart-price" style="font-size:14px;color:#334155">
+            ₹${i.price} × ${i.quantity || 1} =
+            <b>₹${Number(i.price) * Number(i.quantity || 1)}</b>
+          </div>
+        </div>
+
+        <div class="cart-actions">
+          <button onclick="removeFromCart('${i.productId}')"
+            style="border:none;background:#fee2e2;color:#991b1b;border-radius:6px;padding:4px 8px;cursor:pointer">
+            ❌
+          </button>
+        </div>
+
       </div>
+    `).join("");
 
-      <div class="cart-actions">
-        <button onclick="removeFromCart('${i.productId}')">❌</button>
-      </div>
+    /* 🔄 LOCAL CART SYNC (IMPORTANT) */
+    cart = filteredItems.map(i => ({
+      ...i,
+      quantity: Number(i.quantity || 1),
+      price: Number(i.price)
+    }));
 
-    </div>
-  `).join("");
+    /* 🚚 DELIVERY RECALC */
+    calcCartDelivery();
 
-  // 🔄 local cart sync
-  cart = data.items;
-  calcCartDelivery();
+  }catch(err){
+    console.error("❌ loadCart error", err);
+    cartDiv.innerHTML =
+      "<p style='text-align:center'>⚠️ Cart load failed</p>";
+    cart = [];
+  }
 }
 
 
