@@ -1316,8 +1316,9 @@ async function loadCart(){
 
       <div class="cart-info">
         <div class="cart-name">${i.productName}</div>
-        <div class="cart-price">₹${i.price}</div>
-        <div class="cart-qty">Qty: ${i.quantity}</div>
+        <div class="cart-price">
+  ₹${i.price} × ${i.quantity} = ₹${i.price * i.quantity}
+</div>
       </div>
 
       <div class="cart-actions">
