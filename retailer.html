@@ -1236,80 +1236,70 @@ async function calcCartDelivery(){
 }
   // ------------------- CART -------------------
 async function addToCart(p){
-
   const retailerId = localStorage.getItem("userId");
   if(!retailerId){
     alert("🔐 Please login first");
     return;
   }
 
-  // 🔄 LOAD CART FROM LOCAL (SAFE)
-  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-
-  /* ================= WHOLESALER CHECK ================= */
-  if (
-    cart.length > 0 &&
-    cart[0].wholesalerId !== p.wholesalerId
-  ) {
-    alert("❌ Ek cart me sirf ek wholesaler ke product allowed hain");
-    return;
-  }
-
-  /* ================= DUPLICATE CHECK ================= */
-  const already = cart.find(
-    item => item.productId === p._id
-  );
-
-  if(already){
-    alert("⚠️ Product already in cart");
-    return;
-  }
-
-  /* ================= ADD TO LOCAL CART ================= */
-  const cartItem = {
-    productId: p._id,
-    productName: p.productName,
-    price: Number(p.price),
-    quantity: 1,
-    image: p.images?.[0] || "",
-    wholesalerId: p.wholesalerId,
-    wholesalerLocation: p.wholesalerLocation,
-    shopName: p.shopName,
-    mobile: p.mobile,
-    address: p.address
-  };
-
-  cart.push(cartItem);
-
-  /* ================= SAVE TO SERVER ================= */
   try{
     const res = await fetch(`${API}/api/cart/save`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         retailerId,
-        item: cartItem
+        item:{
+          productId: p._id,
+          productName: p.productName,
+          price: p.price,
+          image: p.images?.[0] || "",
+          wholesalerId: p.wholesalerId,
+          shopName: p.shopName,
+          mobile: p.mobile,
+          address: p.address
+        }
       })
     });
 
     const data = await res.json();
 
-    if(!data.success){
-      throw new Error("Server rejected");
+    // ❌ DIFFERENT WHOLESALER FOUND
+    if(!data.success && data.message === "Only one wholesaler allowed in cart"){
+
+      // 🧹 AUTO CLEAR CART (BACKEND)
+      await fetch(`${API}/api/cart/clear/${retailerId}`,{
+        method:"DELETE"
+      });
+
+      // 🧹 CLEAR FRONTEND
+      cart = [];
+      localStorage.removeItem("cart");
+      currentWholesalerId = null;
+
+      alert("🧹 Purana cart clear kar diya gaya. Ab naya wholesaler add ho raha hai.");
+
+      // 🔁 TRY AGAIN (ADD NEW PRODUCT)
+      addToCart(p);
+      return;
     }
 
-    // ✅ SAVE LOCAL ONLY AFTER SUCCESS
-    localStorage.setItem("cart", JSON.stringify(cart));
+    if(data.success){
+      cart.push(p);
+      currentWholesalerId = p.wholesalerId;
+      localStorage.setItem("cart", JSON.stringify(cart));
 
-    alert(
-      "🛒 Added to cart successfully ✅\n\n" +
-      "Product: " + p.productName + "\n" +
-      "Price: ₹" + p.price
-    );
+      alert(
+        "🛒 Added to cart successfully ✅\n\n" +
+        "Product: " + p.productName +
+        "\nPrice: ₹" + p.price
+      );
+    }else{
+      alert("❌ Failed to add item");
+    }
 
   }catch(err){
-    console.error("ADD CART ERROR:", err);
-    alert("❌ Failed to add item to cart");
+    console.error(err);
+    alert("❌ Server error");
   }
 }
 async function loadCart(){
