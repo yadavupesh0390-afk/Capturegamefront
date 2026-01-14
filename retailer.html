@@ -718,11 +718,9 @@ window.addEventListener("pageshow", (e) => {
 });
 
   function openCategory(category, wid){
-  sessionStorage.setItem("fromCategory", "yes");
-
   window.location.href =
     `categoryProducts.html?wid=${wid}&category=${category}`;
-  }
+}
   function saveCurrentLocation() {
 
   if (!navigator.geolocation) {
