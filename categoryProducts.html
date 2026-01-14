@@ -313,43 +313,67 @@ function goBack(){
   window.history.back();
 }
 // ---------------- CART ----------------
+// ---------------- CART ----------------
 let cart = JSON.parse(localStorage.getItem("cart")||"[]");
+let currentWholesalerId = cart.length ? cart[0].wholesalerId : null;
 
 async function addToCart(p){
-
   const retailerId = localStorage.getItem("userId");
   if(!retailerId){
     alert("🔐 Please login first");
     return;
   }
 
-  const res = await fetch(`${API}/api/cart/save`,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      retailerId,
-      item:{
-        productId: p._id || p.id,
-        productName: p.productName,
-        price: p.price,
-        image: p.images?.[0] || "",
-        wholesalerId: p.wholesalerId,
-        shopName: p.shopName,
-        mobile: p.mobile,
-        address: p.address
-      }
-    })
-  });
+  // अगर cart में पहले से products हैं और wholesaler अलग है
+  if(currentWholesalerId && currentWholesalerId !== p.wholesalerId){
+    const confirmClear = confirm("⚠️ आपका cart पहले से भरा है। दूसरे wholesaler का product add करने पर पुराना cart clear होगा। Continue?");
+    if(!confirmClear) return;
 
-  const data = await res.json();
+    // 🔹 Backend cart clear
+    await fetch(`${API}/api/cart/clear/${retailerId}`, { method: "DELETE" });
 
-  if(data.success){
-    alert("🛒 Added to cart successfully");
-  }else{
-    alert("❌ Failed to add to cart");
+    // 🔹 Frontend cart clear
+    cart = [];
+    localStorage.removeItem("cart");
+    currentWholesalerId = null;
+
+    alert("🧹 पुराना cart clear कर दिया गया। अब नया product add हो रहा है।");
+  }
+
+  try{
+    const res = await fetch(`${API}/api/cart/save`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        retailerId,
+        item:{
+          productId: p._id || p.id,
+          productName: p.productName,
+          price: p.price,
+          image: p.images?.[0] || "",
+          wholesalerId: p.wholesalerId,
+          shopName: p.shopName,
+          mobile: p.mobile,
+          address: p.address
+        }
+      })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      cart.push(p);
+      currentWholesalerId = p.wholesalerId;
+      localStorage.setItem("cart", JSON.stringify(cart));
+      alert("🛒 Added to cart successfully");
+    }else{
+      alert("❌ Failed to add to cart");
+    }
+  }catch(err){
+    console.error(err);
+    alert("❌ Server error");
   }
 }
-
 
   let deliveryTimer = null;
 
