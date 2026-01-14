@@ -707,16 +707,26 @@ window.addEventListener("load", () => {
   const fromCategory = sessionStorage.getItem("fromCategory");
 
   if(fromCategory){
-    // 🔁 Category page से वापस आए हैं
-    console.log("↩️ Back from category, state preserved");
+    const wid = sessionStorage.getItem("lastWid");
+    const categories =
+      JSON.parse(sessionStorage.getItem("lastCategories") || "[]");
+
+    if(wid && categories.length){
+      document.getElementById("widInput").value = wid;
+      renderCategories(categories); // 🔥 restore
+    }
 
     sessionStorage.removeItem("fromCategory");
-    return;
   }
 
-  // ✅ First time dashboard open
-  loadCategories();
 });
+
+  function openCategory(category, wid){
+  sessionStorage.setItem("fromCategory", "yes");
+
+  window.location.href =
+    `categoryProducts.html?wid=${wid}&category=${category}`;
+  }
   function saveCurrentLocation() {
 
   if (!navigator.geolocation) {
