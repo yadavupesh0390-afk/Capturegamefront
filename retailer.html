@@ -1489,6 +1489,27 @@ async function payCart() {
     alert("❌ Payment failed");
   }
 }
+  function clearCartCompletely(){
+  cart = [];
+  localStorage.removeItem("cart");
+
+  // backend cart bhi clear
+  const retailerId = localStorage.getItem("userId");
+  if(retailerId){
+    fetch(`${API}/api/cart/clear`,{
+      method:"DELETE",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ retailerId })
+    });
+  }
+
+  // UI reset
+  const cartBox = document.getElementById("cartItems");
+  if(cartBox) cartBox.innerHTML = "<p>🛒 Cart empty hai</p>";
+
+  document.getElementById("cartDeliveryBox").style.display = "none";
+  window.__cartDelivery = null;
+  }
 
 // ------------------- DELIVERY -------------------
 async function openDeliveryDetails(){
