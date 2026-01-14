@@ -1387,7 +1387,10 @@ async function payCart() {
   }
 
   // ✅ Subtotal
-  const subtotal = cart.reduce((s, i) => s + i.price, 0);
+  const subtotal = cart.reduce(
+  (s, i) => s + (Number(i.price) * Number(i.quantity || 1)),
+  0
+);
 
   try {
     // 🔹 STEP 1: DELIVERY CALCULATION FROM SERVER
