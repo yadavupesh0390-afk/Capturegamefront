@@ -1236,7 +1236,12 @@ async function calcCartDelivery(){
 }
   // ------------------- CART -------------------
 async function addToCart(p){
+  if(currentWholesalerId && p.wholesalerId !== currentWholesalerId){
+    alert("❌ Ek cart me sirf ek wholesaler ke product allowed hain");
+    return;
+  }
 
+  currentWholesalerId = p.wholesalerId;
   const retailerId = localStorage.getItem("userId");
   if(!retailerId){
     alert("🔐 Please login first");
