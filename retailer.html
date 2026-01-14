@@ -1236,75 +1236,82 @@ async function calcCartDelivery(){
 }
   // ------------------- CART -------------------
 async function addToCart(p){
-  if(currentWholesalerId && p.wholesalerId !== currentWholesalerId){
-    alert("❌ Ek cart me sirf ek wholesaler ke product allowed hain");
-    return;
-  }
 
-  currentWholesalerId = p.wholesalerId;
   const retailerId = localStorage.getItem("userId");
   if(!retailerId){
     alert("🔐 Please login first");
     return;
   }
 
-  // 🔁 DUPLICATE CHECK
-  const already = cart.find(item => item._id === p._id);
+  // 🔄 LOAD CART FROM LOCAL (SAFE)
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  /* ================= WHOLESALER CHECK ================= */
+  if (
+    cart.length > 0 &&
+    cart[0].wholesalerId !== p.wholesalerId
+  ) {
+    alert("❌ Ek cart me sirf ek wholesaler ke product allowed hain");
+    return;
+  }
+
+  /* ================= DUPLICATE CHECK ================= */
+  const already = cart.find(
+    item => item.productId === p._id
+  );
+
   if(already){
     alert("⚠️ Product already in cart");
     return;
   }
 
-  // ✅ ADD TO CART (LOCAL)
-  cart.push(p);
+  /* ================= ADD TO LOCAL CART ================= */
+  const cartItem = {
+    productId: p._id,
+    productName: p.productName,
+    price: Number(p.price),
+    quantity: 1,
+    image: p.images?.[0] || "",
+    wholesalerId: p.wholesalerId,
+    wholesalerLocation: p.wholesalerLocation,
+    shopName: p.shopName,
+    mobile: p.mobile,
+    address: p.address
+  };
 
+  cart.push(cartItem);
+
+  /* ================= SAVE TO SERVER ================= */
   try{
     const res = await fetch(`${API}/api/cart/save`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-  retailerId,
-  item:{
-  productId: p._id,
-  productName: p.productName,
-  price: p.price,
-  image: p.images?.[0] || "",
-  wholesalerId: p.wholesalerId,
-  shopName: p.shopName,
-  mobile: p.mobile,
-  address: p.address,
-
-  // 🔥 ADD THIS
-  wholesalerLocation: p.wholesalerLocation
-}
-})
+        retailerId,
+        item: cartItem
+      })
     });
 
     const data = await res.json();
 
-    if(data.success){
-      localStorage.setItem("cart", JSON.stringify(cart));
-
-      alert(
-        "🛒 Added to cart successfully ✅\n\n" +
-        "Product: " + p.productName + "\n" +
-        "Price: ₹" + p.price
-      );
-    }else{
-      // ❌ rollback
-      cart = cart.filter(item => item._id !== p._id);
-      alert("❌ Failed to add item to cart");
+    if(!data.success){
+      throw new Error("Server rejected");
     }
+
+    // ✅ SAVE LOCAL ONLY AFTER SUCCESS
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    alert(
+      "🛒 Added to cart successfully ✅\n\n" +
+      "Product: " + p.productName + "\n" +
+      "Price: ₹" + p.price
+    );
 
   }catch(err){
     console.error("ADD CART ERROR:", err);
-
-    // ❌ rollback
-    cart = cart.filter(item => item._id !== p._id);
-    alert("❌ Server error while adding to cart");
+    alert("❌ Failed to add item to cart");
   }
 }
-
 async function loadCart(){
 
   const retailerId = localStorage.getItem("userId");
