@@ -310,7 +310,8 @@ function closeAll(){
   lastDeliveryCharge = 0;
 }
 function goBack(){
-  window.history.back();
+  sessionStorage.setItem("fromCategory", "1");
+  window.location.href = "retailer.html";
 }
 // ---------------- CART ----------------
 // ---------------- CART ----------------
