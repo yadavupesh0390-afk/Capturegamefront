@@ -702,7 +702,21 @@ function openCategory(categoryId, wid){
     }
   );
   }
+window.addEventListener("load", () => {
 
+  const fromCategory = sessionStorage.getItem("fromCategory");
+
+  if(fromCategory){
+    // 🔁 Category page से वापस आए हैं
+    console.log("↩️ Back from category, state preserved");
+
+    sessionStorage.removeItem("fromCategory");
+    return;
+  }
+
+  // ✅ First time dashboard open
+  loadCategories();
+});
   function saveCurrentLocation() {
 
   if (!navigator.geolocation) {
