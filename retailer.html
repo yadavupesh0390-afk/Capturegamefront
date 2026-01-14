@@ -576,7 +576,7 @@ const API = "https://shopbacked-vmhs.onrender.com";
 let selectedProduct = null;
 let cart = [];
 let cartDeliveryCharge = 0;
-
+let currentWholesalerId = null;
 // DOM elements
 const dImages = document.getElementById("dImages");
 const dDots   = document.getElementById("dDots");
@@ -614,7 +614,11 @@ function formatDT(d){ const dt=new Date(d); return dt.toLocaleDateString()+" "+d
 async function loadProducts(){
   const wid = document.getElementById("wid").value.trim();
   if(!wid) return alert("Enter Wholesaler ID");
+  if (currentWholesalerId && currentWholesalerId !== wid) {
+    clearCartCompletely();
+  }
 
+  currentWholesalerId = wid;
   try{
     const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
     const data = await res.json();
