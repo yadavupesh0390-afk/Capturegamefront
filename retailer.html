@@ -1264,7 +1264,7 @@ async function addToCart(p){
     const data = await res.json();
 
     // ❌ DIFFERENT WHOLESALER FOUND
-    if(!data.success && data.message === "Only one wholesaler allowed in cart"){
+    if(!data.success && data.message && data.message.includes("Only one wholesaler")){
 
       // 🧹 AUTO CLEAR CART (BACKEND)
       await fetch(`${API}/api/cart/clear/${retailerId}`,{
