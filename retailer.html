@@ -702,23 +702,19 @@ function openCategory(categoryId, wid){
     }
   );
   }
-window.addEventListener("load", () => {
+let categoriesLoaded = false;
 
-  const fromCategory = sessionStorage.getItem("fromCategory");
-
-  if(fromCategory){
-    const wid = sessionStorage.getItem("lastWid");
-    const categories =
-      JSON.parse(sessionStorage.getItem("lastCategories") || "[]");
-
-    if(wid && categories.length){
-      document.getElementById("widInput").value = wid;
-      renderCategories(categories); // 🔥 restore
-    }
-
-    sessionStorage.removeItem("fromCategory");
+window.addEventListener("pageshow", (e) => {
+  // अगर page browser cache से आया है
+  if (e.persisted) {
+    console.log("↩️ Page restored from cache");
+    return; // ❌ दुबारा load मत करो
   }
 
+  if (!categoriesLoaded) {
+    loadCategories();
+    categoriesLoaded = true;
+  }
 });
 
   function openCategory(category, wid){
