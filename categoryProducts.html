@@ -549,32 +549,39 @@ async function directBuy(e){
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
-        amount: total,
-        notes: {
-  type: "direct",
+  amount: total,
+  notes: {
+    type: "direct",
 
-  productId: selectedProduct._id,
-  productName: selectedProduct.productName,
-  price: selectedProduct.price,
-  image: selectedProduct.images?.[0] || "",        
+    productId: selectedProduct._id,
+    productName: selectedProduct.productName,
+    price: selectedProduct.price,
+    image: selectedProduct.images?.[0] || "",
 
-  wholesalerId: selectedProduct.wholesalerId,
-  wholesalerName: selectedProduct.shopName,
-  wholesalerMobile: selectedProduct.mobile,
-  wholesalerAddress: selectedProduct.address,
+    // 🏪 Wholesaler info
+    wholesalerId: selectedProduct.wholesalerId,
+    wholesalerName: selectedProduct.shopName,
+    wholesalerMobile: selectedProduct.mobile,
+    wholesalerAddress: selectedProduct.address,
 
-  retailerName: retailerProfile.name,
-  retailerMobile: retailerProfile.mobile,
-  retailerAddress: retailerProfile.address,
+    // ✅ WHOLESALER CURRENT LOCATION
+    wholesalerLocation: wholesalerLoc,
 
-  vehicleType: vehicle,
+    // 🏬 Retailer info
+    retailerName: retailerProfile.name,
+    retailerMobile: retailerProfile.mobile,
+    retailerAddress: retailerProfile.address,
 
-  // ✅ MUST MATCH BACKEND
-  totalDelivery: lastDeliveryCharge,
-  retailerPays: lastDeliveryCharge,
-  wholesalerPays: 0
-}
-      })
+    // ✅ RETAILER CURRENT LOCATION
+    retailerLocation: retailerLoc,
+
+    vehicleType: vehicle,
+
+    totalDelivery: lastDeliveryCharge,
+    retailerPays: lastDeliveryCharge,
+    wholesalerPays: 0
+  }
+})
     });
 
     const data = await res.json();
