@@ -173,6 +173,8 @@ body{margin:0;background:#f3f6fb}
 const API = "https://shopbacked-vmhs.onrender.com";
 let lastDeliveryCharge = 0;
  let allProducts = []; 
+  let currentRetailerLoc = null;
+let currentWholesalerLoc = null;
 // URL params
 const params = new URLSearchParams(location.search);
 const wid = params.get("wid");
