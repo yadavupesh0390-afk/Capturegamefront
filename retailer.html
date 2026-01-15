@@ -614,6 +614,7 @@ function formatDT(d){ const dt=new Date(d); return dt.toLocaleDateString()+" "+d
 async function loadProducts(){
   const wid = document.getElementById("wid").value.trim();
   if(!wid) return alert("Enter Wholesaler ID");
+  sessionStorage.setItem("lastWid", wid);
   if (currentWholesalerId && currentWholesalerId !== wid) {
     clearCartCompletely();
   }
