@@ -320,14 +320,14 @@ function renderOrders(list){
    <b>${o.productName}</b><br>  
    <span class="badge blue">${o.status}</span><br>  
    <small>${o.statusHistory[o.statusHistory.length-1]?.time ? new Date(o.statusHistory[o.statusHistory.length-1].time).toLocaleString() : ""}</small><br><br>  
-   🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>  
+   🏪 <b>Wholesaler Shop Name (short address):</b> ${o.wholesalerName}<br>  
    🧭 <b>Wholesaler Location:</b>
 ${o.wholesalerLocation
  ? `${o.wholesalerLocation.lat}, ${o.wholesalerLocation.lng}`
  : "N/A"}
 <br>  
    📞 ${o.wholesalerMobile || "N/A"}<br><br>  
-   🏬 <b>Retailer:</b> ${o.retailerName}<br>  
+   🏬 <b>Retailer Shop Name (short address):</b> ${o.retailerName}<br>  
    🧭 <b>Retailer Location:</b>
 ${o.retailerLocation
  ? `${o.retailerLocation.lat}, ${o.retailerLocation.lng}`
