@@ -321,10 +321,18 @@ function renderOrders(list){
    <span class="badge blue">${o.status}</span><br>  
    <small>${o.statusHistory[o.statusHistory.length-1]?.time ? new Date(o.statusHistory[o.statusHistory.length-1].time).toLocaleString() : ""}</small><br><br>  
    🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>  
-   📍 ${o.wholesalerAddress || "Address N/A"}<br>  
+   🧭 <b>Wholesaler Location:</b>
+${o.wholesalerLocation
+ ? `${o.wholesalerLocation.lat}, ${o.wholesalerLocation.lng}`
+ : "N/A"}
+<br>  
    📞 ${o.wholesalerMobile || "N/A"}<br><br>  
    🏬 <b>Retailer:</b> ${o.retailerName}<br>  
-   📍 ${o.retailerAddress || "Address N/A"}<br>  
+   🧭 <b>Retailer Location:</b>
+${o.retailerLocation
+ ? `${o.retailerLocation.lat}, ${o.retailerLocation.lng}`
+ : "N/A"}
+<br>  
    📞 ${o.retailerMobile || "N/A"}<br><br>  
    🚗 <b>Vehicle:</b> ${o.vehicleType==="two_wheeler"?"Two Wheeler":o.vehicleType==="three_wheeler"?"Three Wheeler":o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"}<br><br>  
   
