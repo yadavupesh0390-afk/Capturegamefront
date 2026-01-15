@@ -688,10 +688,8 @@ function openCategory(categoryId, wid){
         loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);
 
       // ✅ localStorage में save
-      localStorage.setItem(
-        "retailer_location",
-        JSON.stringify(loc)
-      );
+      localStorage.setItem("retailer_location", JSON.stringify(loc));
+localStorage.setItem("location_updated", "yes");
 
       alert("✅ Location set successfully");
 
