@@ -652,6 +652,10 @@ async function loadProducts(){
 
   </div>
 `).join("");
+    sessionStorage.setItem(
+  "lastCategoriesHTML",
+  categoriesContainer.innerHTML
+);
 
   }catch(e){
     console.error(e);
@@ -725,10 +729,7 @@ window.addEventListener("pageshow", function () {
   // 👉 First time: kuch nahi (user search karega)
 });
 
-  function openCategory(category, wid){
-  window.location.href =
-    `categoryProducts.html?wid=${wid}&category=${category}`;
-}
+  
   function saveCurrentLocation() {
 
   if (!navigator.geolocation) {
