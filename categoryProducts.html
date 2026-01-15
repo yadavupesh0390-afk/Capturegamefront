@@ -556,6 +556,7 @@ async function directBuy(e){
   productId: selectedProduct._id,
   productName: selectedProduct.productName,
   price: selectedProduct.price,
+  image: selectedProduct.images?.[0] || "",        
 
   wholesalerId: selectedProduct.wholesalerId,
   wholesalerName: selectedProduct.shopName,
