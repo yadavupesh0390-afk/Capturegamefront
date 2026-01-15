@@ -1685,43 +1685,60 @@ async function openRetailerProfile() {
   profileModal.style.display = "flex";
 
   const retailerId = localStorage.getItem("userId");
-  if(!retailerId){
+  if (!retailerId) {
     alert("Login required");
     return;
   }
 
-  try{
+  try {
     const res = await fetch(`${API}/api/retailers/profile/${retailerId}`);
     const data = await res.json();
 
-    if(data.success && data.profile){
+    if (data.success && data.profile) {
 
       profileName.value    = data.profile.name || "";
       profileMobile.value  = data.profile.mobile || "";
       profileAddress.value = data.profile.address || "";
 
-      // ✅ Current Location
-      if(data.profile.location){
+      // 🔥 CHECK: user ne abhi location update ki hai kya?
+      const locationUpdated =
+        localStorage.getItem("location_updated") === "yes";
+
+      // ✅ LOCATION LOGIC (FIXED)
+      if (!locationUpdated && data.profile.location) {
+
+        // 👉 Sirf tab hi server wali location lagao
         profileLocation.value =
           data.profile.location.lat.toFixed(6) + ", " +
           data.profile.location.lng.toFixed(6);
-      } else {
-        profileLocation.value = "";
-      }
 
-      // ✅ Cache for order/delivery
-      localStorage.setItem(
-        "retailerProfile",
-        JSON.stringify(data.profile)
-      );
-
-      // ✅ Cache location separately (optional)
-      if(data.profile.location){
+        // cache
         localStorage.setItem(
           "retailer_location",
           JSON.stringify(data.profile.location)
         );
+
+      } else if (locationUpdated) {
+
+        // 👉 User ki nayi location ko chhedo mat
+        const loc =
+          JSON.parse(localStorage.getItem("retailer_location") || "{}");
+
+        if (loc.lat && loc.lng) {
+          profileLocation.value =
+            Number(loc.lat).toFixed(6) + ", " +
+            Number(loc.lng).toFixed(6);
+        }
+
+      } else {
+        profileLocation.value = "";
       }
+
+      // ✅ Profile cache
+      localStorage.setItem(
+        "retailerProfile",
+        JSON.stringify(data.profile)
+      );
 
     } else {
       profileName.value = "";
@@ -1730,7 +1747,7 @@ async function openRetailerProfile() {
       profileLocation.value = "";
     }
 
-  } catch(err){
+  } catch (err) {
     alert("Server error");
   }
 }
