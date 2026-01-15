@@ -705,17 +705,24 @@ function openCategory(categoryId, wid){
   }
 let categoriesLoaded = false;
 
-window.addEventListener("pageshow", (e) => {
-  // अगर page browser cache से आया है
-  if (e.persisted) {
-    console.log("↩️ Page restored from cache");
-    return; // ❌ दुबारा load मत करो
+window.addEventListener("pageshow", function () {
+
+  const wid = sessionStorage.getItem("lastWid");
+  const catHTML = sessionStorage.getItem("lastCategoriesHTML");
+
+  // 👉 input restore
+  if (wid) {
+    document.getElementById("wid").value = wid;
   }
 
-  if (!categoriesLoaded) {
-    loadCategories();
-    categoriesLoaded = true;
+  // 👉 categories restore (BACK CASE)
+  if (catHTML) {
+    document.getElementById("categories").innerHTML = catHTML;
+    console.log("↩️ Categories restored from session");
+    return;
   }
+
+  // 👉 First time: kuch nahi (user search karega)
 });
 
   function openCategory(category, wid){
