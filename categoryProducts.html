@@ -384,6 +384,9 @@ function updateDelivery(){
   deliveryTimer = setTimeout(runDeliveryCalc, 400); // debounce
 }
 
+
+
+
 async function runDeliveryCalc(){
 
   if(!selectedProduct){
@@ -407,22 +410,22 @@ async function runDeliveryCalc(){
   const retailerProfile =
     JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-  let retailerLoc =
+  currentRetailerLoc =
     JSON.parse(localStorage.getItem("retailer_location")) ||
     retailerProfile.location ||
     null;
 
   // 🔄 Normalize retailer location keys
-  if(retailerLoc?.latitude && retailerLoc?.longitude){
-    retailerLoc = {
-      lat: retailerLoc.latitude,
-      lng: retailerLoc.longitude
+  if(currentRetailerLoc?.latitude && currentRetailerLoc?.longitude){
+    currentRetailerLoc = {
+      lat: currentRetailerLoc.latitude,
+      lng: currentRetailerLoc.longitude
     };
   }
 
   /* ================= WHOLESALER LOCATION (LIVE) ================= */
 
-  let wholesalerLoc = null;
+  currentWholesalerLoc = null;
 
   try{
     const resWh = await fetch(
@@ -430,21 +433,21 @@ async function runDeliveryCalc(){
     );
     const whData = await resWh.json();
 
-    wholesalerLoc =
+    currentWholesalerLoc =
       whData?.profile?.location ||
       whData?.wholesaler?.location ||
       whData?.location ||
       null;
 
     // 🔄 Normalize wholesaler location keys
-    if(wholesalerLoc?.latitude && wholesalerLoc?.longitude){
-      wholesalerLoc = {
-        lat: wholesalerLoc.latitude,
-        lng: wholesalerLoc.longitude
+    if(currentWholesalerLoc?.latitude && currentWholesalerLoc?.longitude){
+      currentWholesalerLoc = {
+        lat: currentWholesalerLoc.latitude,
+        lng: currentWholesalerLoc.longitude
       };
     }
 
-    console.log("🏪 LIVE Wholesaler Location:", wholesalerLoc);
+    console.log("🏪 LIVE Wholesaler Location:", currentWholesalerLoc);
 
   }catch(err){
     console.error("❌ Wholesaler location fetch failed", err);
@@ -453,10 +456,10 @@ async function runDeliveryCalc(){
   /* ================= LOCATION VALIDATION ================= */
 
   if(
-    !retailerLoc?.lat ||
-    !retailerLoc?.lng ||
-    !wholesalerLoc?.lat ||
-    !wholesalerLoc?.lng
+    !currentRetailerLoc?.lat ||
+    !currentRetailerLoc?.lng ||
+    !currentWholesalerLoc?.lat ||
+    !currentWholesalerLoc?.lng
   ){
     box.style.display = "block";
     dText.innerText = "📍 Location missing";
@@ -464,8 +467,8 @@ async function runDeliveryCalc(){
     lastDeliveryCharge = 0;
 
     console.warn("⚠️ Location check failed", {
-      retailerLoc,
-      wholesalerLoc
+      retailerLoc: currentRetailerLoc,
+      wholesalerLoc: currentWholesalerLoc
     });
     return;
   }
@@ -479,8 +482,8 @@ async function runDeliveryCalc(){
       body: JSON.stringify({
         orderAmount: Number(selectedProduct.price),
         vehicleType: vehicle,
-        retailerLocation: retailerLoc,
-        wholesalerLocation: wholesalerLoc
+        retailerLocation: currentRetailerLoc,
+        wholesalerLocation: currentWholesalerLoc
       })
     });
 
