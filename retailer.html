@@ -1782,22 +1782,31 @@ async function sendProfile(payload){
 
     if(data.success){
 
-      // ✅ ALWAYS SAVE SERVER PROFILE
+      // ✅ Profile हमेशा save करो
       localStorage.setItem(
         "retailerProfile",
         JSON.stringify(data.profile)
       );
 
-      // ✅ HANDLE LOCATION SAFELY
-      if(data.profile.location){
-        localStorage.setItem(
-          "retailer_location",
-          JSON.stringify(data.profile.location)
-        );
-      } else {
-        // 🔥 IMPORTANT: remove old location
-        localStorage.removeItem("retailer_location");
+      // 🔥 LOCATION FIX
+      const locationUpdated = localStorage.getItem("location_updated");
+
+      if(!locationUpdated){
+        // 👉 user ने नई location set नहीं की
+        if(data.profile.location){
+          localStorage.setItem(
+            "retailer_location",
+            JSON.stringify(data.profile.location)
+          );
+        } else {
+          localStorage.removeItem("retailer_location");
+        }
       }
+      // ❌ अगर location_updated = yes है तो कुछ मत करो
+      // (नई location already localStorage में है)
+
+      // ✅ SAVE COMPLETE → flag हटाओ
+      localStorage.removeItem("location_updated");
 
       alert("✅ Profile save ho gaya");
       closeAll();
