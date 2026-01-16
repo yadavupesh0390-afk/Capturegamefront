@@ -235,7 +235,7 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
   </div>
  </div>
  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  
- <!-- 🔥 FIREBASE SDK -->
+ 
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/firebase-messaging-sw.js")
@@ -247,6 +247,7 @@ if ("serviceWorker" in navigator) {
     });
 }
 </script>
+ <!-- 🔥 FIREBASE SDK -->
  <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
