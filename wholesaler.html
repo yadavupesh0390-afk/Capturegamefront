@@ -235,7 +235,9 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
   </div>
  </div>
  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  
- 
+ <script>
+  const API = "https://shopbacked-vmhs.onrender.com";
+ </script>
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/firebase-messaging-sw.js")
@@ -299,7 +301,7 @@ if ("serviceWorker" in navigator) {
 </script>
  
  <script>    
-const API="https://shopbacked-vmhs.onrender.com";    
+    
 const TOKEN=localStorage.getItem("token");    
 const WID=localStorage.getItem("userId");    
 const ROLE=localStorage.getItem("role");    
