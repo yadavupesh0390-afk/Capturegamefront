@@ -16,7 +16,7 @@ const messaging = getMessaging(app);
 // User login ke baad token get karo
 export const getFCMToken = async () => {
   try {
-    const token = await getToken(messaging, { vapidKey: "YOUR_VAPID_KEY_HERE" });
+    const token = await getToken(messaging, { vapidKey: "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s" });
     console.log("FCM TOKEN:", token);
     return token;
   } catch (err) {
