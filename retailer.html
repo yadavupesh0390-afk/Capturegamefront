@@ -1741,7 +1741,6 @@ async function openRetailerProfile() {
     } else {
       profileName.value = "";
       profileMobile.value = "";
-      profileAddress.value = "";
       profileLocation.value = "";
     }
 
@@ -1762,8 +1761,8 @@ async function saveProfile() {
   const payload = {
     retailerId: localStorage.getItem("userId"),
     name: profileName.value.trim(),
-    mobile: profileMobile.value.trim(),
-    address: profileAddress.value.trim()
+    mobile: profileMobile.value.trim()
+    
   };
 
   sendProfile(payload);
