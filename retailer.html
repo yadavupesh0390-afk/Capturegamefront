@@ -1757,11 +1757,22 @@ async function saveProfile() {
     return;
   }
 
+  // ✅ CURRENT LOCATION READ
+  let location = null;
+
+  const locLS = localStorage.getItem("retailer_location");
+  if(locLS){
+    location = JSON.parse(locLS);
+  }
+
   const payload = {
     retailerId: localStorage.getItem("userId"),
     name: profileName.value.trim(),
-    mobile: profileMobile.value.trim()
+    mobile: profileMobile.value.trim(),
     
+
+    // 🔥 सबसे जरूरी
+    location: location
   };
 
   sendProfile(payload);
