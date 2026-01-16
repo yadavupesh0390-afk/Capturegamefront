@@ -1780,16 +1780,20 @@ async function sendProfile(payload){
 
     if(data.success){
 
-      // ✅ Profile हमेशा save करो
+      // ✅ Profile हमेशा update करो
       localStorage.setItem(
         "retailerProfile",
         JSON.stringify(data.profile)
       );
 
-      // 🔥 LOCATION FIX
+      // 🔥 सबसे जरूरी FIX
       const locationUpdated = localStorage.getItem("location_updated");
 
-      if(!locationUpdated){
+      if(locationUpdated === "yes"){
+        // 👉 user ने नई location set की है
+        // ❌ backend की location से कुछ मत करो
+        console.log("📍 New location preserved (local)");
+      } else {
         // 👉 user ने नई location set नहीं की
         if(data.profile.location){
           localStorage.setItem(
@@ -1800,10 +1804,8 @@ async function sendProfile(payload){
           localStorage.removeItem("retailer_location");
         }
       }
-      // ❌ अगर location_updated = yes है तो कुछ मत करो
-      // (नई location already localStorage में है)
 
-      // ✅ SAVE COMPLETE → flag हटाओ
+      // ✅ flag clear
       localStorage.removeItem("location_updated");
 
       alert("✅ Profile save ho gaya");
