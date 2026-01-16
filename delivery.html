@@ -486,5 +486,53 @@ function closeCodeModal(){ codeModal.style.display="none"; }
 loadOrders();
 setInterval(loadOrders,8000);
 setInterval(setLiveLocation, 15000); 
-</script>  </body>  
+</script> <!-- 🔥 FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBioiLSE3HyZh49yJv93MwnQFrmAm6wJ5g",
+    authDomain: "shop-ab586.firebaseapp.com",
+    projectId: "shop-ab586",
+    storageBucket: "shop-ab586.firebasestorage.app",
+    messagingSenderId: "603669325846",
+    appId: "1:603669325846:web:00f3ccff7fa977bf542d37"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+
+  Notification.requestPermission().then(permission => {
+    if(permission === "granted"){
+      getToken(messaging, {
+        vapidKey: "👉👉 YAHAN_APNA_VAPID_KEY_DALO 👈👈"
+      }).then(token => {
+        if(token){
+          console.log("🔔 FCM Token:", token);
+
+          // Backend ko token bhejo
+          fetch(`${API}/api/notifications/saveToken`,{
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              "Authorization":"Bearer "+TOKEN
+            },
+            body: JSON.stringify({
+              userId: DBID,
+              role: "delivery",    // ✅ DELIVERY BOY ROLE
+              fcmToken: token
+            })
+          });
+        }
+      });
+    }
+  });
+
+  // Foreground notification
+  onMessage(messaging, payload => {
+    alert("📩 New Order: " + payload.notification.title);
+    loadOrders(); // notification aate hi orders refresh
+  });
+</script> </body>  
 </html>
