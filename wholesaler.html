@@ -234,7 +234,59 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
     ">Close</button>
   </div>
  </div>
- <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  <script>    
+ <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>  
+ <!-- 🔥 FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBioiLSE3HyZh49yJv93MwnQFrmAm6wJ5g",
+    authDomain: "shop-ab586.firebaseapp.com",
+    projectId: "shop-ab586",
+    storageBucket: "shop-ab586.firebasestorage.app",
+    messagingSenderId: "603669325846",
+    appId: "1:603669325846:web:00f3ccff7fa977bf542d37"
+  };
+
+  // 🔹 Init Firebase
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+
+  // 🔹 Permission + Token
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      getToken(messaging, {
+        vapidKey: "👉👉 YAHAN_APNA_VAPID_KEY_DALO 👈👈"
+      }).then(token => {
+        if (token) {
+          console.log("🔔 FCM Token:", token);
+
+          // 🔥 BACKEND ko token bhejo
+          fetch(`${API}/api/notifications/saveToken`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+              userId: localStorage.getItem("userId"),
+              role: "wholesaler",
+              fcmToken: token
+            })
+          });
+        }
+      });
+    }
+  });
+
+  // 🔔 Foreground notification
+  onMessage(messaging, payload => {
+    alert("🔔 New Order: " + payload.notification.title);
+  });
+</script>
+ 
+ <script>    
 const API="https://shopbacked-vmhs.onrender.com";    
 const TOKEN=localStorage.getItem("token");    
 const WID=localStorage.getItem("userId");    
