@@ -1696,8 +1696,7 @@ async function openRetailerProfile() {
 
       profileName.value    = data.profile.name || "";
       profileMobile.value  = data.profile.mobile || "";
-      profileAddress.value = data.profile.address || "";
-
+      
       // 🔥 CHECK: user ne abhi location update ki hai kya?
       const locationUpdated =
         localStorage.getItem("location_updated") === "yes";
