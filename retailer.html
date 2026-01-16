@@ -1465,61 +1465,55 @@ async function payCart() {
     return;
   }
 
-  // ✅ Subtotal
-  const subtotal = cart.reduce(
-  (s, i) => s + (Number(i.price) * Number(i.quantity || 1)),
-  0
-);
+  // ✅ DELIVERY DATA MUST EXIST
+  if (!window.__cartDelivery) {
+    alert("❌ Delivery calculation missing");
+    return;
+  }
+
+  const {
+    subtotal,
+    retailerPays,
+    wholesalerPays,
+    total,
+    distanceKm,
+    timeMinutes
+  } = window.__cartDelivery;
 
   try {
-    // 🔹 STEP 1: DELIVERY CALCULATION FROM SERVER
-    const deliveryRes = await getDeliveryFromServer({
-      orderAmount: subtotal,
-      vehicleType: vehicle
-    });
-
-    if (!deliveryRes.success) {
-      alert(deliveryRes.message || "Delivery calculation failed");
-      return;
-    }
-
-    const retailerDelivery = deliveryRes.retailerPays;
-    const wholesalerDelivery = deliveryRes.wholesalerPays;
-    const totalDelivery = deliveryRes.totalDelivery;
-
-    const totalAmount = subtotal + retailerDelivery;
-
-    // 🔹 STEP 2: CREATE PAYMENT
+    // ===============================
+    // ✅ CREATE ORDER + PAYMENT
+    // ===============================
     const res = await fetch(`${API}/api/orders/pay-and-create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: totalAmount, // ✅ FIXED
+        amount: total,   // ✅ FINAL TOTAL
         notes: {
-          type: "cart", // ✅🔥 CRITICAL
+          type: "cart",
 
           retailerName: profile.name,
           retailerMobile: profile.mobile,
-          retailerAddress: profile.address,
 
           vehicleType: vehicle,
 
-          // ✅ DELIVERY BREAKUP (IMPORTANT)
-          deliveryCharge: totalDelivery,
-          retailerDeliveryPay: retailerDelivery,
-          wholesalerDeliveryPay: wholesalerDelivery,
+          // ✅ DELIVERY BREAKUP
+          deliveryCharge: retailerPays + wholesalerPays,
+          retailerDeliveryPay: retailerPays,
+          wholesalerDeliveryPay: wholesalerPays,
+          distanceKm,
+          timeMinutes,
 
           products: JSON.stringify(
             cart.map(p => ({
-              productId: p._id,
+              productId: p.productId || p._id,
               productName: p.productName,
               price: p.price,
+              quantity: p.quantity || 1,
 
               wholesalerId: p.wholesalerId,
               wholesalerName: p.shopName,
-              wholesalerMobile: p.mobile,
-              wholesalerAddress: p.address,
-              wholesalerLocation: p.wholesalerLocation // ✅ standard key
+              wholesalerMobile: p.mobile
             }))
           )
         }
@@ -1528,11 +1522,13 @@ async function payCart() {
 
     const data = await res.json();
     if (!data.success) {
-      alert("❌ Payment init failed");
+      alert(data.message || "❌ Payment init failed");
       return;
     }
 
-    // 🔹 STEP 3: OPEN RAZORPAY
+    // ===============================
+    // ✅ RAZORPAY
+    // ===============================
     const rzp = new Razorpay({
       key: data.key,
       amount: data.amount,
@@ -1542,11 +1538,11 @@ async function payCart() {
       handler: function () {
         localStorage.removeItem("cart");
         cart = [];
+        window.__cartDelivery = null;
 
-        alert("✅ Cart Payment Successful 🎉\n📦 Orders processing me hain");
-
+        alert("✅ Payment Successful 🎉");
         closeAll();
-        setTimeout(openOrderStatus, 3000);
+        setTimeout(openOrderStatus, 2000);
       },
 
       modal: {
@@ -1560,9 +1556,9 @@ async function payCart() {
 
   } catch (err) {
     console.error("CART PAYMENT ERROR:", err);
-    alert("❌ Payment failed");
+    alert("❌ Payment error");
   }
-}
+      }
   function clearCartCompletely(){
   cart = [];
   localStorage.removeItem("cart");
