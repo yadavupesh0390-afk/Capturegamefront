@@ -1,4 +1,3 @@
-// firebase.js (frontend)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging.js";
 
@@ -13,11 +12,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-// User login ke baad token get karo
+// 🔔 Permission
+export const requestPermission = async () => {
+  const permission = await Notification.requestPermission();
+  return permission === "granted";
+};
+
+// 🔑 Get Token
 export const getFCMToken = async () => {
   try {
-    const token = await getToken(messaging, { vapidKey: "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s" });
-    console.log("FCM TOKEN:", token);
+    const permissionGranted = await requestPermission();
+    if (!permissionGranted) {
+      console.log("❌ Permission denied");
+      return null;
+    }
+
+    const token = await getToken(messaging, {
+      vapidKey: "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s"
+    });
+
+    console.log("✅ FCM TOKEN:", token);
     return token;
   } catch (err) {
     console.error("FCM TOKEN ERROR:", err);
@@ -25,7 +39,7 @@ export const getFCMToken = async () => {
   }
 };
 
-// Incoming foreground messages
-onMessage(messaging, (payload) => {
-  console.log("Foreground message:", payload);
+// Foreground notification
+onMessage(messaging, payload => {
+  alert(payload.notification.title + "\n" + payload.notification.body);
 });
