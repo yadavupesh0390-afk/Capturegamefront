@@ -129,6 +129,11 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
 </div>
 
 </div>  <script type="module">
+    if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/firebase-messaging-sw.js")
+    .then(() => console.log("✅ FCM Service Worker registered"))
+    .catch(err => console.error("❌ SW register error", err));
+    }
 /* ================= FIREBASE ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js";
