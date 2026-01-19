@@ -238,67 +238,6 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
  <script>
   const API = "https://shopbacked-vmhs.onrender.com";
  </script>
-
- <!-- 🔥 FIREBASE SDK -->
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
-
-/* ================= FIREBASE CONFIG ================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyBioiLSE3HyZh49yJv93MwnQFrmAm6wJ5g",
-  authDomain: "shop-ab586.firebaseapp.com",
-  projectId: "shop-ab586",
-  messagingSenderId: "603669325846",
-  appId: "1:603669325846:web:00f3ccff7fa977bf542d37"
-};
-
-const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
-
-/* ================= SERVICE WORKER ================= */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/firebase-messaging-sw.js")
-    .then(() => console.log("✅ FCM Service Worker registered"))
-    .catch(err => console.error("❌ SW error", err));
-}
-
-/* ================= INIT FCM AFTER LOGIN ================= */
-async function initFCM() {
-
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") {
-    console.warn("❌ Notification permission denied");
-    return;
-  }
-
-  const token = await getToken(messaging, {
-    vapidKey: "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s"
-  });
-
-  console.log("🔥 FCM TOKEN =", token);
-
-  if (!token) return;
-
-  await fetch("https://shopbacked-vmhs.onrender.com/api/notifications/saveToken", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userId: localStorage.getItem("userId"),
-      role: "wholesaler",
-      fcmToken: token
-    })
-  });
-
-  console.log("✅ FCM token saved to backend");
-}
-
-/* ================= CALL AFTER PAGE LOAD ================= */
-window.addEventListener("load", initFCM);
-
-</script>
- 
  <script>    
     
 const TOKEN=localStorage.getItem("token");    
@@ -858,6 +797,64 @@ async function loadOrders(){
   `).join("");
 }    loadCategories();
      loadCategoriesSelect();
-</script>  </body>
+</script> 
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
+/* 🔥 Firebase Config */
+const firebaseConfig = {
+  apiKey: "AIzaSyBioiLSE3HyZh49yJv93MwnQFrmAm6wJ5g",
+  authDomain: "shop-ab586.firebaseapp.com",
+  projectId: "shop-ab586",
+  messagingSenderId: "603669325846",
+  appId: "1:603669325846:web:00f3ccff7fa977bf542d37"
+};
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+
+/* 🧠 Register Service Worker */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/firebase-messaging-sw.js")
+    .then(() => console.log("✅ SW Registered"))
+    .catch(err => console.error("❌ SW Error", err));
+}
+
+/* 🔔 Init FCM */
+async function initFCM() {
+
+  if (!localStorage.getItem("userId")) return;
+
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return;
+
+  const token = await getToken(messaging, {
+    vapidKey: "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s"
+  });
+
+  if (!token) return;
+
+  console.log("🔥 FCM TOKEN:", token);
+
+  await fetch("https://shopbacked-vmhs.onrender.com/api/notifications/saveToken", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: localStorage.getItem("userId"),
+      role: "wholesaler",
+      fcmToken: token
+    })
+  });
+
+  console.log("✅ Token saved");
+}
+
+window.addEventListener("load", initFCM);
+
+</script>
+
+</body>
 
 </html>
