@@ -18,7 +18,7 @@ messaging.onBackgroundMessage(payload => {
     body: payload.notification?.body,
     icon: "/icon-192.png",   // optional
     data: {
-      url: payload.data?.url || "https://bazaarsathi.vercel.app/wholesaler/dashboard"
+      url: payload.data?.url || "https://bazaarsathi.vercel.app/wholesaler.html"
     }
   });
 });
