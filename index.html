@@ -34,7 +34,7 @@ h1{text-align:center;font-size:34px;font-weight:800;margin-bottom:25px;}
 .tab.active{background:#00eaff33;}
 form{display:none;}
 form.active{display:block;}
-input,select{
+input{
   width:100%;padding:12px;margin:10px 0;
   border-radius:12px;background:#00000088;color:#fff;border:1px solid #444;
 }
@@ -58,20 +58,11 @@ button.submit{
 </div>
 
 <!-- WHOLESALER -->
-<div id="wholesaler" class="panel" style="display:none;">
+<div id="wholesaler" class="panel">
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>
-    <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>
+    <div class="tab active" onclick="switchTab('wholesaler','login')">Login</div>
   </div>
-  <form id="wholesaler-signup" class="active">
-    <input placeholder="Name">
-    <input placeholder="Mobile Number">
-    <input placeholder="Shop Location">
-    <input type="password" placeholder="Password">
-    <input type="password" placeholder="Confirm Password">
-    <button class="submit" type="button">Create Account</button>
-  </form>
-  <form id="wholesaler-login">
+  <form id="wholesaler-login" class="active">
     <input placeholder="Mobile Number">
     <input type="password" placeholder="Password">
     <button class="submit" type="button">Login</button>
@@ -81,18 +72,9 @@ button.submit{
 <!-- RETAILER -->
 <div id="retailer" class="panel" style="display:none;">
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>
-    <div class="tab" onclick="switchTab('retailer','login')">Login</div>
+    <div class="tab active" onclick="switchTab('retailer','login')">Login</div>
   </div>
-  <form id="retailer-signup" class="active">
-    <input placeholder="Name">
-    <input placeholder="Mobile Number">
-    <input placeholder="Shop Location">
-    <input type="password" placeholder="Password">
-    <input type="password" placeholder="Confirm Password">
-    <button class="submit" type="button">Create Account</button>
-  </form>
-  <form id="retailer-login">
+  <form id="retailer-login" class="active">
     <input placeholder="Mobile Number">
     <input type="password" placeholder="Password">
     <button class="submit" type="button">Login</button>
@@ -102,18 +84,9 @@ button.submit{
 <!-- DELIVERY -->
 <div id="delivery" class="panel" style="display:none;">
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>
-    <div class="tab" onclick="switchTab('delivery','login')">Login</div>
+    <div class="tab active" onclick="switchTab('delivery','login')">Login</div>
   </div>
-  <form id="delivery-signup" class="active">
-    <input placeholder="Name">
-    <input placeholder="Mobile Number">
-    <input placeholder="Current Location">
-    <input type="password" placeholder="Password">
-    <input type="password" placeholder="Confirm Password">
-    <button class="submit" type="button">Create Account</button>
-  </form>
-  <form id="delivery-login">
+  <form id="delivery-login" class="active">
     <input placeholder="Mobile Number">
     <input type="password" placeholder="Password">
     <button class="submit" type="button">Login</button>
@@ -123,51 +96,82 @@ button.submit{
 </div>
 
 <script type="module">
-/* 🔐 AUTO LOGIN */
-const token = localStorage.getItem("token");
-const role = localStorage.getItem("role");
-if(token && role){
-  window.location.href = role + ".html";
+/* ================= AUTO LOGIN ================= */
+const savedToken = localStorage.getItem("token");
+const savedRole  = localStorage.getItem("role");
+if(savedToken && savedRole){
+  window.location.href = savedRole + ".html";
 }
 
-/* UI */
+/* ================= UI ================= */
 window.showPanel = id=>{
   document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
   document.getElementById(id).style.display='block';
-  switchTab(id,'signup');
 }
-window.switchTab = (p,t)=>{
-  document.getElementById(p+'-signup').classList.toggle('active',t==='signup');
-  document.getElementById(p+'-login').classList.toggle('active',t==='login');
-}
+window.switchTab = ()=>{};
 showPanel('wholesaler');
 
-/* SERVER */
+/* ================= FIREBASE ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBioiLSE3HyZh49yJv93MwnQFrmAm6wJ5g",
+  authDomain: "shop-ab586.firebaseapp.com",
+  projectId: "shop-ab586",
+  messagingSenderId: "603669325846",
+  appId: "1:603669325846:web:00f3ccff7fa977bf542d37"
+};
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+const VAPID_KEY = "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s";
+
+/* ================= SERVER ================= */
 const SERVER_URL="https://shopbacked-vmhs.onrender.com";
 
-/* LOGIN */
+/* ================= FCM ================= */
+async function getFCMToken(){
+  try{
+    const permission = await Notification.requestPermission();
+    if(permission!=="granted") return null;
+    return await getToken(messaging,{vapidKey:VAPID_KEY});
+  }catch(e){ return null; }
+}
+
+/* ================= LOGIN ================= */
 async function loginUser(role,mobile,password){
-  const res=await fetch(`${SERVER_URL}/api/login`,{
+  const res = await fetch(`${SERVER_URL}/api/login`,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({mobile,password,role})
   });
-  const json=await res.json();
+
+  const json = await res.json();
   if(!json.success) return alert("Login failed");
 
   localStorage.setItem("token",json.token);
   localStorage.setItem("userId",json.userId);
   localStorage.setItem("role",role);
 
-  window.location.href=role+".html";
+  const fcmToken = await getFCMToken();
+  if(fcmToken){
+    await fetch(`${SERVER_URL}/api/notifications/saveToken`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({userId:json.userId,role,fcmToken})
+    });
+  }
+
+  window.location.href = role + ".html";
 }
 
-/* HANDLERS */
+/* ================= HANDLERS ================= */
 ['wholesaler','retailer','delivery'].forEach(role=>{
   document.querySelector(`#${role}-login .submit`).onclick=()=>{
     const i=document.querySelectorAll(`#${role}-login input`);
     loginUser(role,i[0].value,i[1].value);
-  }
+  };
 });
 </script>
 
