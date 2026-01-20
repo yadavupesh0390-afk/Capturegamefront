@@ -1,110 +1,141 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>बाजार साथी • Login</title>
+<!DOCTYPE html>  <html lang="hi">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>बाजार साथी • Black Theme Ultra Panel</title>  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  <style>  
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}  
+body{min-height:100vh;background: radial-gradient(circle at top,#000,#0a0a0a,#111);display:flex;justify-content:center;align-items:flex-start;padding:50px 0;overflow-x:hidden;color:#fff;}  
+body::before{content:'';position:fixed;top:-100px;left:-100px;width:300px;height:300px;background:#00eaff22;border-radius:50%;filter:blur(120px);animation:move1 12s infinite linear;}  
+body::after{content:'';position:fixed;bottom:-100px;right:-100px;width:350px;height:350px;background:#ff00ff22;border-radius:50%;filter:blur(150px);animation:move2 15s infinite linear;}  
+@keyframes move1{0%{transform:translate(0,0);}50%{transform:translate(80px,120px);}100%{transform:translate(0,0);}}  
+@keyframes move2{0%{transform:translate(0,0);}50%{transform:translate(-100px,-160px);}100%{transform:translate(0,0);}}  
+.container{width:90%;max-width:500px;background:rgba(0,0,0,0.55);border:1px solid #ffffff22;padding:35px;border-radius:20px;box-shadow:0 0 35px #00eaff33;backdrop-filter:blur(18px);text-align:center;z-index:10;}  
+h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaff;}  
+.nav-buttons{display:flex;flex-wrap:wrap;justify-content:center;margin-bottom:25px;gap:12px;}  
+.nav-buttons button{padding:14px 20px;border:none;border-radius:14px;cursor:pointer;font-weight:700;color:#fff;background:#000000aa;border:1px solid #ffffff22;transition:0.4s;display:flex;align-items:center;gap:8px;font-size:16px;box-shadow:0 0 8px #00000088;}  
+.nav-buttons button:hover{background:#00eaff33;transform:scale(1.06);box-shadow:0 0 20px #00eaff55;}  
+.nav-buttons i{font-size:20px;}  
+.tabs{display:flex;margin-bottom:18px;border-radius:12px;overflow:hidden;background:#00000055;border:1px solid #333;}  
+.tab{width:50%;padding:12px;cursor:pointer;color:#fff;font-weight:600;transition:0.3s;}  
+.tab.active{background:#00eaff33;}  
+form{display:none;max-height:600px;overflow-y:auto;padding-right:5px;}  
+form.active{display:block;}  
+input, select{width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;}  
+input::placeholder{color:#aaa;}  
+input:focus{border:1px solid #00eaff;box-shadow:0 0 12px #00eaff66;}  
+button.submit{width:100%;padding:14px;border:none;border-radius:14px;margin-top:18px;background:#00eaffaa;color:#000;font-size:19px;font-weight:700;cursor:pointer;transition:0.3s;box-shadow:0 0 18px #00eaff88;}  
+button.submit:hover{transform:scale(1.03);background:#00eaff;box-shadow:0 0 25px #00eaff;}  
+form::-webkit-scrollbar{width:6px;}  
+form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}  
+</style>  </head>  
+<body>  <div class="container">  
+    <h1>बाजार साथी</h1>  
+    <div class="nav-buttons">  
+        <button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>  
+        <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>  
+        <button onclick="showPanel('delivery')"><i class="fas fa-motorcycle" style="color:#00ff88;"></i> Delivery Boy</button>  
+        <button onclick="showPanel('admin')"><i class="fas fa-user-shield" style="color:#ff77ff;"></i> Admin</button>  
+    </div>  <!-- WHOLESALER -->  
+<div id="wholesaler" class="panel" style="display:none;">  
+    <div class="tabs">  
+        <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>  
+        <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>  
+    </div>  
+    <form id="wholesaler-signup" class="active">  
+        <input type="text" placeholder="Name">  
+        <input type="number" placeholder="UPI Mobile Number">  
+        <input type="text" placeholder="Shop Current Location">  
+        <input type="password" placeholder="Password">  
+        <input type="password" placeholder="Confirm Password">  
+        <button type="button" class="submit">Create Account</button>  
+    </form>  
+    <form id="wholesaler-login">  
+        <input type="number" placeholder="Mobile Number">  
+        <input type="password" placeholder="Password">  
+        <button type="button" class="submit">Login</button>  
+    </form>  
+</div>  
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- RETAILER -->  
+<div id="retailer" class="panel" style="display:none;">  
+    <div class="tabs">  
+        <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>  
+        <div class="tab" onclick="switchTab('retailer','login')">Login</div>  
+    </div>  
+    <form id="retailer-signup" class="active">  
+        <input type="text" placeholder="Name">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="text" placeholder="Shop Current Location">  
+        <input type="password" placeholder="Password">  
+        <input type="password" placeholder="Confirm Password">  
+        <button type="button" class="submit">Create Account</button>  
+    </form>  
+    <form id="retailer-login">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="password" placeholder="Password">  
+        <button type="button" class="submit">Login</button>  
+    </form>  
+</div>  
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins,sans-serif;}
-body{
-  min-height:100vh;
-  background:radial-gradient(circle at top,#000,#0a0a0a,#111);
-  display:flex;justify-content:center;
-  padding:50px 0;color:#fff;
-}
-.container{
-  width:90%;max-width:500px;
-  background:rgba(0,0,0,.55);
-  padding:35px;border-radius:20px;
-  box-shadow:0 0 35px #00eaff33;
-}
-h1{text-align:center;font-size:34px;font-weight:800;margin-bottom:25px;}
-.nav-buttons{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:25px;}
-.nav-buttons button{
-  padding:14px 20px;border:none;border-radius:14px;
-  cursor:pointer;font-weight:700;color:#fff;
-  background:#000000aa;border:1px solid #ffffff22;
-}
-.tabs{display:flex;margin-bottom:15px;}
-.tab{width:50%;padding:12px;text-align:center;}
-.tab.active{background:#00eaff33;}
-form{display:none;}
-form.active{display:block;}
-input{
-  width:100%;padding:12px;margin:10px 0;
-  border-radius:12px;background:#00000088;color:#fff;border:1px solid #444;
-}
-button.submit{
-  width:100%;padding:14px;margin-top:15px;
-  background:#00eaff;color:#000;
-  border:none;border-radius:14px;font-size:18px;font-weight:700;
-}
-</style>
-</head>
+<!-- DELIVERY BOY -->  
+<div id="delivery" class="panel" style="display:none;">  
+    <div class="tabs">  
+        <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>  
+        <div class="tab" onclick="switchTab('delivery','login')">Login</div>  
+    </div>  
+    <form id="delivery-signup" class="active">  
+        <input type="text" placeholder="Name">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="text" placeholder="Alternate Mobile (optional)">  
+        <input type="text" placeholder="Current Live Location">  
+        <input type="password" placeholder="Password">  
+        <input type="password" placeholder="Confirm Password">  
+        <select>  
+            <option>2-Wheeler</option>  
+            <option>3-Wheeler</option>  
+            <option>4-Wheeler</option>  
+        </select>  
+        <input type="text" placeholder="Vehicle Model">  
+        <input type="text" placeholder="Vehicle Number">  
+        <button type="button" class="submit">Create Account</button>  
+    </form>  
+    <form id="delivery-login">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="password" placeholder="Password">  
+        <button type="button" class="submit">Login</button>  
+    </form>  
+</div>  
 
-<body>
-
-<div class="container">
-<h1>बाजार साथी</h1>
-
-<div class="nav-buttons">
-  <button onclick="showPanel('wholesaler')"><i class="fas fa-store"></i> Wholesaler</button>
-  <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping"></i> Retailer</button>
-  <button onclick="showPanel('delivery')"><i class="fas fa-motorcycle"></i> Delivery</button>
+<!-- ADMIN -->  
+<div id="admin" class="panel" style="display:none;">  
+    <div class="tabs">  
+        <div class="tab active" onclick="switchTab('admin','signup')">Sign-Up</div>  
+        <div class="tab" onclick="switchTab('admin','login')">Login</div>  
+    </div>  
+    <form id="admin-signup" class="active">  
+        <input type="text" placeholder="Full Name">  
+        <input type="text" placeholder="Official Mobile Number">  
+        <input type="text" placeholder="Login Mobile">  
+        <input type="password" placeholder="Password">  
+        <input type="password" placeholder="Confirm Password">  
+        <button type="button" class="submit">Create Account</button>  
+    </form>  
+    <form id="admin-login">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="password" placeholder="Password">  
+        <button type="button" class="submit">Login</button>  
+    </form>  
 </div>
 
-<!-- WHOLESALER -->
-<div id="wholesaler" class="panel">
-  <div class="tabs">
-    <div class="tab active">Login</div>
-  </div>
-  <form id="wholesaler-login" class="active">
-    <input placeholder="Mobile Number">
-    <input type="password" placeholder="Password">
-    <button class="submit" type="button">Login</button>
-  </form>
-</div>
+</div>  <script type="module">
 
-<!-- RETAILER -->
-<div id="retailer" class="panel" style="display:none;">
-  <div class="tabs"><div class="tab active">Login</div></div>
-  <form id="retailer-login" class="active">
-    <input placeholder="Mobile Number">
-    <input type="password" placeholder="Password">
-    <button class="submit" type="button">Login</button>
-  </form>
-</div>
-
-<!-- DELIVERY -->
-<div id="delivery" class="panel" style="display:none;">
-  <div class="tabs"><div class="tab active">Login</div></div>
-  <form id="delivery-login" class="active">
-    <input placeholder="Mobile Number">
-    <input type="password" placeholder="Password">
-    <button class="submit" type="button">Login</button>
-  </form>
-</div>
-
-</div>
-
-<script type="module">
-/* ================= AUTO LOGIN ================= */
-const token = localStorage.getItem("token");
-const role  = localStorage.getItem("role");
-if(token && role){
-  window.location.href = role + ".html";
+/* ================= SERVICE WORKER ================= */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/firebase-messaging-sw.js")
+    .then(() => console.log("✅ FCM Service Worker registered"))
+    .catch(err => console.error("❌ SW error", err));
 }
-
-/* ================= UI ================= */
-window.showPanel = id=>{
-  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-  document.getElementById(id).style.display='block';
-}
-showPanel('wholesaler');
 
 /* ================= FIREBASE ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -125,45 +156,111 @@ const VAPID_KEY = "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm
 /* ================= SERVER ================= */
 const SERVER_URL = "https://shopbacked-vmhs.onrender.com";
 
-/* ================= LOGIN ================= */
-async function loginUser(role,mobile,password){
-  const res = await fetch(`${SERVER_URL}/api/login`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({mobile,password,role})
+/* ================= UI ================= */
+window.onload = () => showPanel('wholesaler');
+
+window.showPanel = id => {
+  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+  switchTab(id, 'signup');
+};
+
+window.switchTab = (panel, tab) => {
+  document.getElementById(panel + '-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById(panel + '-login').classList.toggle('active', tab === 'login');
+  document.querySelectorAll('#' + panel + ' .tab')
+    .forEach((t, i) => t.classList.toggle('active', i === (tab === 'signup' ? 0 : 1)));
+};
+
+/* ================= FCM TOKEN ================= */
+async function getFCMToken() {
+  if (!("Notification" in window)) return null;
+
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return null;
+
+  try {
+    return await getToken(messaging, { vapidKey: VAPID_KEY });
+  } catch (e) {
+    console.log("❌ FCM error", e);
+    return null;
+  }
+}
+
+/* ================= SIGNUP ================= */
+async function signupUser(role, data) {
+  const res = await fetch(`${SERVER_URL}/api/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...data, role })
   });
+
   const json = await res.json();
-  if(!json.success) return alert(json.message);
+  if (!json.success) return alert(json.message);
 
-  localStorage.setItem("token",json.token);
-  localStorage.setItem("userId",json.userId);
-  localStorage.setItem("role",role);
-
-  try{
-    const permission = await Notification.requestPermission();
-    if(permission==="granted"){
-      const fcmToken = await getToken(messaging,{vapidKey:VAPID_KEY});
-      if(fcmToken){
-        await fetch(`${SERVER_URL}/api/notifications/saveToken`,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({userId:json.userId,fcmToken})
-        });
-      }
-    }
-  }catch(e){}
+  localStorage.setItem("token", json.token);
+  localStorage.setItem("userId", json.userId);
+  localStorage.setItem("role", role);
 
   window.location.href = role + ".html";
 }
 
-/* ================= HANDLERS ================= */
-['wholesaler','retailer','delivery'].forEach(role=>{
-  document.querySelector(`#${role}-login .submit`).onclick=()=>{
-    const i=document.querySelectorAll(`#${role}-login input`);
-    loginUser(role,i[0].value,i[1].value);
-  };
-});
-</script>
+/* ================= LOGIN ================= */
+async function loginUser(role, mobile, password) {
+  const res = await fetch(`${SERVER_URL}/api/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mobile, password, role })
+  });
 
-</body>
+  const json = await res.json();
+  if (!json.success) return alert(json.message);
+
+  localStorage.setItem("token", json.token);
+  localStorage.setItem("userId", json.userId);
+  localStorage.setItem("role", role);
+
+  const fcmToken = await getFCMToken();
+  if (fcmToken) {
+    await fetch(`${SERVER_URL}/api/notifications/saveToken`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: json.userId,
+        role,
+        fcmToken
+      })
+    });
+  }
+
+  window.location.href = role + ".html";
+}
+
+/* ================= BUTTONS ================= */
+['wholesaler','retailer','delivery','admin'].forEach(role => {
+
+  document.querySelector(`#${role}-signup .submit`).onclick = () => {
+    const data = {};
+    document.querySelectorAll(`#${role}-signup input, #${role}-signup select`)
+      .forEach(i => {
+        const key = i.placeholder
+          ? i.placeholder.replace(/ /g,'_').toLowerCase()
+          : "vehicle";
+        data[key] = i.value;
+      });
+
+    if (data.password !== data.confirm_password) {
+      alert("Password mismatch");
+      return;
+    }
+    signupUser(role, data);
+  };
+
+  document.querySelector(`#${role}-login .submit`).onclick = () => {
+    const inputs = document.querySelectorAll(`#${role}-login input`);
+    loginUser(role, inputs[0].value, inputs[1].value);
+  };
+
+});
+</script>  </body>  
 </html>
