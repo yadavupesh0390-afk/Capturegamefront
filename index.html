@@ -199,6 +199,16 @@ async function getFCMToken(){
   }
 }
 
+(function autoLoginCheck() {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (token && role) {
+    // ✅ Already logged in → direct dashboard
+    window.location.href = role + ".html";
+  }
+})();
+    
 /* ================= SIGNUP ================= */
 async function signupUser(type,data){
   try{
