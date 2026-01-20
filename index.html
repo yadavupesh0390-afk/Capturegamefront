@@ -129,14 +129,11 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
 </div>
 
 </div>  <script type="module">
-
-/* ================= SERVICE WORKER ================= */
-if ("serviceWorker" in navigator) {
+    if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/firebase-messaging-sw.js")
     .then(() => console.log("✅ FCM Service Worker registered"))
-    .catch(err => console.error("❌ SW error", err));
-}
-
+    .catch(err => console.error("❌ SW register error", err));
+    }
 /* ================= FIREBASE ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js";
@@ -151,116 +148,127 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
+
 const VAPID_KEY = "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s";
 
 /* ================= SERVER ================= */
 const SERVER_URL = "https://shopbacked-vmhs.onrender.com";
+async function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    alert("This browser does not support notifications");
+    return false;
+  }
 
+  const permission = await Notification.requestPermission();
+
+  if (permission === "granted") {
+    console.log("✅ Notification permission granted");
+    return true;
+  } else {
+    console.warn("❌ Notification permission denied");
+    return false;
+  }
+    }
 /* ================= UI ================= */
-window.onload = () => showPanel('wholesaler');
+window.onload = ()=> showPanel('wholesaler');
 
-window.showPanel = id => {
-  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-  document.getElementById(id).style.display = 'block';
-  switchTab(id, 'signup');
+window.showPanel = (panelId)=>{
+  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+  document.getElementById(panelId).style.display='block';
+  switchTab(panelId,'signup');
 };
 
-window.switchTab = (panel, tab) => {
-  document.getElementById(panel + '-signup').classList.toggle('active', tab === 'signup');
-  document.getElementById(panel + '-login').classList.toggle('active', tab === 'login');
-  document.querySelectorAll('#' + panel + ' .tab')
-    .forEach((t, i) => t.classList.toggle('active', i === (tab === 'signup' ? 0 : 1)));
+window.switchTab = (panel, tab)=>{
+  document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
+  document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
+  document.querySelectorAll('#'+panel+' .tab')
+    .forEach((t,i)=>t.classList.toggle('active', i === (tab==='signup'?0:1)));
 };
 
 /* ================= FCM TOKEN ================= */
-async function getFCMToken() {
-  if (!("Notification" in window)) return null;
+async function getFCMToken(){
+  try{
+    const permission = await Notification.requestPermission();
+    if(permission !== "granted") return null;
 
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") return null;
-
-  try {
-    return await getToken(messaging, { vapidKey: VAPID_KEY });
-  } catch (e) {
-    console.log("❌ FCM error", e);
+    const token = await getToken(messaging,{ vapidKey: VAPID_KEY });
+    return token;
+  }catch(err){
+    console.log("FCM error",err);
     return null;
   }
 }
 
 /* ================= SIGNUP ================= */
-async function signupUser(role, data) {
-  const res = await fetch(`${SERVER_URL}/api/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...data, role })
-  });
-
-  const json = await res.json();
-  if (!json.success) return alert(json.message);
-
-  localStorage.setItem("token", json.token);
-  localStorage.setItem("userId", json.userId);
-  localStorage.setItem("role", role);
-
-  window.location.href = role + ".html";
-}
-
-/* ================= LOGIN ================= */
-async function loginUser(role, mobile, password) {
-  const res = await fetch(`${SERVER_URL}/api/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ mobile, password, role })
-  });
-
-  const json = await res.json();
-  if (!json.success) return alert(json.message);
-
-  localStorage.setItem("token", json.token);
-  localStorage.setItem("userId", json.userId);
-  localStorage.setItem("role", role);
-
-  const fcmToken = await getFCMToken();
-  if (fcmToken) {
-    await fetch(`${SERVER_URL}/api/notifications/saveToken`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: json.userId,
-        role,
-        fcmToken
-      })
+async function signupUser(type,data){
+  try{
+    const res = await fetch(`${SERVER_URL}/api/signup`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({...data,role:type})
     });
-  }
-
-  window.location.href = role + ".html";
+    const json = await res.json();
+    if(json.success){
+      localStorage.setItem("token",json.token);
+      localStorage.setItem("userId",json.userId);
+      localStorage.setItem("role",type);
+      alert(type+" signup success");
+      window.location.href = type+".html";
+    }else alert(json.message);
+  }catch(err){ alert("Server error: "+err.message); }
 }
 
-/* ================= BUTTONS ================= */
-['wholesaler','retailer','delivery','admin'].forEach(role => {
+/* ================= LOGIN + FCM ================= */
+async function loginUser(type,mobile,password){
+  try{
+    const res = await fetch(`${SERVER_URL}/api/login`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({mobile,password,role:type})
+    });
+    const json = await res.json();
+    if(!json.success) return alert(json.message);
 
-  document.querySelector(`#${role}-signup .submit`).onclick = () => {
-    const data = {};
-    document.querySelectorAll(`#${role}-signup input, #${role}-signup select`)
-      .forEach(i => {
-        const key = i.placeholder
-          ? i.placeholder.replace(/ /g,'_').toLowerCase()
-          : "vehicle";
-        data[key] = i.value;
+    localStorage.setItem("token",json.token);
+    localStorage.setItem("userId",json.userId);
+    localStorage.setItem("role",type);
+
+    /* 🔥 FCM TOKEN SEND */
+    const fcmToken = await getFCMToken();
+    if(fcmToken){
+      await fetch(`${SERVER_URL}/api/notifications/saveToken`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          userId: json.userId,
+          role: type,
+          fcmToken
+        })
       });
-
-    if (data.password !== data.confirm_password) {
-      alert("Password mismatch");
-      return;
     }
-    signupUser(role, data);
+
+    window.location.href = type+".html";
+  }catch(err){ alert("Server error: "+err.message); }
+}
+
+/* ================= BUTTON HANDLERS ================= */
+['wholesaler','retailer','delivery','admin'].forEach(type=>{
+  document.querySelector(`#${type}-signup .submit`).onclick=()=>{
+    let data={};
+    document.querySelectorAll(`#${type}-signup input, #${type}-signup select`).forEach(i=>{
+      let key=i.placeholder?i.placeholder.replace(/ /g,'_').toLowerCase():"vehicle";
+      data[key]=i.value;
+    });
+    if(data.password!==data.confirm_password){
+      alert('Password mismatch'); return;
+    }
+    signupUser(type,data);
   };
 
-  document.querySelector(`#${role}-login .submit`).onclick = () => {
-    const inputs = document.querySelectorAll(`#${role}-login input`);
-    loginUser(role, inputs[0].value, inputs[1].value);
+  document.querySelector(`#${type}-login .submit`).onclick=()=>{
+    let inputs=document.querySelectorAll(`#${type}-login input`);
+    loginUser(type,inputs[0].value,inputs[1].value);
   };
-
 });
 </script>  </body>  
 </html>
