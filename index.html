@@ -53,63 +53,248 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
     <form id="wholesaler-login">  
         <input type="number" placeholder="Mobile Number">  
         <input type="password" placeholder="Password">  
-        <button type="button" class="submit">Login</button>  
-    </form>  
-</div>  
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bazaar Sathi • Smart Supply Network</title>
 
-<!-- RETAILER -->  
-<div id="retailer" class="panel" style="display:none;">  
-    <div class="tabs">  
-        <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>  
-        <div class="tab" onclick="switchTab('retailer','login')">Login</div>  
-    </div>  
-    <form id="retailer-signup" class="active">  
-        <input type="text" placeholder="Name">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="text" placeholder="Shop Current Location">  
-        <input type="password" placeholder="Password">  
-        <input type="password" placeholder="Confirm Password">  
-        <button type="button" class="submit">Create Account</button>  
-    </form>  
-    <form id="retailer-login">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="password" placeholder="Password">  
-        <button type="button" class="submit">Login</button>  
-    </form>  
-</div>  
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
-<!-- DELIVERY BOY -->  
-<div id="delivery" class="panel" style="display:none;">  
-    <div class="tabs">  
-        <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>  
-        <div class="tab" onclick="switchTab('delivery','login')">Login</div>  
-    </div>  
-    <form id="delivery-signup" class="active">  
-        <input type="text" placeholder="Name">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="text" placeholder="Alternate Mobile (optional)">  
-        <input type="text" placeholder="Current Live Location">  
-        <input type="password" placeholder="Password">  
-        <input type="password" placeholder="Confirm Password">  
-        <select>  
-            <option>2-Wheeler</option>  
-            <option>3-Wheeler</option>  
-            <option>4-Wheeler</option>  
-        </select>  
-        <input type="text" placeholder="Vehicle Model">  
-        <input type="text" placeholder="Vehicle Number">  
-        <button type="button" class="submit">Create Account</button>  
-    </form>  
-    <form id="delivery-login">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="password" placeholder="Password">  
-        <button type="button" class="submit">Login</button>  
-    </form>  
-</div>  
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Poppins",sans-serif;
+}
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#020617,#020617,#020617);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#fff;
+}
 
+/* 🔥 Soft Glow Background */
+.bg-glow{
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background:
+    radial-gradient(circle at 20% 20%, #22d3ee33, transparent 40%),
+    radial-gradient(circle at 80% 80%, #a855f733, transparent 45%);
+}
 
+/* MAIN CARD */
+.container{
+  width:94%;
+  max-width:520px;
+  background:rgba(15,23,42,0.85);
+  border:1px solid #ffffff14;
+  border-radius:22px;
+  padding:32px 26px;
+  box-shadow:0 30px 80px #000000aa;
+  backdrop-filter:blur(14px);
+}
 
-</div>  <script type="module">
+/* BRAND */
+.brand{
+  text-align:center;
+  margin-bottom:26px;
+}
+.brand h1{
+  font-size:36px;
+  font-weight:800;
+  background:linear-gradient(90deg,#22d3ee,#a855f7);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.brand p{
+  font-size:14px;
+  color:#cbd5f5;
+  margin-top:6px;
+}
+
+/* ROLE BUTTONS */
+.roles{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:22px;
+}
+.roles button{
+  padding:14px 10px;
+  border-radius:14px;
+  border:1px solid #ffffff18;
+  background:#020617;
+  color:#fff;
+  cursor:pointer;
+  font-weight:600;
+  transition:.25s;
+}
+.roles button:hover{
+  background:#22d3ee22;
+  transform:translateY(-2px);
+}
+
+/* TABS */
+.tabs{
+  display:flex;
+  background:#020617;
+  border-radius:14px;
+  overflow:hidden;
+  margin-bottom:18px;
+}
+.tab{
+  flex:1;
+  padding:12px;
+  text-align:center;
+  cursor:pointer;
+  font-weight:600;
+  color:#94a3b8;
+}
+.tab.active{
+  background:#22d3ee22;
+  color:#fff;
+}
+
+/* FORM */
+form{
+  display:none;
+}
+form.active{
+  display:block;
+}
+input,select{
+  width:100%;
+  margin:10px 0;
+  padding:13px 14px;
+  border-radius:14px;
+  border:1px solid #ffffff1f;
+  background:#020617;
+  color:#fff;
+  font-size:15px;
+}
+input::placeholder{color:#94a3b8;}
+input:focus,select:focus{
+  outline:none;
+  border-color:#22d3ee;
+}
+
+/* SUBMIT */
+.submit{
+  margin-top:18px;
+  width:100%;
+  padding:15px;
+  font-size:18px;
+  font-weight:700;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(90deg,#22d3ee,#a855f7);
+  color:#020617;
+  cursor:pointer;
+  transition:.3s;
+}
+.submit:hover{
+  transform:scale(1.03);
+}
+
+/* PANELS */
+.panel{display:none;}
+.panel.active{display:block;}
+
+</style>
+</head>
+
+<body>
+<div class="bg-glow"></div>
+
+<div class="container">
+
+  <div class="brand">
+    <h1>Bazaar Sathi</h1>
+    <p>Smart Wholesaler • Retailer • Delivery Network</p>
+  </div>
+
+  <div class="roles">
+    <button onclick="showPanel('wholesaler')">Wholesaler</button>
+    <button onclick="showPanel('retailer')">Retailer</button>
+    <button onclick="showPanel('delivery')">Delivery</button>
+  </div>
+
+  <!-- WHOLESALER -->
+  <div id="wholesaler" class="panel">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>
+      <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>
+    </div>
+    <form id="wholesaler-signup" class="active">
+      <input placeholder="Full Name">
+      <input placeholder="Mobile / UPI Number">
+      <input placeholder="Shop Location">
+      <input type="password" placeholder="Password">
+      <input type="password" placeholder="Confirm Password">
+      <button class="submit">Create Account</button>
+    </form>
+    <form id="wholesaler-login">
+      <input placeholder="Mobile Number">
+      <input type="password" placeholder="Password">
+      <button class="submit">Login</button>
+    </form>
+  </div>
+
+  <!-- RETAILER -->
+  <div id="retailer" class="panel">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>
+      <div class="tab" onclick="switchTab('retailer','login')">Login</div>
+    </div>
+    <form id="retailer-signup" class="active">
+      <input placeholder="Shop Name">
+      <input placeholder="Mobile Number">
+      <input placeholder="Shop Location">
+      <input type="password" placeholder="Password">
+      <input type="password" placeholder="Confirm Password">
+      <button class="submit">Create Account</button>
+    </form>
+    <form id="retailer-login">
+      <input placeholder="Mobile Number">
+      <input type="password" placeholder="Password">
+      <button class="submit">Login</button>
+    </form>
+  </div>
+
+  <!-- DELIVERY -->
+  <div id="delivery" class="panel">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>
+      <div class="tab" onclick="switchTab('delivery','login')">Login</div>
+    </div>
+    <form id="delivery-signup" class="active">
+      <input placeholder="Full Name">
+      <input placeholder="Mobile Number">
+      <select>
+        <option>Two Wheeler</option>
+        <option>Three Wheeler</option>
+        <option>Four Wheeler</option>
+      </select>
+      <input placeholder="Vehicle Number">
+      <input type="password" placeholder="Password">
+      <input type="password" placeholder="Confirm Password">
+      <button class="submit">Join as Delivery Partner</button>
+    </form>
+    <form id="delivery-login">
+      <input placeholder="Mobile Number">
+      <input type="password" placeholder="Password">
+      <button class="submit">Login</button>
+    </form>
+  </div>
+
+</div>
+ <script type="module">
     if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/firebase-messaging-sw.js")
     .then(() => console.log("✅ FCM Service Worker registered"))
@@ -150,20 +335,61 @@ async function requestNotificationPermission() {
     return false;
   }
     }
-/* ================= UI ================= */
-window.onload = ()=> showPanel('wholesaler');
+/* ================= UI STATE ================= */
+let currentOpenPanel = null;
 
-window.showPanel = (panelId)=>{
-  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-  document.getElementById(panelId).style.display='block';
-  switchTab(panelId,'signup');
+/* ================= ON LOAD ================= */
+window.onload = () => {
+  // start with all panels closed
+  document.querySelectorAll(".panel").forEach(p => {
+    p.style.display = "none";
+  });
 };
 
-window.switchTab = (panel, tab)=>{
-  document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
-  document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
-  document.querySelectorAll('#'+panel+' .tab')
-    .forEach((t,i)=>t.classList.toggle('active', i === (tab==='signup'?0:1)));
+/* ================= PANEL TOGGLE ================= */
+window.showPanel = (panelId) => {
+
+  const panel = document.getElementById(panelId);
+
+  // 🔁 SAME ICON CLICK → CLOSE
+  if (currentOpenPanel === panelId) {
+    panel.style.display = "none";
+    currentOpenPanel = null;
+    return;
+  }
+
+  // ❌ CLOSE ALL PANELS
+  document.querySelectorAll(".panel").forEach(p => {
+    p.style.display = "none";
+  });
+
+  // ✅ OPEN CLICKED PANEL
+  panel.style.display = "block";
+  currentOpenPanel = panelId;
+
+  // DEFAULT → SIGNUP TAB
+  switchTab(panelId, "signup");
+};
+
+/* ================= TAB SWITCH ================= */
+window.switchTab = (panelId, tab) => {
+
+  const signupForm = document.getElementById(panelId + "-signup");
+  const loginForm  = document.getElementById(panelId + "-login");
+
+  const tabs = document.querySelectorAll(`#${panelId} .tab`);
+
+  // FORM VISIBILITY
+  signupForm.classList.toggle("active", tab === "signup");
+  loginForm.classList.toggle("active", tab === "login");
+
+  // TAB ACTIVE STATE
+  tabs.forEach((t, index) => {
+    t.classList.toggle(
+      "active",
+      index === (tab === "signup" ? 0 : 1)
+    );
+  });
 };
 
 /* ================= FCM TOKEN ================= */
