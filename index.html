@@ -1,203 +1,323 @@
-<!DOCTYPE html>  <html lang="hi">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>Bazaar Sathi </title>  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">  
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  <style>  
-*{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}  
-body{min-height:100vh;background: radial-gradient(circle at top,#000,#0a0a0a,#111);display:flex;justify-content:center;align-items:flex-start;padding:50px 0;overflow-x:hidden;color:#fff;}  
-body::before{content:'';position:fixed;top:-100px;left:-100px;width:300px;height:300px;background:#00eaff22;border-radius:50%;filter:blur(120px);animation:move1 12s infinite linear;}  
-body::after{content:'';position:fixed;bottom:-100px;right:-100px;width:350px;height:350px;background:#ff00ff22;border-radius:50%;filter:blur(150px);animation:move2 15s infinite linear;}  
-@keyframes move1{0%{transform:translate(0,0);}50%{transform:translate(80px,120px);}100%{transform:translate(0,0);}}  
-@keyframes move2{0%{transform:translate(0,0);}50%{transform:translate(-100px,-160px);}100%{transform:translate(0,0);}}  
-.container{width:90%;max-width:500px;background:rgba(0,0,0,0.55);border:1px solid #ffffff22;padding:35px;border-radius:20px;box-shadow:0 0 35px #00eaff33;backdrop-filter:blur(18px);text-align:center;z-index:10;}  
-h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaff;}  
-.nav-buttons{display:flex;flex-wrap:wrap;justify-content:center;margin-bottom:25px;gap:12px;}  
-.nav-buttons button{padding:14px 20px;border:none;border-radius:14px;cursor:pointer;font-weight:700;color:#fff;background:#000000aa;border:1px solid #ffffff22;transition:0.4s;display:flex;align-items:center;gap:8px;font-size:16px;box-shadow:0 0 8px #00000088;}  
-.nav-buttons button:hover{background:#00eaff33;transform:scale(1.06);box-shadow:0 0 20px #00eaff55;}  
-.nav-buttons i{font-size:20px;}  
-.tabs{display:flex;margin-bottom:18px;border-radius:12px;overflow:hidden;background:#00000055;border:1px solid #333;}  
-.tab{width:50%;padding:12px;cursor:pointer;color:#fff;font-weight:600;transition:0.3s;}  
-.tab.active{background:#00eaff33;}  
-.logo-text-only{
-  display:inline-block;
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bazaar Sathi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* ====== GLOBAL ====== */
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif; }
+    body {
+      min-height:100vh;
+      background: radial-gradient(circle at top, #000, #0a0a0a, #111);
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:50px 0;
+      overflow-x:hidden;
+      color:#fff;
+    }
 
-  font-size:20px;          /* chhota, logo-friendly text */
-  font-weight:700;
-  letter-spacing:0.5px;
+    /* ====== ANIMATED BACKGROUND ====== */
+    body::before, body::after {
+      content:'';
+      position:fixed;
+      border-radius:50%;
+      filter:blur(120px);
+      animation:move1 12s infinite linear;
+      z-index:0;
+    }
+    body::before {
+      top:-100px; left:-100px;
+      width:300px; height:300px;
+      background:#00eaff22;
+    }
+    body::after {
+      bottom:-100px; right:-100px;
+      width:350px; height:350px;
+      background:#ff00ff22;
+      filter:blur(150px);
+      animation:move2 15s infinite linear;
+    }
+    @keyframes move1 {
+      0% { transform:translate(0,0); }
+      50% { transform:translate(80px,120px); }
+      100% { transform:translate(0,0); }
+    }
+    @keyframes move2 {
+      0% { transform:translate(0,0); }
+      50% { transform:translate(-100px,-160px); }
+      100% { transform:translate(0,0); }
+    }
 
-  padding:6px 25px;        /* thin background patti */
-  border-radius:10px;
+    /* ====== CONTAINER ====== */
+    .container {
+      width:90%; max-width:500px;
+      background:rgba(0,0,0,0.55);
+      border:1px solid #ffffff22;
+      padding:35px;
+      border-radius:20px;
+      box-shadow:0 0 35px #00eaff33;
+      backdrop-filter:blur(18px);
+      text-align:center;
+      z-index:10;
+      position:relative;
+    }
+    h1.logo-text-only {
+      font-size:34px; font-weight:800; margin-bottom:25px;
+      text-shadow:0 0 18px #00eaff;
+      display:inline-block;
+      font-size:20px;
+      font-weight:700;
+      letter-spacing:0.5px;
+      padding:6px 25px;
+      border-radius:10px;
+      background:#facc15;
+      color:#1f2937;
+      box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    }
 
-  background:#facc15;      /* soft yellow */
-  color:#1f2937;           /* dark readable text */
+    /* ====== NAV BUTTONS ====== */
+    .nav-buttons {
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-bottom:25px;
+      gap:12px;
+    }
+    .nav-buttons button {
+      padding:14px 20px;
+      border:none;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:700;
+      color:#fff;
+      background:#000000aa;
+      border:1px solid #ffffff22;
+      transition:0.4s;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:16px;
+      box-shadow:0 0 8px #00000088;
+    }
+    .nav-buttons button:hover {
+      background:#00eaff33;
+      transform:scale(1.06);
+      box-shadow:0 0 20px #00eaff55;
+    }
+    .nav-buttons i { font-size:20px; }
 
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.25);
-}
-  .overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.55);
-  backdrop-filter:blur(4px);
-  z-index:99;
-  display:none;
-}
+    /* ====== OVERLAY ====== */
+    .overlay {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.55);
+      backdrop-filter:blur(4px);
+      z-index:99;
+      display:none;
+    }
 
-/* AUTO SIZE POPUP */
-/* PANEL FIX */
-.panel{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
+    /* ====== PANEL ====== */
+    .panel {
+      position:fixed;
+      top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:auto; min-width:280px; max-width:90vw;
+      max-height:85vh; overflow-y:auto;
+      padding:14px 14px 18px;
+      border-radius:16px;
+      background:#111827;
+      border:1px solid #1f2937;
+      box-shadow:0 20px 50px rgba(0,0,0,0.7);
+      display:none;
+      z-index:100;
+    }
+
+    /* ====== POPUP HEADER ====== */
+    .popup-header {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:8px 4px 14px;
+    }
+    .popup-header i {
+      font-size:20px;
+      cursor:pointer;
+      color:#e5e7eb;
+    }
+    .popup-header span {
+      font-size:16px;
+      font-weight:600;
+    }
+
+    /* ====== TABS ====== */
+    .tabs {
+      display:flex;
+      align-items:center;
+      min-height:44px;
+      overflow:visible;
+      margin-bottom:18px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#00000055;
+      border:1px solid #333;
+    }
+    .tab {
+      width:50%;
+      padding:12px;
+      cursor:pointer;
+      color:#fff;
+      font-weight:600;
+      transition:0.3s;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      line-height:1.2;
+    }
+    .tab.active { background:#00eaff33; }
+
+    /* ====== FORMS ====== */
+    form { display:none; max-height:600px; overflow-y:auto; padding-right:5px; }
+    form.active { display:block; }
+    input, select {
+      width:100%;
+      padding:12px;
+      margin:10px 0;
+      border-radius:12px;
+      border:1px solid #444;
+      outline:none;
+      font-size:15px;
+      background:#00000088;
+      color:#fff;
+      transition:0.3s;
+    }
+    input::placeholder { color:#aaa; }
+    input:focus {
+      border:1px solid #00eaff;
+      box-shadow:0 0 12px #00eaff66;
+    }
+    button.submit {
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:14px;
+      margin-top:18px;
+      background:#00eaffaa;
+      color:#000;
+      font-size:19px;
+      font-weight:700;
+      cursor:pointer;
+      transition:0.3s;
+      box-shadow:0 0 18px #00eaff88;
+    }
+    button.submit:hover {
+      transform:scale(1.03);
+      background:#00eaff;
+      box-shadow:0 0 25px #00eaff;
+    }
+    form::-webkit-scrollbar {
+      width:6px;
+    }
+    form::-webkit-scrollbar-thumb {
+      background:#00eaff55;
+      border-radius:6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="logo-text-only">🌐 BazaarSathi</h1>
+
+    <div class="nav-buttons">
+      <button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>
+      <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>
+      <button onclick="showPanel('delivery')"><i class="fas fa-motorcycle" style="color:#00ff88;"></i> Delivery Boy</button>
+      <div class="popup-header">
+        <i class="fa fa-arrow-left" onclick="closePopup()"></i>
+        <span>Account</span>
+      </div>
+    </div>
+
+    <!-- WHOLESALER PANEL -->
+    <div id="wholesaler" class="panel">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>
+        <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>
+      </div>
+      <form id="wholesaler-signup" class="active">
+        <input type="text" placeholder="Name">
+        <input type="number" placeholder="UPI Mobile Number">
+        <input type="text" placeholder="Shop Current Location">
+        <input type="password" placeholder="Password">
+        <input type="password" placeholder="Confirm Password">
+        <button type="button" class="submit">Create Account</button>
+      </form>
+      <form id="wholesaler-login">
+        <input type="number" placeholder="Mobile Number">
+        <input type="password" placeholder="Password">
+        <button type="button" class="submit">Login</button>
+      </form>
+    </div>
+
+    <!-- RETAILER PANEL -->
+    <div id="retailer" class="panel">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>
+        <div class="tab" onclick="switchTab('retailer','login')">Login</div>
+      </div>
+      <form id="retailer-signup" class="active">
+        <input type="text" placeholder="Name">
+        <input type="text" placeholder="Mobile Number">
+        <input type="text" placeholder="Shop Current Location">
+        <input type="password" placeholder="Password">
+        <input type="password" placeholder="Confirm Password">
+        <button type="button" class="submit">Create Account</button>
+      </form>
+      <form id="retailer-login">
+        <input type="text" placeholder="Mobile Number">
+        <input type="password" placeholder="Password">
+        <button type="button" class="submit">Login</button>
+      </form>
+    </div>
+
+    <!-- DELIVERY BOY PANEL -->
+    <div id="delivery" class="panel">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>
+        <div class="tab" onclick="switchTab('delivery','login')">Login</div>
+      </div>
+      <form id="delivery-signup" class="active">
+        <input type="text" placeholder="Name">
+        <input type="text" placeholder="Mobile Number">
+        <input type="text" placeholder="Alternate Mobile (optional)">
+        <input type="text" placeholder="Current Live Location">
+        <input type="password" placeholder="Password">
+        <input type="password" placeholder="Confirm Password">
+        <select>
+          <option>2-Wheeler</option>
+          <option>3-Wheeler</option>
+          <option>4-Wheeler</option>
+        </select>
+        <input type="text" placeholder="Vehicle Model">
+        <input type="text" placeholder="Vehicle Number">
+        <button type="button" class="submit">Create Account</button>
+      </form>
+      <form id="delivery-login">
+        <input type="text" placeholder="Mobile Number">
+        <input type="password" placeholder="Password">
+        <button type="button" class="submit">Login</button>
+      </form>
+    </div>
+
+  </div>
+</div>
   
-  width:auto;
-  min-width:280px;
-  max-width:90vw;
-  max-height:85vh;
-  overflow-y:auto;          /* 🔥 scroll only vertical */
 
-  padding:14px 14px 18px;   /* 🔥 top space */
-  border-radius:16px;
-
-  background:#111827;
-  border:1px solid #1f2937;
-  box-shadow:0 20px 50px rgba(0,0,0,0.7);
-
-  display:none;
-  z-index:100;
-}
-
-/* HEADER BAR */
-.popup-header{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:8px 4px 14px;
-}
-
-.popup-header i{
-  font-size:20px;
-  cursor:pointer;
-  color:#e5e7eb;
-}
-
-.popup-header span{
-  font-size:16px;
-  font-weight:600;
-}
-
-/* TABS FIX */
-.tabs{
-  display:flex;
-  align-items:center;
-  min-height:44px;          /* 🔥 icon cut fix */
-  overflow:visible;        /* 🔥 allow full icon */
-}
-
-.tab{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  padding:10px 0;
-  line-height:1.2;
-}
-form{display:none;max-height:600px;overflow-y:auto;padding-right:5px;}  
-form.active{display:block;}  
-input, select{width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;}  
-input::placeholder{color:#aaa;}  
-input:focus{border:1px solid #00eaff;box-shadow:0 0 12px #00eaff66;}  
-button.submit{width:100%;padding:14px;border:none;border-radius:14px;margin-top:18px;background:#00eaffaa;color:#000;font-size:19px;font-weight:700;cursor:pointer;transition:0.3s;box-shadow:0 0 18px #00eaff88;}  
-button.submit:hover{transform:scale(1.03);background:#00eaff;box-shadow:0 0 25px #00eaff;}  
-form::-webkit-scrollbar{width:6px;}  
-form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}  
-</style>  </head>  
-<body>  <div class="container">  
-    <h1 class="logo-text-only">🌐 BazaarSathi</h1>  
-    <div class="nav-buttons">  
-        <button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>  
-        <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>  
-        <button onclick="showPanel('delivery')"><i class="fas fa-motorcycle" style="color:#00ff88;"></i> Delivery Boy</button>  
-          <div class="popup-header">
-  <i class="fa fa-arrow-left" onclick="closePopup()"></i>
-  <span>Account</span>
-          </div>
-    </div>  <!-- WHOLESALER -->  
-<div id="wholesaler" class="panel" style="display:none;">  
-    <div class="tabs">  
-        <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>  
-        <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>  
-    </div>  
-    <form id="wholesaler-signup" class="active">  
-        <input type="text" placeholder="Name">  
-        <input type="number" placeholder="UPI Mobile Number">  
-        <input type="text" placeholder="Shop Current Location">  
-        <input type="password" placeholder="Password">  
-        <input type="password" placeholder="Confirm Password">  
-        <button type="button" class="submit">Create Account</button>  
-    </form>  
-    <form id="wholesaler-login">  
-        <input type="number" placeholder="Mobile Number">  
-        <input type="password" placeholder="Password">  
-        <button type="button" class="submit">Login</button>  
-    </form>  
-</div>  
-
-<!-- RETAILER -->  
-<div id="retailer" class="panel" style="display:none;">  
-    <div class="tabs">  
-        <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>  
-        <div class="tab" onclick="switchTab('retailer','login')">Login</div>  
-    </div>  
-    <form id="retailer-signup" class="active">  
-        <input type="text" placeholder="Name">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="text" placeholder="Shop Current Location">  
-        <input type="password" placeholder="Password">  
-        <input type="password" placeholder="Confirm Password">  
-        <button type="button" class="submit">Create Account</button>  
-    </form>  
-    <form id="retailer-login">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="password" placeholder="Password">  
-        <button type="button" class="submit">Login</button>  
-    </form>  
-</div>  
-
-<!-- DELIVERY BOY -->  
-<div id="delivery" class="panel" style="display:none;">  
-    <div class="tabs">  
-        <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>  
-        <div class="tab" onclick="switchTab('delivery','login')">Login</div>  
-    </div>  
-    <form id="delivery-signup" class="active">  
-        <input type="text" placeholder="Name">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="text" placeholder="Alternate Mobile (optional)">  
-        <input type="text" placeholder="Current Live Location">  
-        <input type="password" placeholder="Password">  
-        <input type="password" placeholder="Confirm Password">  
-        <select>  
-            <option>2-Wheeler</option>  
-            <option>3-Wheeler</option>  
-            <option>4-Wheeler</option>  
-        </select>  
-        <input type="text" placeholder="Vehicle Model">  
-        <input type="text" placeholder="Vehicle Number">  
-        <button type="button" class="submit">Create Account</button>  
-    </form>  
-    <form id="delivery-login">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="password" placeholder="Password">  
-        <button type="button" class="submit">Login</button>  
-    </form>  
-</div>  
-
-
-
-</div>  <script type="module">
+  <script type="module">
     if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/firebase-messaging-sw.js")
     .then(() => console.log("✅ FCM Service Worker registered"))
