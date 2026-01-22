@@ -106,7 +106,11 @@ h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaf
   overflow-y:auto;
   padding-right:5px;
 }
-form{display:none;}
+form{
+  display:none;
+  max-height:calc(90vh - 140px);
+  overflow-y:auto;
+}
 form.active{display:block;}  
 input, select{width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;}  
 input::placeholder{color:#aaa;}  
