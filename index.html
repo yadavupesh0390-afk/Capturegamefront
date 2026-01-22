@@ -465,7 +465,7 @@ async function loginUser(type,mobile,password){
 }
 
 /* ================= BUTTON HANDLERS ================= */
-['wholesaler','retailer','delivery','admin'].forEach(type=>{
+['wholesaler','retailer','delivery'].forEach(type=>{
   document.querySelector(`#${type}-signup .submit`).onclick=()=>{
     let data={};
     document.querySelectorAll(`#${type}-signup input, #${type}-signup select`).forEach(i=>{
