@@ -246,17 +246,37 @@ async function requestNotificationPermission() {
 /* ================= UI ================= */
 
 
-window.showPanel = (panelId)=>{
-  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-  document.getElementById(panelId).style.display='block';
-  switchTab(panelId,'signup');
+window.showPanel = function(panelId, tab = 'signup') {
+  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+
+  panel.style.display = 'block';
+  document.querySelector('.overlay').style.display = 'block';
+
+  window.switchTab(panelId, tab);
 };
 
-window.switchTab = (panel, tab)=>{
-  document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
-  document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
-  document.querySelectorAll('#'+panel+' .tab')
-    .forEach((t,i)=>t.classList.toggle('active', i === (tab==='signup'?0:1)));
+window.closePopup = function() {
+  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+  document.querySelector('.overlay').style.display = 'none';
+};
+
+window.switchTab = function(panel, tab) {
+  const signupForm = document.getElementById(panel + '-signup');
+  const loginForm  = document.getElementById(panel + '-login');
+
+  if (!signupForm || !loginForm) return;
+
+  signupForm.classList.toggle('active', tab === 'signup');
+  loginForm.classList.toggle('active', tab === 'login');
+
+  document
+    .querySelectorAll('#' + panel + ' .tab')
+    .forEach((t, i) =>
+      t.classList.toggle('active', i === (tab === 'signup' ? 0 : 1))
+    );
 };
 
 /* ================= FCM TOKEN ================= */
