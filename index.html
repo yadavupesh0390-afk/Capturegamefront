@@ -35,108 +35,8 @@ h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaf
   box-shadow:
     0 4px 12px rgba(0,0,0,0.25);
 }
-  .overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.65);
-  backdrop-filter:blur(4px);
-  z-index:9;
-  display:none;
-}
-
-.panel{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-
-  width:100%;
-  max-width:380px;
-  height:90vh;
-
-  background:#000000cc;
-  border-radius:18px;
-  padding:16px;
-
-  display:none;
-  overflow:hidden;        /* panel kabhi scroll nahi karega */
-  z-index:100;
-}
-
-/* ===== POPUP HEADER (CLOSE ICON AREA) ===== */
-.popup-header{
-  position:sticky;
-  top:0;
-  z-index:100;            /* 🔥 sabse upar rahe */
-
-  background:#000;
-  display:flex;
-  justify-content:flex-end;
-  align-items:center;
-
-  padding:8px 0 10px;
-}
-
-/* Close icon */
-.close-btn{
-  cursor:pointer;
-  font-size:20px;
-  font-weight:800;
-  color:#fff;
-  line-height:1;
-}
-
-/* ===== TABS ===== */
-.tabs{
-  position:sticky;
-  top:48px;               /* header ke just niche */
-  z-index:50;
-
-  display:flex;
-  margin-bottom:12px;
-  border-radius:12px;
-  overflow:hidden;
-  background:#00000055;
-  border:1px solid #333;
-}
-
-.tab{
-  width:50%;
-  padding:12px;
-  cursor:pointer;
-  font-weight:600;
-  text-align:center;
-}
-
-.tab.active{
-  background:#00eaff33;
-}
-
-/* ===== BODY SCROLL AREA ===== */
-.popup-body{
-  height:calc(90vh - 120px);  /* header + tabs space */
-  overflow-y:auto;
-  padding-right:6px;
-}
-
-/* ===== FORMS ===== */
-form{
-  display:none;
-}
-
-form.active{
-  display:block;
-}
-
-/* Smooth scrollbar */
-.popup-body::-webkit-scrollbar{
-  width:6px;
-}
-
-.popup-body::-webkit-scrollbar-thumb{
-  background:#00eaff55;
-  border-radius:6px;
-}
+form{display:none;max-height:600px;overflow-y:auto;padding-right:5px;}  
+form.active{display:block;}  
 input, select{width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;}  
 input::placeholder{color:#aaa;}  
 input:focus{border:1px solid #00eaff;box-shadow:0 0 12px #00eaff66;}  
@@ -151,149 +51,77 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
         <button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>  
         <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>  
         <button onclick="showPanel('delivery')"><i class="fas fa-motorcycle" style="color:#00ff88;"></i> Delivery Boy</button>  
-        
-    </div> 
-   <div class="overlay" onclick="closePopup()"></div>  
-  
-  <!-- WHOLESALER -->  
-<div id="wholesaler" class="panel">
-
-  <!-- Close Button -->
-  <span class="close-btn" onclick="closePopup()">✖</span>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>
-    <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>
-  </div>
-
-  <!-- Popup Body -->
-  <div class="popup-body">
-
-    <!-- Sign-Up Form -->
-    <form id="wholesaler-signup" class="active">
-      <input type="text" placeholder="Name">
-      <input type="number" placeholder="UPI Mobile Number">
-      <input type="text" placeholder="Shop Current Location">
-      <input type="password" placeholder="Password">
-      <input type="password" placeholder="Confirm Password">
-      <button type="button" class="submit">Create Account</button>
-
-      <p style="margin-top:15px;font-size:14px;opacity:0.8">
-        Already have an account?
-        <span style="color:#00eaff;cursor:pointer;font-weight:600"
-              onclick="switchTab('wholesaler','login')">
-          Login here
-        </span>
-      </p>
-    </form>
-
-    <!-- Login Form -->
-    <form id="wholesaler-login">
-      <input type="number" placeholder="Mobile Number">
-      <input type="password" placeholder="Password">
-      <button type="button" class="submit">Login</button>
-    </form>
-
-  </div> <!-- End of popup-body -->
-
-
+          
+    </div>  <!-- WHOLESALER -->  
+<div id="wholesaler" class="panel" style="display:none;">  
+    <div class="tabs">  
+        <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>  
+        <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>  
+    </div>  
+    <form id="wholesaler-signup" class="active">  
+        <input type="text" placeholder="Name">  
+        <input type="number" placeholder="UPI Mobile Number">  
+        <input type="text" placeholder="Shop Current Location">  
+        <input type="password" placeholder="Password">  
+        <input type="password" placeholder="Confirm Password">  
+        <button type="button" class="submit">Create Account</button>  
+    </form>  
+    <form id="wholesaler-login">  
+        <input type="number" placeholder="Mobile Number">  
+        <input type="password" placeholder="Password">  
+        <button type="button" class="submit">Login</button>  
+    </form>  
+</div>  
 
 <!-- RETAILER -->  
-<div id="retailer" class="panel" style="display:none;">
-
-  <!-- Close Button -->
-  <span class="close-btn" onclick="closePopup()">✖</span>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>
-    <div class="tab" onclick="switchTab('retailer','login')">Login</div>
-  </div>
-
-  <!-- Popup Body -->
-  <div class="popup-body">
-
-    <!-- Sign-Up Form -->
-    <form id="retailer-signup" class="active">
-      <input type="text" placeholder="Name">
-      <input type="text" placeholder="Mobile Number">
-      <input type="text" placeholder="Shop Current Location">
-      <input type="password" placeholder="Password">
-      <input type="password" placeholder="Confirm Password">
-      <button type="button" class="submit">Create Account</button>
-
-      <p style="margin-top:15px;font-size:14px;opacity:0.8">
-        Already have an account?
-        <span style="color:#00eaff;cursor:pointer;font-weight:600"
-              onclick="switchTab('retailer','login')">
-          Login here
-        </span>
-      </p>
-    </form>
-
-    <!-- Login Form -->
-    <form id="retailer-login">
-      <input type="text" placeholder="Mobile Number">
-      <input type="password" placeholder="Password">
-      <button type="button" class="submit">Login</button>
-    </form>
-
-  </div> <!-- End of popup-body -->
-
-
+<div id="retailer" class="panel" style="display:none;">  
+    <div class="tabs">  
+        <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>  
+        <div class="tab" onclick="switchTab('retailer','login')">Login</div>  
+    </div>  
+    <form id="retailer-signup" class="active">  
+        <input type="text" placeholder="Name">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="text" placeholder="Shop Current Location">  
+        <input type="password" placeholder="Password">  
+        <input type="password" placeholder="Confirm Password">  
+        <button type="button" class="submit">Create Account</button>  
+    </form>  
+    <form id="retailer-login">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="password" placeholder="Password">  
+        <button type="button" class="submit">Login</button>  
+    </form>  
+</div>  
 
 <!-- DELIVERY BOY -->  
-<div id="delivery" class="panel" style="display:none;">
-
-  <!-- Close Button -->
-  <span class="close-btn" onclick="closePopup()">✖</span>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>
-    <div class="tab" onclick="switchTab('delivery','login')">Login</div>
-  </div>
-
-  <!-- Popup Body -->
-  <div class="popup-body">
-
-    <!-- Sign-Up Form -->
-    <form id="delivery-signup" class="active">
-      <input type="text" placeholder="Name">
-      <input type="text" placeholder="Mobile Number">
-      <input type="text" placeholder="Alternate Mobile (optional)">
-      <input type="text" placeholder="Current Live Location">
-      <input type="password" placeholder="Password">
-      <input type="password" placeholder="Confirm Password">
-      <select>
-        <option>2-Wheeler</option>
-        <option>3-Wheeler</option>
-        <option>4-Wheeler</option>
-      </select>
-      <input type="text" placeholder="Vehicle Model">
-      <input type="text" placeholder="Vehicle Number">
-      <button type="button" class="submit">Create Account</button>
-
-      <p style="margin-top:15px;font-size:14px;opacity:0.8">
-        Already have an account?
-        <span style="color:#00eaff;cursor:pointer;font-weight:600"
-              onclick="switchTab('delivery','login')">
-          Login here
-        </span>
-      </p>
-    </form>
-
-    <!-- Login Form -->
-    <form id="delivery-login">
-      <input type="text" placeholder="Mobile Number">
-      <input type="password" placeholder="Password">
-      <button type="button" class="submit">Login</button>
-    </form>
-
-  </div> <!-- End of popup-body -->
-
-
+<div id="delivery" class="panel" style="display:none;">  
+    <div class="tabs">  
+        <div class="tab active" onclick="switchTab('delivery','signup')">Sign-Up</div>  
+        <div class="tab" onclick="switchTab('delivery','login')">Login</div>  
+    </div>  
+    <form id="delivery-signup" class="active">  
+        <input type="text" placeholder="Name">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="text" placeholder="Alternate Mobile (optional)">  
+        <input type="text" placeholder="Current Live Location">  
+        <input type="password" placeholder="Password">  
+        <input type="password" placeholder="Confirm Password">  
+        <select>  
+            <option>2-Wheeler</option>  
+            <option>3-Wheeler</option>  
+            <option>4-Wheeler</option>  
+        </select>  
+        <input type="text" placeholder="Vehicle Model">  
+        <input type="text" placeholder="Vehicle Number">  
+        <button type="button" class="submit">Create Account</button>  
+    </form>  
+    <form id="delivery-login">  
+        <input type="text" placeholder="Mobile Number">  
+        <input type="password" placeholder="Password">  
+        <button type="button" class="submit">Login</button>  
+    </form>  
+</div>  
 
 
 
@@ -339,40 +167,21 @@ async function requestNotificationPermission() {
   }
     }
 /* ================= UI ================= */
+window.onload = ()=> showPanel('wholesaler');
 
-
-window.showPanel = function(panelId, tab = 'signup') {
-  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-
-  const panel = document.getElementById(panelId);
-  if (!panel) return;
-
-  panel.style.display = 'block';
-  document.querySelector('.overlay').style.display = 'block';
-
-  window.switchTab(panelId, tab);
+window.showPanel = (panelId)=>{
+  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+  document.getElementById(panelId).style.display='block';
+  switchTab(panelId,'signup');
 };
 
-window.closePopup = function() {
-  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-  document.querySelector('.overlay').style.display = 'none';
+window.switchTab = (panel, tab)=>{
+  document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
+  document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
+  document.querySelectorAll('#'+panel+' .tab')
+    .forEach((t,i)=>t.classList.toggle('active', i === (tab==='signup'?0:1)));
 };
 
-window.switchTab = function(panel, tab) {
-  const signupForm = document.getElementById(panel + '-signup');
-  const loginForm  = document.getElementById(panel + '-login');
-
-  if (!signupForm || !loginForm) return;
-
-  signupForm.classList.toggle('active', tab === 'signup');
-  loginForm.classList.toggle('active', tab === 'login');
-
-  document
-    .querySelectorAll('#' + panel + ' .tab')
-    .forEach((t, i) =>
-      t.classList.toggle('active', i === (tab === 'signup' ? 0 : 1))
-    );
-};
 /* ================= FCM TOKEN ================= */
 async function getFCMToken(){
   try{
