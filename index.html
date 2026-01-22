@@ -358,29 +358,35 @@ async function requestNotificationPermission() {
     return false;
   }
     }
-/* ================= UI ================= */
-let currentPanel = null;
-
-window.showPanel = (panelId)=>{
-  if(currentPanel === panelId){
-    closePopup();
-    return;
-  }
-
-  closePopup();
-  currentPanel = panelId;
-
-  document.getElementById("overlay").style.display="block";
-  const panel = document.getElementById(panelId);
-  panel.style.display="block";
-
-  switchTab(panelId,'signup');
+/* ===================== UI / POPUP ===================== */
+window.onload = () => {
+  // optional: auto open panel for test
+  // openPopup('wholesaler');
 };
 
-window.closePopup = ()=>{
-  document.getElementById("overlay").style.display="none";
-  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-  currentPanel = null;
+window.openPopup = (panelId) => {
+  document.getElementById("overlay").style.display = "block";
+  document.getElementById("wholesaler").style.display = "none";
+  document.getElementById("retailer").style.display = "none";
+  document.getElementById("delivery").style.display = "none";
+
+  document.getElementById(panelId).style.display = "block";
+};
+
+window.closePopup = () => {
+  document.getElementById("overlay").style.display = "none";
+  document.getElementById("wholesaler").style.display = "none";
+  document.getElementById("retailer").style.display = "none";
+  document.getElementById("delivery").style.display = "none";
+};
+
+/* ===================== TABS SWITCH ===================== */
+window.switchTab = (panel, tab) => {
+  document.getElementById(panel + "-signup").classList.toggle('active', tab === 'signup');
+  document.getElementById(panel + "-login").classList.toggle('active', tab === 'login');
+
+  document.querySelectorAll('#' + panel + ' .tab')
+    .forEach((t, i) => t.classList.toggle('active', i === (tab === 'signup' ? 0 : 1)));
 };
 
 /* ================= FCM TOKEN ================= */
