@@ -167,7 +167,14 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
         </select>  
         <input type="text" placeholder="Vehicle Model">  
         <input type="text" placeholder="Vehicle Number">  
-        <button type="button" class="submit">Create Account</button>  
+        <button type="button" class="submit">Create Account</button> 
+      <p style="margin-top:15px;font-size:14px;opacity:0.8">
+  Already have an account?
+  <span style="color:#00eaff;cursor:pointer;font-weight:600"
+        onclick="switchTab('delivery','login')">
+    Login here
+  </span>
+      </p>
     </form>  
     <form id="delivery-login">  
         <input type="text" placeholder="Mobile Number">  
