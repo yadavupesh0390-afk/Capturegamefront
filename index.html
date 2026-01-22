@@ -49,15 +49,18 @@ h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaf
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  width:92%;
-  max-width:420px;
-  background:rgba(0,0,0,0.9);
+  width:100%;
+  max-width:380px;
+
+  max-height:90vh;          /* 🔥 screen ke andar */
+  background:#000000cc;
   border-radius:18px;
   padding:20px;
-  z-index:10;
-  display:none;
-}
 
+  display:none;
+  overflow:hidden;          /* header fixed rahe */
+  z-index:100;
+}
 .popup-header{
   display:flex;
   justify-content:space-between;
