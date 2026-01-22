@@ -19,44 +19,6 @@ h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaf
 .tabs{display:flex;margin-bottom:18px;border-radius:12px;overflow:hidden;background:#00000055;border:1px solid #333;}  
 .tab{width:50%;padding:12px;cursor:pointer;color:#fff;font-weight:600;transition:0.3s;}  
 .tab.active{background:#00eaff33;}  
-.logo-text-only{
-  font-size:30px;
-  font-weight:900;
-  letter-spacing:1px;
-  padding:14px 26px;
-  border-radius:18px;
-  background:
-    radial-gradient(circle at top,#00eaff55,transparent 60%),
-    #020617;
-  border:1px solid #1f2937;
-  box-shadow:
-    0 0 25px #00eaff55,
-    inset 0 0 20px #000;
-}
-  .overlay{
-  position:fixed;
-  inset:0;
-  background:#000000aa;
-  backdrop-filter:blur(6px);
-  z-index:99;
-  display:none;
-}
-
-.panel{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%) scale(0.9);
-  width:100%;
-  max-width:460px;
-  z-index:100;
-  display:none;
-  animation:popup .25s ease forwards;
-}
-
-@keyframes popup{
-  to{ transform:translate(-50%,-50%) scale(1); }
-}
 form{display:none;max-height:600px;overflow-y:auto;padding-right:5px;}  
 form.active{display:block;}  
 input, select{width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;}  
@@ -68,7 +30,7 @@ form::-webkit-scrollbar{width:6px;}
 form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}  
 </style>  </head>  
 <body>  <div class="container">  
-    <h1 class="logo-text-only">🌐 BazaarSathi</h1>  
+    <h1>Bazaar Sathi</h1>  
     <div class="nav-buttons">  
         <button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>  
         <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>  
@@ -189,28 +151,19 @@ async function requestNotificationPermission() {
   }
     }
 /* ================= UI ================= */
-let currentPanel = null;
+window.onload = ()=> showPanel('wholesaler');
 
 window.showPanel = (panelId)=>{
-  if(currentPanel === panelId){
-    closePopup();
-    return;
-  }
-
-  closePopup();
-  currentPanel = panelId;
-
-  document.getElementById("overlay").style.display="block";
-  const panel = document.getElementById(panelId);
-  panel.style.display="block";
-
+  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+  document.getElementById(panelId).style.display='block';
   switchTab(panelId,'signup');
 };
 
-window.closePopup = ()=>{
-  document.getElementById("overlay").style.display="none";
-  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-  currentPanel = null;
+window.switchTab = (panel, tab)=>{
+  document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
+  document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
+  document.querySelectorAll('#'+panel+' .tab')
+    .forEach((t,i)=>t.classList.toggle('active', i === (tab==='signup'?0:1)));
 };
 
 /* ================= FCM TOKEN ================= */
