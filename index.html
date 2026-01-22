@@ -51,14 +51,14 @@ h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaf
   transform:translate(-50%,-50%);
   width:100%;
   max-width:380px;
+  height:90vh;                 /* 🔥 fixed height */
 
-  max-height:90vh;          /* 🔥 screen ke andar */
   background:#000000cc;
   border-radius:18px;
-  padding:20px;
+  padding:16px;
 
   display:none;
-  overflow:hidden;          /* header fixed rahe */
+  overflow:hidden;             /* panel kabhi scroll nahi karega */
   z-index:100;
 }
 .popup-header{
@@ -96,6 +96,25 @@ form{
 form.active{
   display:block;
 }  
+  .popup-header{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:#000;
+  padding-bottom:8px;
+}
+
+.tabs{
+  position:sticky;
+  top:38px;                    /* header ke niche */
+  z-index:25;
+}
+
+.popup-body{
+  height:calc(90vh - 110px);   /* header + tabs space */
+  overflow-y:auto;
+  padding-right:5px;
+}
 form.active{display:block;}  
 input, select{width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;}  
 input::placeholder{color:#aaa;}  
