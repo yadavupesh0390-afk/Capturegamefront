@@ -193,7 +193,20 @@ function closePopup() {
   document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
   document.querySelector('.overlay').style.display = 'none';
 }
+window.onload = ()=> showPanel('wholesaler');
 
+window.showPanel = (panelId)=>{
+  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+  document.getElementById(panelId).style.display='block';
+  switchTab(panelId,'signup');
+};
+
+window.switchTab = (panel, tab)=>{
+  document.getElementById(panel+'-signup').classList.toggle('active',tab==='signup');
+  document.getElementById(panel+'-login').classList.toggle('active',tab==='login');
+  document.querySelectorAll('#'+panel+' .tab')
+    .forEach((t,i)=>t.classList.toggle('active', i === (tab==='signup'?0:1)));
+};
 /* ================= FCM TOKEN ================= */
 async function getFCMToken(){
   try{
