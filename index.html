@@ -35,6 +35,45 @@ h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaf
   box-shadow:
     0 4px 12px rgba(0,0,0,0.25);
 }
+  .overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.65);
+  backdrop-filter:blur(4px);
+  z-index:9;
+  display:none;
+}
+
+.panel{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:92%;
+  max-width:420px;
+  background:rgba(0,0,0,0.9);
+  border-radius:18px;
+  padding:20px;
+  z-index:10;
+  display:none;
+}
+
+.popup-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+.popup-header span{
+  font-weight:700;
+  font-size:16px;
+}
+
+.popup-header i{
+  cursor:pointer;
+  font-size:18px;
+}
 form{display:none;max-height:600px;overflow-y:auto;padding-right:5px;}  
 form.active{display:block;}  
 input, select{width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;}  
@@ -51,7 +90,7 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
         <button onclick="showPanel('wholesaler')"><i class="fas fa-store" style="color:#00eaff;"></i> Wholesaler</button>  
         <button onclick="showPanel('retailer')"><i class="fas fa-cart-shopping" style="color:#ffea00;"></i> Retailer</button>  
         <button onclick="showPanel('delivery')"><i class="fas fa-motorcycle" style="color:#00ff88;"></i> Delivery Boy</button>  
-          
+          <div class="overlay" onclick="closePopup()"></div>
     </div>  <!-- WHOLESALER -->  
 <div id="wholesaler" class="panel" style="display:none;">  
     <div class="tabs">  
