@@ -200,36 +200,48 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
 
 
 <!-- RETAILER -->  
-<div id="retailer" class="panel" style="display:none;">  
-  
+<div id="retailer" class="panel" style="display:none;">
+
+  <!-- Close Button -->
   <span class="close-btn" onclick="closePopup()">✖</span>
-</div>
-    <div class="tabs">  
-        <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>  
-        <div class="tab" onclick="switchTab('retailer','login')">Login</div>  
-    </div>  
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('retailer','signup')">Sign-Up</div>
+    <div class="tab" onclick="switchTab('retailer','login')">Login</div>
+  </div>
+
+  <!-- Popup Body -->
   <div class="popup-body">
-    <form id="retailer-signup" class="active">  
-        <input type="text" placeholder="Name">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="text" placeholder="Shop Current Location">  
-        <input type="password" placeholder="Password">  
-        <input type="password" placeholder="Confirm Password">  
-        <button type="button" class="submit">Create Account</button> 
+
+    <!-- Sign-Up Form -->
+    <form id="retailer-signup" class="active">
+      <input type="text" placeholder="Name">
+      <input type="text" placeholder="Mobile Number">
+      <input type="text" placeholder="Shop Current Location">
+      <input type="password" placeholder="Password">
+      <input type="password" placeholder="Confirm Password">
+      <button type="button" class="submit">Create Account</button>
+
       <p style="margin-top:15px;font-size:14px;opacity:0.8">
-  Already have an account?
-  <span style="color:#00eaff;cursor:pointer;font-weight:600"
-        onclick="switchTab('retailer','login')">
-    Login here
-  </span>
-</p>
-    </form>  
-    <form id="retailer-login">  
-        <input type="text" placeholder="Mobile Number">  
-        <input type="password" placeholder="Password">  
-        <button type="button" class="submit">Login</button>  
-    </form>  
-</div>  
+        Already have an account?
+        <span style="color:#00eaff;cursor:pointer;font-weight:600"
+              onclick="switchTab('retailer','login')">
+          Login here
+        </span>
+      </p>
+    </form>
+
+    <!-- Login Form -->
+    <form id="retailer-login">
+      <input type="text" placeholder="Mobile Number">
+      <input type="password" placeholder="Password">
+      <button type="button" class="submit">Login</button>
+    </form>
+
+  </div> <!-- End of popup-body -->
+
+
 
 <!-- DELIVERY BOY -->  
 <div id="delivery" class="panel" style="display:none;"> 
