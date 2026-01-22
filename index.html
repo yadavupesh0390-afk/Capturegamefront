@@ -19,20 +19,22 @@ h1{font-size:34px;font-weight:800;margin-bottom:25px;text-shadow:0 0 18px #00eaf
 .tabs{display:flex;margin-bottom:18px;border-radius:12px;overflow:hidden;background:#00000055;border:1px solid #333;}  
 .tab{width:50%;padding:12px;cursor:pointer;color:#fff;font-weight:600;transition:0.3s;}  
 .tab.active{background:#00eaff33;} 
- .logo-text-only{
-  font-size:30px;
-  font-weight:900;
-  letter-spacing:1px;
-  padding:14px 26px;
-  border-radius:18px;
-  background:
-    radial-gradient(circle at top,#00eaff55,transparent 60%),
-    #020617;
-  border:1px solid #1f2937;
+.logo-text-only{
+  display:inline-block;
+
+  font-size:20px;          /* chhota, logo-friendly text */
+  font-weight:700;
+  letter-spacing:0.5px;
+
+  padding:6px 25px;        /* thin background patti */
+  border-radius:10px;
+
+  background:#facc15;      /* soft yellow */
+  color:#1f2937;           /* dark readable text */
+
   box-shadow:
-    0 0 25px #00eaff55,
-    inset 0 0 20px #000;
- }
+    0 4px 12px rgba(0,0,0,0.25);
+}
 form{display:none;max-height:600px;overflow-y:auto;padding-right:5px;}  
 form.active{display:block;}  
 input, select{width:100%;padding:12px;margin:10px 0;border-radius:12px;border:1px solid #444;outline:none;font-size:15px;background:#00000088;color:#fff;transition:0.3s;}  
