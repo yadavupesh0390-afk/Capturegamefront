@@ -156,36 +156,48 @@ form::-webkit-scrollbar-thumb{background:#00eaff55;border-radius:6px;}
    <div class="overlay" onclick="closePopup()"></div>  
   
   <!-- WHOLESALER -->  
-<div id="wholesaler" class="panel">  
-  
+<div id="wholesaler" class="panel">
+
+  <!-- Close Button -->
   <span class="close-btn" onclick="closePopup()">✖</span>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>
+    <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>
   </div>
-    <div class="tabs">  
-        <div class="tab active" onclick="switchTab('wholesaler','signup')">Sign-Up</div>  
-        <div class="tab" onclick="switchTab('wholesaler','login')">Login</div>  
-    </div> 
+
+  <!-- Popup Body -->
   <div class="popup-body">
-    <form id="wholesaler-signup" class="active">  
-        <input type="text" placeholder="Name">  
-        <input type="number" placeholder="UPI Mobile Number">  
-        <input type="text" placeholder="Shop Current Location">  
-        <input type="password" placeholder="Password">  
-        <input type="password" placeholder="Confirm Password">  
-        <button type="button" class="submit">Create Account</button> 
+
+    <!-- Sign-Up Form -->
+    <form id="wholesaler-signup" class="active">
+      <input type="text" placeholder="Name">
+      <input type="number" placeholder="UPI Mobile Number">
+      <input type="text" placeholder="Shop Current Location">
+      <input type="password" placeholder="Password">
+      <input type="password" placeholder="Confirm Password">
+      <button type="button" class="submit">Create Account</button>
+
       <p style="margin-top:15px;font-size:14px;opacity:0.8">
-  Already have an account?
-  <span style="color:#00eaff;cursor:pointer;font-weight:600"
-        onclick="switchTab('wholesaler','login')">
-    Login here
-  </span>
+        Already have an account?
+        <span style="color:#00eaff;cursor:pointer;font-weight:600"
+              onclick="switchTab('wholesaler','login')">
+          Login here
+        </span>
       </p>
-    </form>  
-    <form id="wholesaler-login">  
-        <input type="number" placeholder="Mobile Number">  
-        <input type="password" placeholder="Password">  
-        <button type="button" class="submit">Login</button>  
-    </form>  
-</div>  
+    </form>
+
+    <!-- Login Form -->
+    <form id="wholesaler-login">
+      <input type="number" placeholder="Mobile Number">
+      <input type="password" placeholder="Password">
+      <button type="button" class="submit">Login</button>
+    </form>
+
+  </div> <!-- End of popup-body -->
+
+
 
 <!-- RETAILER -->  
 <div id="retailer" class="panel" style="display:none;">  
