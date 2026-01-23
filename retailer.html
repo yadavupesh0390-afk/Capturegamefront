@@ -1955,72 +1955,89 @@ async function saveProfile() {
   sendProfile(payload);
 }
 // ✅ Helper function to send profile to server
-async function sendProfile(payload){
-try{
-const res = await fetch(${API}/api/retailers/saveProfile,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify(payload)
-});
+/* ================= SEND / SAVE PROFILE ================= */
+async function sendProfile(payload) {
+  try {
+    const res = await fetch(`${API}/api/retailers/saveProfile`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-const data = await res.json();    
+    const data = await res.json();
 
-if(data.success){    
+    if (data.success) {
 
-  // ✅ Profile हमेशा update करो    
-  localStorage.setItem(    
-    "retailerProfile",    
-    JSON.stringify(data.profile)    
-  );    
+      // ✅ Always update profile cache
+      localStorage.setItem(
+        "retailerProfile",
+        JSON.stringify(data.profile)
+      );
 
-  // 🔥 सबसे जरूरी FIX    
-  const locationUpdated = localStorage.getItem("location_updated");    
+      /* ================= LOCATION FIX ================= */
+      const locationUpdated = localStorage.getItem("location_updated");
 
-  if(locationUpdated === "yes"){    
-    // 👉 user ने नई location set की है    
-    // ❌ backend की location से कुछ मत करो    
-    console.log("📍 New location preserved (local)");    
-  } else {    
-    // 👉 user ने नई location set नहीं की    
-    if(data.profile.location){    
-      localStorage.setItem(    
-        "retailer_location",    
-        JSON.stringify(data.profile.location)    
-      );    
-    } else {    
-      localStorage.removeItem("retailer_location");    
-    }    
-  }    
+      if (locationUpdated === "yes") {
+        // ✅ User set new location → keep local
+        console.log("📍 New location preserved (local)");
+      } else {
+        // ✅ User didn't set new location → use server
+        if (data.profile.location?.lat && data.profile.location?.lng) {
+          localStorage.setItem(
+            "retailer_location",
+            JSON.stringify({
+              lat: Number(data.profile.location.lat),
+              lng: Number(data.profile.location.lng)
+            })
+          );
+        } else {
+          localStorage.removeItem("retailer_location");
+        }
+      }
 
-  // ✅ flag clear    
-  localStorage.removeItem("location_updated");    
+      // ✅ Clear flag
+      localStorage.removeItem("location_updated");
 
-  alert("✅ Profile save ho gaya");    
-  closeAll();    
+      alert("✅ Profile save ho gaya");
+      closeAll();
 
-} else {    
-  alert("❌ Save failed");    
+    } else {
+      alert(data.message || "❌ Save failed");
+    }
+
+  } catch (err) {
+    console.error("SaveProfile Error:", err);
+    alert("❌ Server error");
+  }
 }
 
-}catch(err){
-console.error("SaveProfile Error:", err);
-alert("Server error");
-}
-}
-// ------------------- NOTIFY -------------------
-setInterval(async()=>{
-const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!profile.mobile) return;
-try{
-const res = await fetch(${API}/api/orders/retailer/${profile.mobile});
-const data = await res.json();
-deliveryDot.style.display = data.orders.some(o=>o.deliveryBoyName) ? "block":"none";
-}catch(e){}
-},8000);
 
-// ------------------- CLOSE MODALS -------------------
-function closeAll(){
-document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
+/* ================= DELIVERY NOTIFY DOT ================= */
+setInterval(async () => {
+  const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+  if (!profile.mobile) return;
+
+  try {
+    const res = await fetch(`${API}/api/orders/retailer/${profile.mobile}`);
+    const data = await res.json();
+
+    if (deliveryDot) {
+      deliveryDot.style.display = 
+        (data.orders || []).some(o => o.deliveryBoyName) ? "block" : "none";
+    }
+
+  } catch (err) {
+    console.error("Delivery notify error:", err);
+  }
+
+}, 8000);
+
+
+/* ================= CLOSE ALL MODALS ================= */
+function closeAll() {
+  document.querySelectorAll(".modal").forEach(m => {
+    m.style.display = "none";
+  });
 }
 </script>
 
