@@ -1396,93 +1396,101 @@ async function addToCart(p) {
 }
 
 
-async function loadCart(){
+async function loadCart() {
 
-const retailerId = localStorage.getItem("userId");
-const cartDiv = document.getElementById("cartItems");
+  const retailerId = localStorage.getItem("userId");
+  const cartDiv = document.getElementById("cartItems");
 
-if(!retailerId){
-cartDiv.innerHTML = "<p style='text-align:center'>🔐 Please login</p>";
-cart = [];
-return;
+  /* ---------- LOGIN CHECK ---------- */
+  if (!retailerId) {
+    cartDiv.innerHTML =
+      "<p style='text-align:center'>🔐 Please login</p>";
+    cart = [];
+    return;
+  }
+
+  try {
+    /* ---------- FETCH CART ---------- */
+    const res = await fetch(`${API}/api/cart/${retailerId}`);
+    const data = await res.json();
+
+    if (!data.items || !data.items.length) {
+      cartDiv.innerHTML =
+        "<p style='text-align:center'>🛒 Cart is empty</p>";
+      cart = [];
+      return;
+    }
+
+    /* ---------- CURRENT WHOLESALER FILTER ---------- */
+    const currentWholesalerId =
+      new URLSearchParams(window.location.search).get("wid") ||
+      localStorage.getItem("currentWholesalerId");
+
+    const filteredItems = currentWholesalerId
+      ? data.items.filter(
+          item => item.wholesalerId === currentWholesalerId
+        )
+      : data.items;
+
+    if (!filteredItems.length) {
+      cartDiv.innerHTML =
+        "<p style='text-align:center'>🛒 Is wholesaler ka cart empty hai</p>";
+      cart = [];
+      return;
+    }
+
+    /* ---------- RENDER CART ---------- */
+    cartDiv.innerHTML = filteredItems.map(item => `
+      <div class="cart-card"
+           style="display:flex;gap:10px;align-items:center;
+                  padding:8px;border-bottom:1px solid #eee">
+
+        <img src="${item.image || ''}"
+             class="cart-img"
+             style="width:60px;height:60px;object-fit:contain;
+                    border-radius:8px;background:#f8fafc">
+
+        <div class="cart-info" style="flex:1">
+          <div class="cart-name" style="font-weight:600">
+            ${item.productName}
+          </div>
+
+          <div class="cart-price"
+               style="font-size:14px;color:#334155">
+            ₹${item.price} × ${item.quantity || 1} =
+            <b>₹${Number(item.price) * Number(item.quantity || 1)}</b>
+          </div>
+        </div>
+
+        <div class="cart-actions">
+          <button
+            onclick="removeFromCart('${item.productId}')"
+            style="border:none;background:#fee2e2;color:#991b1b;
+                   border-radius:6px;padding:4px 8px;cursor:pointer">
+            ❌
+          </button>
+        </div>
+
+      </div>
+    `).join("");
+
+    /* ---------- LOCAL CART SYNC (IMPORTANT) ---------- */
+    cart = filteredItems.map(item => ({
+      ...item,
+      quantity: Number(item.quantity || 1),
+      price: Number(item.price)
+    }));
+
+    /* ---------- DELIVERY RECALC ---------- */
+    calcCartDelivery();
+
+  } catch (err) {
+    console.error("❌ loadCart error", err);
+    cartDiv.innerHTML =
+      "<p style='text-align:center'>⚠️ Cart load failed</p>";
+    cart = [];
+  }
 }
-
-try{
-
-const res = await fetch(`${API}/api/cart/${retailerId}`);    
-const data = await res.json();    
-
-if(!data.items || !data.items.length){    
-  cartDiv.innerHTML = "<p style='text-align:center'>🛒 Cart is empty</p>";    
-  cart = [];    
-  return;    
-}    
-
-/* 🔥 CURRENT WHOLESALER FILTER */    
-const currentWholesalerId =    
-  new URLSearchParams(location.search).get("wid") ||    
-  localStorage.getItem("currentWholesalerId");    
-
-const filteredItems = currentWholesalerId    
-  ? data.items.filter(    
-      i => i.wholesalerId === currentWholesalerId    
-    )    
-  : data.items;    
-
-if(!filteredItems.length){    
-  cartDiv.innerHTML =    
-    "<p style='text-align:center'>🛒 Is wholesaler ka cart empty hai</p>";    
-  cart = [];    
-  return;    
-}    
-
-/* 🧺 RENDER CART */    
-cartDiv.innerHTML = filteredItems.map(i => `    
-  <div class="cart-card" style="display:flex;gap:10px;align-items:center;padding:8px;border-bottom:1px solid #eee">    
-
-    <img src="${i.image || ''}"    
-         class="cart-img"    
-         style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:#f8fafc">    
-
-    <div class="cart-info" style="flex:1">    
-      <div class="cart-name" style="font-weight:600">    
-        ${i.productName}    
-      </div>    
-
-      <div class="cart-price" style="font-size:14px;color:#334155">    
-        ₹${i.price} × ${i.quantity || 1} =    
-        <b>₹${Number(i.price) * Number(i.quantity || 1)}</b>    
-      </div>    
-    </div>    
-
-    <div class="cart-actions">    
-      <button onclick="removeFromCart('${i.productId}')"    
-        style="border:none;background:#fee2e2;color:#991b1b;border-radius:6px;padding:4px 8px;cursor:pointer">    
-        ❌    
-      </button>    
-    </div>    
-
-  </div>    
-`).join("");    
-
-/* 🔄 LOCAL CART SYNC (IMPORTANT) */    
-cart = filteredItems.map(i => ({    
-  ...i,    
-  quantity: Number(i.quantity || 1),    
-  price: Number(i.price)    
-}));    
-
-/* 🚚 DELIVERY RECALC */    
-calcCartDelivery();
-
-}catch(err){
-console.error("❌ loadCart error", err);
-cartDiv.innerHTML =
-"<p style='text-align:center'>⚠️ Cart load failed</p>";
-cart = [];
-}
-}
-
 function openCart(){
 document.getElementById("cartModal").style.display = "flex";
 loadCart(); // ✅ yahin se cart load hoga
