@@ -585,7 +585,7 @@ clearCartCompletely();
 
 currentWholesalerId = wid;
 try{
-const res = await fetch(${API}/api/products/wholesaler/${wid});
+const res = await fetch('${API}/api/products/wholesaler/${wid}');
 const data = await res.json();
 
 const categoriesContainer = document.getElementById("categories");    
