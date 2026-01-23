@@ -260,7 +260,39 @@ socket.on("orderAssigned", ({ orderId, deliveryBoyId }) => {
 });
 function openProduct(){productModal.style.display="flex";}
 function openOrders(){orderModal.style.display="flex";loadOrders();}
-async function openProfile(){
+
+  async function ensureWholesalerLocation() {
+  const key = "wholesalerProfile_" + WID;
+  let profile = JSON.parse(localStorage.getItem(key) || "{}");
+
+  // ✅ Agar location already hai → kuch mat karo
+  if (profile.location?.lat && profile.location?.lng) {
+    console.log("📍 Wholesaler location already present");
+    return;
+  }
+
+  // ✅ Server se try karo
+  try {
+    const res = await fetch(`${API}/api/wholesalers/profile/${WID}`, {
+      headers: { "Authorization": "Bearer " + TOKEN }
+    });
+    const data = await res.json();
+
+    if (data.profile?.location?.lat) {
+      profile.location = data.profile.location;
+      localStorage.setItem(key, JSON.stringify(profile));
+      console.log("📍 Wholesaler location synced from server");
+      return;
+    }
+  } catch (e) {
+    console.warn("⚠️ Server location fetch failed");
+  }
+
+  // ⚠️ LAST OPTION: ask user later
+  console.warn("❌ Wholesaler location missing — ask user to set it");
+  }
+  
+  async function openProfile(){
 
   profileModal.style.display = "flex";
 
@@ -852,6 +884,10 @@ async function initFCM() {
 }
 
 window.addEventListener("load", initFCM);
+ // ------------------- INIT -------------------
+window.addEventListener("load", () => {
+  ensureWholesalerLocation();
+});
 
 </script>
 
