@@ -538,11 +538,12 @@ border-radius: 4px;
   </div>    
  </div>     
 <script>    
-const API = "https://shopbacked-vmhs.onrender.com";    let selectedProduct = null;
+const API = "https://shopbacked-vmhs.onrender.com";    
+let selectedProduct = null;
 let cart = [];
 let cartDeliveryCharge = 0;
 let currentWholesalerId = null;
-window.addEventListener("load", ensureRetailerLocation);
+
   // DOM elements
 const dImages = document.getElementById("dImages");
 const dDots   = document.getElementById("dDots");
@@ -2088,6 +2089,7 @@ function closeAll() {
     m.style.display = "none";
   });
 }
+window.addEventListener("load", ensureRetailerLocation);
 </script>
 
 </body>    
