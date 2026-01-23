@@ -1491,152 +1491,176 @@ async function loadCart() {
     cart = [];
   }
 }
-function openCart(){
-document.getElementById("cartModal").style.display = "flex";
-loadCart(); // ✅ yahin se cart load hoga
-}
-async function removeCart(i){
-cart.splice(i,1);
-try{
-await fetch(${API}/api/cart/save,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ retailerId: localStorage.getItem("userId"), items: cart })
-});
-localStorage.setItem("cart", JSON.stringify(cart));
-openCart();
-}catch(e){ alert("Failed to remove item"); }
-}
-async function removeFromCart(productId){
-const retailerId = localStorage.getItem("userId");
-
-const res = await fetch(${API}/api/cart/remove,{
-method:"DELETE",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ retailerId, productId })
-});
-
-const data = await res.json();
-
-if(data.success){
-loadCart(); // 🔄 refresh
-}else{
-alert("❌ Failed to remove item");
-}
+/* ================= OPEN CART ================= */
+function openCart() {
+  const modal = document.getElementById("cartModal");
+  if (modal) modal.style.display = "flex";
+  loadCart(); // ✅ yahin se cart load hoga
 }
 
+
+/* ================= REMOVE (LOCAL – OPTIONAL) ================= */
+/* ⚠️ Agar backend cart use ho raha hai to isko use na karein */
+async function removeCart(index) {
+  cart.splice(index, 1);
+
+  try {
+    await fetch(`${API}/api/cart/save`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        retailerId: localStorage.getItem("userId"),
+        items: cart
+      })
+    });
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    loadCart();
+
+  } catch (e) {
+    alert("❌ Failed to remove item");
+  }
+}
+
+
+/* ================= REMOVE FROM CART (BACKEND) ================= */
+async function removeFromCart(productId) {
+  const retailerId = localStorage.getItem("userId");
+  if (!retailerId) return;
+
+  try {
+    const res = await fetch(`${API}/api/cart/remove`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ retailerId, productId })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      loadCart(); // 🔄 refresh
+    } else {
+      alert(data.message || "❌ Failed to remove item");
+    }
+
+  } catch (err) {
+    console.error("REMOVE CART ERROR:", err);
+    alert("❌ Server error");
+  }
+}
+
+
+/* ================= PAY CART ================= */
 async function payCart() {
 
-const vehicle = cartVehicle.value;
-if (!vehicle) {
-alert("🚚 Select vehicle first");
-return;
-}
+  const vehicle = cartVehicle?.value;
+  if (!vehicle) {
+    alert("🚚 Select vehicle first");
+    return;
+  }
 
-const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-if (!profile.mobile) {
-alert("👤 Save profile first");
-return;
-}
+  const profile =
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-if (!cart || cart.length === 0) {
-alert("🛒 Cart empty");
-return;
-}
+  if (!profile.mobile) {
+    alert("👤 Save profile first");
+    return;
+  }
 
-// ✅ DELIVERY DATA MUST EXIST
-if (!window.__cartDelivery) {
-alert("❌ Delivery calculation missing");
-return;
-}
+  if (!cart || cart.length === 0) {
+    alert("🛒 Cart empty");
+    return;
+  }
 
-const {
-subtotal,
-retailerPays,
-wholesalerPays,
-total,
-distanceKm,
-timeMinutes
-} = window.__cartDelivery;
+  /* ✅ DELIVERY DATA REQUIRED */
+  if (!window.__cartDelivery) {
+    alert("❌ Delivery calculation missing");
+    return;
+  }
 
-try {
-// ===============================
-// ✅ CREATE ORDER + PAYMENT
-// ===============================
-const res = await fetch(${API}/api/orders/pay-and-create, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-amount: total,   // ✅ FINAL TOTAL
-notes: {
-type: "cart",
+  const {
+    subtotal,
+    retailerPays,
+    wholesalerPays,
+    total,
+    distanceKm,
+    timeMinutes
+  } = window.__cartDelivery;
 
-retailerName: profile.name,    
-      retailerMobile: profile.mobile,    
+  try {
+    /* ================= CREATE ORDER ================= */
+    const res = await fetch(`${API}/api/orders/pay-and-create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: total, // ✅ FINAL TOTAL
+        notes: {
+          type: "cart",
 
-      vehicleType: vehicle,    
+          retailerName: profile.name,
+          retailerMobile: profile.mobile,
 
-      // ✅ DELIVERY BREAKUP    
-      deliveryCharge: retailerPays + wholesalerPays,    
-      retailerDeliveryPay: retailerPays,    
-      wholesalerDeliveryPay: wholesalerPays,    
-      distanceKm,    
-      timeMinutes,    
+          vehicleType: vehicle,
 
-      products: JSON.stringify(    
-        cart.map(p => ({    
-          productId: p.productId || p._id,    
-          productName: p.productName,    
-          price: p.price,    
-          quantity: p.quantity || 1,    
+          /* 🚚 DELIVERY BREAKUP */
+          deliveryCharge: retailerPays + wholesalerPays,
+          retailerDeliveryPay: retailerPays,
+          wholesalerDeliveryPay: wholesalerPays,
+          distanceKm,
+          timeMinutes,
 
-          wholesalerId: p.wholesalerId,    
-          wholesalerName: p.shopName,    
-          wholesalerMobile: p.mobile    
-        }))    
-      )    
-    }    
-  })    
-});    
+          products: JSON.stringify(
+            cart.map(p => ({
+              productId: p.productId || p._id,
+              productName: p.productName,
+              price: p.price,
+              quantity: p.quantity || 1,
 
-const data = await res.json();    
-if (!data.success) {    
-  alert(data.message || "❌ Payment init failed");    
-  return;    
-}    
+              wholesalerId: p.wholesalerId,
+              wholesalerName: p.shopName,
+              wholesalerMobile: p.mobile
+            }))
+          )
+        }
+      })
+    });
 
-// ===============================    
-// ✅ RAZORPAY    
-// ===============================    
-const rzp = new Razorpay({    
-  key: data.key,    
-  amount: data.amount,    
-  currency: "INR",    
-  order_id: data.order.id,    
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.message || "❌ Payment init failed");
+      return;
+    }
 
-  handler: function () {    
-    localStorage.removeItem("cart");    
-    cart = [];    
-    window.__cartDelivery = null;    
+    /* ================= RAZORPAY ================= */
+    const rzp = new Razorpay({
+      key: data.key,
+      amount: data.amount,
+      currency: "INR",
+      order_id: data.order.id,
 
-    alert("✅ Payment Successful 🎉");    
-    closeAll();    
-    setTimeout(openOrderStatus, 2000);    
-  },    
+      handler: function () {
+        localStorage.removeItem("cart");
+        cart = [];
+        window.__cartDelivery = null;
 
-  modal: {    
-    ondismiss: function () {    
-      alert("❌ Payment cancelled");    
-    }    
-  }    
-});    
+        alert("✅ Payment Successful 🎉");
+        closeAll();
+        setTimeout(openOrderStatus, 2000);
+      },
 
-rzp.open();
+      modal: {
+        ondismiss: function () {
+          alert("❌ Payment cancelled");
+        }
+      }
+    });
 
-} catch (err) {
-console.error("CART PAYMENT ERROR:", err);
-alert("❌ Payment error");
-}
+    rzp.open();
+
+  } catch (err) {
+    console.error("CART PAYMENT ERROR:", err);
+    alert("❌ Payment error");
+  }
 }
 function clearCartCompletely(){
 cart = [];
