@@ -706,117 +706,133 @@ function clearCartCompletely() {
 }
 function saveCurrentLocation() {
 
-if (!navigator.geolocation) {
-alert("Location support nahi karta");
-return;
+  if (!navigator.geolocation) {
+    alert("❌ Location support नहीं करता");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      try {
+        const location = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        };
+
+        // ✅ LocalStorage save
+        localStorage.setItem(
+          "retailer_location",
+          JSON.stringify(location)
+        );
+
+        // ✅ Server save (ONLY location)
+        await fetch(`${API}/api/retailers/location`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + TOKEN
+          },
+          body: JSON.stringify({
+            retailerId: localStorage.getItem("userId"),
+            location: location
+          })
+        });
+
+        // ✅ UI update
+        const profileLocation = document.getElementById("profileLocation");
+        if (profileLocation) {
+          profileLocation.value =
+            location.lat.toFixed(6) + ", " +
+            location.lng.toFixed(6);
+        }
+
+        alert("📍 Location successfully save ho gayi");
+
+      } catch (err) {
+        console.error(err);
+        alert("❌ Server par location save nahi hui");
+      }
+    },
+    () => alert("❌ Location fetch nahi ho pa rahi"),
+    {
+      enableHighAccuracy: true,
+      timeout: 10000
+    }
+  );
 }
 
-navigator.geolocation.getCurrentPosition(
-async (pos) => {
-
-const location = {    
-    lat: pos.coords.latitude,    
-    lng: pos.coords.longitude    
-  };    
-
-  // ✅ LocalStorage save    
-  localStorage.setItem(    
-    "retailer_location",    
-    JSON.stringify(location)    
-  );    
-
-  // ✅ Server save (ONLY location)    
-  await fetch(`${API}/api/retailers/location`, {    
-    method: "PUT",    
-    headers: {    
-      "Content-Type": "application/json",    
-      "Authorization": "Bearer " + TOKEN    
-    },    
-    body: JSON.stringify({    
-      retailerId: localStorage.getItem("userId"),    
-      location    
-    })    
-  });    
-
-  // ✅ UI update    
-  if (document.getElementById("profileLocation")) {    
-    document.getElementById("profileLocation").value =    
-      location.lat.toFixed(6) + ", " +    
-      location.lng.toFixed(6);    
-  }    
-
-  alert("📍 Location successfully save ho gayi");    
-},    
-() => alert("Location fetch nahi ho pa rahi")
-
-);
+/* ================= CART DELIVERY UPDATE ================= */
+function updateCartDelivery() {
+  clearTimeout(cartTimer);
+  cartTimer = setTimeout(calcCartDelivery, 400);
 }
 
-function updateCartDelivery(){
-clearTimeout(cartTimer);
-cartTimer = setTimeout(calcCartDelivery, 400);
+/* ================= PRODUCT DETAIL MODAL ================= */
+function openDetail(p) {
+
+  // 🔥 DEEP COPY (avoid stale data)
+  selectedProduct = JSON.parse(JSON.stringify(p));
+
+  if (!selectedProduct.wholesalerLocation) {
+    console.warn("⚠️ Wholesaler location missing", selectedProduct);
+  }
+
+  document.getElementById("detailModal").style.display = "flex";
+
+  /* ---------- BASIC DETAILS ---------- */
+  dName.innerText  = selectedProduct.productName || "";
+  dPrice.innerText = "Price ₹" + (selectedProduct.price || 0);
+
+  /* ---------- DESCRIPTION ---------- */
+  dDesc.innerText = selectedProduct.detail || "No description available";
+  dDesc.classList.add("short");
+  document.getElementById("descToggle").innerText = "More ⬇";
+
+  /* ---------- DELIVERY RESET ---------- */
+  document.getElementById("deliveryBox").style.display = "none";
+  document.getElementById("deliveryText").innerText = "";
+  document.getElementById("totalText").innerText = "";
+  document.getElementById("vehicleType").value = "";
+
+  /* ---------- MULTIPLE IMAGES ---------- */
+  dImages.innerHTML = "";
+  dDots.innerHTML   = "";
+
+  const images =
+    (selectedProduct.images && selectedProduct.images.length)
+      ? selectedProduct.images
+      : (selectedProduct.image ? [selectedProduct.image] : []);
+
+  images.forEach((img, i) => {
+
+    dImages.innerHTML += `
+      <img
+        src="${img}"
+        onclick="openImage('${img}')"
+        style="min-width:100%;object-fit:contain;cursor:zoom-in"
+      >
+    `;
+
+    dDots.innerHTML += `
+      <div class="dot ${i === 0 ? "active" : ""}"></div>
+    `;
+  });
+
+  /* ---------- DOT ACTIVE ON SCROLL ---------- */
+  dImages.onscroll = () => {
+    const index = Math.round(
+      dImages.scrollLeft / dImages.clientWidth
+    );
+
+    [...dDots.children].forEach((dot, i) => {
+      dot.classList.toggle("active", i === index);
+    });
+  };
+
+  /* ---------- DEBUG ---------- */
+  console.log("📦 Product:", selectedProduct.productName);
+  console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
 }
-// ------------------- PRODUCT DETAIL -------------------
-function openDetail(p){
-
-// 🔥 DEEP COPY (NO STALE LOCATION)
-selectedProduct = JSON.parse(JSON.stringify(p));
-
-if(!selectedProduct.wholesalerLocation){
-console.warn("⚠️ Wholesaler location missing", selectedProduct);
-}
-
-document.getElementById("detailModal").style.display = "flex";
-
-/* ================= BASIC DETAILS ================= */
-dName.innerText  = selectedProduct.productName || "";
-dPrice.innerText = "Price ₹" + (selectedProduct.price || 0);
-
-/* ================= DESCRIPTION RESET ================= */
-dDesc.innerText = selectedProduct.detail || "No description available";
-dDesc.classList.add("short");
-document.getElementById("descToggle").innerText = "More ⬇";
-
-/* ================= DELIVERY RESET ================= */
-document.getElementById("deliveryBox").style.display = "none";
-document.getElementById("deliveryText").innerText = "";
-document.getElementById("totalText").innerText = "";
-document.getElementById("vehicleType").value = "";
-
-/* ================= MULTIPLE IMAGES ================= */
-dImages.innerHTML = "";
-dDots.innerHTML   = "";
-
-const images = (selectedProduct.images && selectedProduct.images.length)
-? selectedProduct.images
-: (selectedProduct.image ? [selectedProduct.image] : []);
-
-images.forEach((img, i) => {
-dImages.innerHTML +=     <img      src="${img}"      onclick="openImage('${img}')"     style="min-width:100%;object-fit:contain;cursor:zoom-in"     >    ;
-
-dDots.innerHTML += `    
-  <div class="dot ${i === 0 ? "active" : ""}"></div>    
-`;
-
-});
-
-/* ================= DOT ACTIVE ON SCROLL ================= */
-dImages.onscroll = () => {
-const index = Math.round(
-dImages.scrollLeft / dImages.clientWidth
-);
-
-[...dDots.children].forEach((dot, i) => {    
-  dot.classList.toggle("active", i === index);    
-});
-
-};
-
-/* ================= DEBUG (VERY IMPORTANT) ================= */
-console.log("📦 Product:", selectedProduct.productName);
-console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
-}
-
 function showChargeInfo(orderAmount = 0) {
 const slabs = [
 {min:100, max:500, percent:70},
