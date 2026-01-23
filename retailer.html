@@ -970,133 +970,142 @@ async function getDeliveryFromServer({ orderAmount, vehicleType }) {
   }
 }
 async function directBuy(e) {
-e.preventDefault();
+  e.preventDefault();
 
-// 🚚 Vehicle check
-if (!vehicleType.value) {
-alert("🚚 Select vehicle first");
-return;
+  /* ================= VEHICLE CHECK ================= */
+  if (!vehicleType.value) {
+    alert("🚚 Select vehicle first");
+    return;
+  }
+
+  /* ================= RETAILER PROFILE CHECK ================= */
+  const retailerProfile = JSON.parse(
+    localStorage.getItem("retailerProfile") || "{}"
+  );
+
+  if (!retailerProfile.mobile) {
+    alert("👤 Please save profile first");
+    return;
+  }
+
+  /* ================= LOCATION CHECK ================= */
+  const retailerLoc = JSON.parse(
+    localStorage.getItem("retailer_location")
+  );
+  const wholesalerLoc = selectedProduct?.wholesalerLocation;
+
+  if (!retailerLoc || !wholesalerLoc) {
+    alert("📍 Location missing");
+    return;
+  }
+
+  try {
+    /* ================= DELIVERY CALCULATION ================= */
+    const deliveryRes = await fetch(
+      `${API}/api/delivery/calculate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderAmount: selectedProduct.price,
+          vehicleType: vehicleType.value,
+          retailerLocation: retailerLoc,
+          wholesalerLocation: wholesalerLoc
+        })
+      }
+    );
+
+    const deliveryData = await deliveryRes.json();
+
+    if (!deliveryData.success) {
+      alert(
+        deliveryData.message || "Delivery calculation failed"
+      );
+      return;
+    }
+
+    /* ================= UI UPDATE ================= */
+    dDelivery.innerText =
+      `Delivery ₹${deliveryData.retailerPays} ` +
+      `(${deliveryData.retailerPercent}% retailer)`;
+
+    const totalAmount =
+      selectedProduct.price + deliveryData.retailerPays;
+
+    dTotal.innerText = `Total ₹${totalAmount}`;
+
+    /* ================= CREATE ORDER ================= */
+    const res = await fetch(
+      `${API}/api/orders/pay-and-create`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: totalAmount,
+          notes: {
+            type: "direct", // 🔥 IMPORTANT
+
+            productId: selectedProduct._id,
+            productName: selectedProduct.productName,
+            price: selectedProduct.price,
+
+            wholesalerId: selectedProduct.wholesalerId,
+            wholesalerName: selectedProduct.shopName,
+            wholesalerMobile: selectedProduct.mobile,
+            wholesalerAddress: selectedProduct.address,
+
+            retailerName: retailerProfile.name,
+            retailerMobile: retailerProfile.mobile,
+            retailerAddress: retailerProfile.address,
+
+            vehicleType: vehicleType.value,
+
+            // ✅ DELIVERY BREAKUP
+            deliveryCharge: deliveryData.totalDelivery,
+            retailerDeliveryPay: deliveryData.retailerPays,
+            wholesalerDeliveryPay: deliveryData.wholesalerPays,
+            distanceKm: deliveryData.distanceKm
+          }
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert("❌ Order create failed");
+      return;
+    }
+
+    /* ================= RAZORPAY ================= */
+    const rzp = new Razorpay({
+      key: data.key,
+      amount: data.amount,
+      currency: "INR",
+      order_id: data.order.id,
+
+      handler: function () {
+        alert("✅ Payment Successful 🎉");
+        alert("📦 Order processing ho raha hai");
+
+        closeAll();
+        setTimeout(openOrderStatus, 3000);
+      },
+
+      modal: {
+        ondismiss: function () {
+          alert("❌ Payment cancelled");
+        }
+      }
+    });
+
+    rzp.open();
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Something went wrong");
+  }
 }
-
-// 👤 Retailer profile check
-const retailerProfile = JSON.parse(
-localStorage.getItem("retailerProfile") || "{}"
-);
-
-if (!retailerProfile.mobile) {
-alert("👤 Please save profile first");
-return;
-}
-
-// 📍 Locations
-const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-const wholesalerLoc = selectedProduct.wholesalerLocation;
-if (!retailerLoc || !wholesalerLoc) {
-alert("📍 Location missing");
-return;
-}
-
-// ===============================
-// ✅ DELIVERY FROM BACKEND
-// ===============================
-const deliveryRes = await fetch(${API}/api/delivery/calculate, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-orderAmount: selectedProduct.price,
-vehicleType: vehicleType.value,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
-
-const deliveryData = await deliveryRes.json();
-
-if (!deliveryData.success) {
-alert(deliveryData.message || "Delivery calculation failed");
-return;
-}
-
-// 🧾 UI update
-dDelivery.innerText =
-Delivery ₹${deliveryData.retailerPays}     (${deliveryData.retailerPercent}% retailer);
-
-const totalAmount =
-selectedProduct.price + deliveryData.retailerPays;
-
-dTotal.innerText = Total ₹${totalAmount};
-
-// ===============================
-// ✅ CREATE ORDER + PAYMENT
-// ===============================
-const res = await fetch(${API}/api/orders/pay-and-create, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-amount: totalAmount,
-notes: {
-type: "direct", // 🔥 IMPORTANT
-
-productId: selectedProduct._id,    
-    productName: selectedProduct.productName,    
-    price: selectedProduct.price,    
-
-    wholesalerId: selectedProduct.wholesalerId,    
-    wholesalerName: selectedProduct.shopName,    
-    wholesalerMobile: selectedProduct.mobile,    
-    wholesalerAddress: selectedProduct.address,    
-
-    retailerName: retailerProfile.name,    
-    retailerMobile: retailerProfile.mobile,    
-    retailerAddress: retailerProfile.address,    
-
-    vehicleType: vehicleType.value,    
-
-    // ✅ DELIVERY BREAKUP (VERY IMPORTANT)    
-    deliveryCharge: deliveryData.totalDelivery,    
-    retailerDeliveryPay: deliveryData.retailerPays,    
-    wholesalerDeliveryPay: deliveryData.wholesalerPays,    
-    distanceKm: deliveryRes.distanceKm    
-  }    
-})
-
-});
-
-const data = await res.json();
-
-if (!data.success) {
-alert("❌ Order create failed");
-return;
-}
-
-// ===============================
-// ✅ RAZORPAY
-// ===============================
-const rzp = new Razorpay({
-key: data.key,
-amount: data.amount,
-currency: "INR",
-order_id: data.order.id,
-
-handler: function () {    
-  alert("✅ Payment Successful 🎉");    
-  alert("📦 Order processing ho raha hai");    
-
-  closeAll();    
-  setTimeout(openOrderStatus, 3000);    
-},    
-
-modal: {    
-  ondismiss: function () {    
-    alert("❌ Payment cancelled");    
-  }    
-}
-
-});
-
-rzp.open();
-}
-
 // ------------------- DELIVERY UPDATE ON VEHICLE SELECT -------------------
 async function updateDelivery() {
 if (!selectedProduct) return; // safety
