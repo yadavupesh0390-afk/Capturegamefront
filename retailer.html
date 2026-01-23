@@ -529,1261 +529,235 @@ border-radius: 4px;
     ">Close</button>    
   </div>    
  </div>     
-<script>    
-const API = "https://shopbacked-vmhs.onrender.com";  let selectedProduct = null;  
-let currentRetailerLoc = null;  
-let currentWholesalerLoc = null;  
-  let cart = [];  
-let cartDeliveryCharge = 0;  
-let currentWholesalerId = null;  
-// DOM elements  
-const dImages = document.getElementById("dImages");  
-const dDots   = document.getElementById("dDots");  const products = document.getElementById("products");
-const detailModal = document.getElementById("detailModal");
+<script>
+/* ================== CONFIG ================== */
+const API = "https://shopbacked-vmhs.onrender.com";
+
+/* ================== GLOBAL STATE ================== */
+let selectedProduct = null;
+let cart = [];
+let currentWholesalerId = null;
+let currentRetailerLoc = null;
+let currentWholesalerLoc = null;
+let cartTimer = null;
+
+/* ================== DOM ================== */
+const dImages = document.getElementById("dImages");
+const dDots = document.getElementById("dDots");
 const dName = document.getElementById("dName");
-const dImg = document.getElementById("dImg");
 const dDesc = document.getElementById("dDesc");
 const dPrice = document.getElementById("dPrice");
 const dDelivery = document.getElementById("dDelivery");
 const dTotal = document.getElementById("dTotal");
 const vehicleType = document.getElementById("vehicleType");
-const cartModal = document.getElementById("cartModal");
-const cartItems = document.getElementById("cartItems");
-const cartSubtotal = document.getElementById("cartSubtotal");
-const cartDelivery = document.getElementById("cartDelivery");
-const cartGrandTotal = document.getElementById("cartGrandTotal");
-const cartVehicle = document.getElementById("cartVehicle");
-const profileModal = document.getElementById("profileModal");
-const profileName = document.getElementById("profileName");
-const profileMobile = document.getElementById("profileMobile");
-const profileAddress = document.getElementById("profileAddress");
-const orderStatusModal = document.getElementById("orderStatusModal");
-const orderStatusData = document.getElementById("orderStatusData");
-const deliveryModal = document.getElementById("deliveryModal");
-const deliveryData = document.getElementById("deliveryData");
-const deliveryDot = document.getElementById("deliveryDot");
-const profileLocation = document.getElementById("profileLocation");
-// Utility
-function formatDT(d){ const dt=new Date(d); return dt.toLocaleDateString()+" "+dt.toLocaleTimeString(); }
 
-// ------------------- PRODUCTS -------------------
+/* ================== UTIL ================== */
+const safeNum = v => isNaN(Number(v)) ? 0 : Number(v);
+
+/* ================== LOAD PRODUCTS ================== */
 async function loadProducts(){
-const wid = document.getElementById("wid").value.trim();
-if(!wid) return alert("Enter Wholesaler ID");
-sessionStorage.setItem("lastWid", wid);
-if (currentWholesalerId && currentWholesalerId !== wid) {
-clearCartCompletely();
+  const wid = document.getElementById("wid").value.trim();
+  if(!wid) return alert("Wholesaler ID daalo");
+
+  sessionStorage.setItem("lastWid", wid);
+  currentWholesalerId = wid;
+
+  try{
+    const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
+    const data = await res.json();
+
+    const container = document.getElementById("categories");
+    if(!data.products || !data.products.length){
+      container.innerHTML = "<p>No categories found</p>";
+      return;
+    }
+
+    const cats = {};
+    data.products.forEach(p=>{
+      cats[p.category || "Other"] = true;
+    });
+
+    container.innerHTML = Object.keys(cats).map(cat=>`
+      <div class="category-card"
+        onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
+        <div class="category-icon"><i class="bi bi-box-seam"></i></div>
+        <div class="category-name">${cat}</div>
+      </div>
+    `).join("");
+
+    sessionStorage.setItem("lastCategoriesHTML", container.innerHTML);
+  }catch(err){
+    console.error(err);
+    alert("Products load failed");
+  }
 }
 
-currentWholesalerId = wid;
-try{
-const res = await fetch(${API}/api/products/wholesaler/${wid});
-const data = await res.json();
-
-const categoriesContainer = document.getElementById("categories");
-
-if(!data.products || !data.products.length){
-categoriesContainer.innerHTML = "<p>No categories found</p>";
-return;
+function openCategory(cat,wid){
+  window.location.href =
+    `categoryProducts.html?wid=${wid}&category=${cat}`;
 }
 
-// 🔥 product se unique categories nikalo
-const map = {};
-data.products.forEach(p=>{
-const cat = p.category || "Other";
-map[cat] = true;
-});
-
-categoriesContainer.innerHTML = Object.keys(map).map(cat=>`
-
-  <div class="category-card"    
-       onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">  <div class="category-icon">    
-  <i class="bi bi-box-seam"></i>    
-</div>    <div class="category-name">    
-  ${cat}    
-</div>    </div>    
-`).join("");    
-    sessionStorage.setItem(    
-  "lastCategoriesHTML",    
-  categoriesContainer.innerHTML    
-);  }catch(e){  
-console.error(e);  
-alert("Failed to load categories");  
-}  
-}  
-function openCategory(categoryId, wid){  
-// Query params ke saath redirect  
-window.location.href = categoryProducts.html?wid=${wid}&category=${categoryId};  
-}  function getRetailerLocation() {
-
-if (!navigator.geolocation) {
-alert("❌ Geolocation supported नहीं है");
-return;
-}
-
-profileLocation.value = "Fetching location...";
-
-navigator.geolocation.getCurrentPosition(
-(pos) => {
-const loc = {
-lat: pos.coords.latitude,
-lng: pos.coords.longitude
-};
-
-// ✅ input में दिखाओ
-profileLocation.value =
-loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);
-
-// ✅ localStorage में save
-localStorage.setItem("retailer_location", JSON.stringify(loc));
-
-localStorage.setItem("location_updated", "yes");
-
-alert("✅ Location set successfully");
-
-},
-(err) => {
-console.error(err);
-alert("❌ Location access denied");
-profileLocation.value = "";
-},
-{
-enableHighAccuracy: true,
-timeout: 10000
-}
-
-);
-}
-let categoriesLoaded = false;
-
-window.addEventListener("pageshow", function () {
-
-const wid = sessionStorage.getItem("lastWid");
-const catHTML = sessionStorage.getItem("lastCategoriesHTML");
-
-// 👉 input restore
-if (wid) {
-document.getElementById("wid").value = wid;
-}
-
-// 👉 categories restore (BACK CASE)
-if (catHTML) {
-document.getElementById("categories").innerHTML = catHTML;
-console.log("↩️ Categories restored from session");
-return;
-}
-
-// 👉 First time: kuch nahi (user search karega)
-});
-
-function saveCurrentLocation() {
-
-if (!navigator.geolocation) {
-alert("Location support nahi karta");
-return;
-}
-
-navigator.geolocation.getCurrentPosition(
-async (pos) => {
-
-const location = {
-lat: pos.coords.latitude,
-lng: pos.coords.longitude
-};
-
-// ✅ LocalStorage save
-localStorage.setItem(
-"retailer_location",
-JSON.stringify(location)
-);
-
-// ✅ Server save (ONLY location)
-await fetch(${API}/api/retailers/location, {
-method: "PUT",
-headers: {
-"Content-Type": "application/json",
-"Authorization": "Bearer " + TOKEN
-},
-body: JSON.stringify({
-retailerId: localStorage.getItem("userId"),
-location
-})
-});
-
-// ✅ UI update
-if (document.getElementById("profileLocation")) {
-document.getElementById("profileLocation").value =
-location.lat.toFixed(6) + ", " +
-location.lng.toFixed(6);
-}
-
-alert("📍 Location successfully save ho gayi");
-},
-() => alert("Location fetch nahi ho pa rahi")
-
-);
-}
-
-function updateCartDelivery(){
-clearTimeout(cartTimer);
-cartTimer = setTimeout(calcCartDelivery, 400);
-}
-// ------------------- PRODUCT DETAIL -------------------
+/* ================== PRODUCT DETAIL ================== */
 function openDetail(p){
+  selectedProduct = JSON.parse(JSON.stringify(p));
 
-// 🔥 DEEP COPY (NO STALE LOCATION)
-selectedProduct = JSON.parse(JSON.stringify(p));
+  document.getElementById("detailModal").style.display="flex";
 
-if(!selectedProduct.wholesalerLocation){
-console.warn("⚠️ Wholesaler location missing", selectedProduct);
+  dName.innerText = selectedProduct.productName || "";
+  dPrice.innerText = "₹" + safeNum(selectedProduct.price);
+  dDesc.innerText = selectedProduct.detail || "No description";
+  dDesc.classList.add("short");
+  dDelivery.innerText = "";
+  dTotal.innerText = "";
+  vehicleType.value = "";
+
+  dImages.innerHTML="";
+  dDots.innerHTML="";
+
+  const imgs = selectedProduct.images?.length
+    ? selectedProduct.images
+    : [selectedProduct.image];
+
+  imgs.forEach((img,i)=>{
+    dImages.innerHTML +=
+      `<img src="${img}"
+        onclick="openImage('${img}')"
+        style="min-width:100%;object-fit:contain">`;
+
+    dDots.innerHTML +=
+      `<div class="dot ${i===0?"active":""}"></div>`;
+  });
+
+  dImages.onscroll = ()=>{
+    const idx = Math.round(dImages.scrollLeft/dImages.clientWidth);
+    [...dDots.children].forEach((d,i)=>{
+      d.classList.toggle("active",i===idx);
+    });
+  };
 }
 
-document.getElementById("detailModal").style.display = "flex";
-
-/* ================= BASIC DETAILS ================= */
-dName.innerText  = selectedProduct.productName || "";
-dPrice.innerText = "Price ₹" + (selectedProduct.price || 0);
-
-/* ================= DESCRIPTION RESET ================= */
-dDesc.innerText = selectedProduct.detail || "No description available";
-dDesc.classList.add("short");
-document.getElementById("descToggle").innerText = "More ⬇";
-
-/* ================= DELIVERY RESET ================= */
-document.getElementById("deliveryBox").style.display = "none";
-document.getElementById("deliveryText").innerText = "";
-document.getElementById("totalText").innerText = "";
-document.getElementById("vehicleType").value = "";
-
-/* ================= MULTIPLE IMAGES ================= */
-dImages.innerHTML = "";
-dDots.innerHTML   = "";
-
-const images = (selectedProduct.images && selectedProduct.images.length)
-? selectedProduct.images
-: (selectedProduct.image ? [selectedProduct.image] : []);
-
-images.forEach((img, i) => {
-dImages.innerHTML +=   <img    src="${img}"    onclick="openImage('${img}')"   style="min-width:100%;object-fit:contain;cursor:zoom-in"   >  ;
-
-dDots.innerHTML += `
-
-  <div class="dot ${i === 0 ? "active" : ""}"></div>    
-`;  });
-
-/* ================= DOT ACTIVE ON SCROLL ================= */
-dImages.onscroll = () => {
-const index = Math.round(
-dImages.scrollLeft / dImages.clientWidth
-);
-
-[...dDots.children].forEach((dot, i) => {
-dot.classList.toggle("active", i === index);
-});
-
-};
-
-/* ================= DEBUG (VERY IMPORTANT) ================= */
-console.log("📦 Product:", selectedProduct.productName);
-console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
-}
-
-function showChargeInfo(orderAmount = 0) {
-const slabs = [
-{min:100, max:500, percent:70},
-{min:501, max:3000, percent:50},
-{min:3001, max:5000, percent:30},
-{min:5001, max:Infinity, percent:0} // Free delivery
-];
-
-const list = document.getElementById("chargeList");
-list.innerHTML = "";
-
-slabs.forEach(slab => {
-const li = document.createElement("li");
-
-if(slab.percent === 0){
-li.innerText = ₹${slab.min}+ का order → Free Delivery ✅;
-} else {
-li.innerText = ₹${slab.min} - ${slab.max} का order → ${slab.percent}% delivery charge;
-}
-
-// Highlight slab based on current order amount
-if(orderAmount >= slab.min && orderAmount <= slab.max){
-li.classList.add("highlight");
-}
-
-list.appendChild(li);
-
-});
-
-document.getElementById("chargeInfoModal").style.display = "flex";
-}
-
-function closeChargeModal() {
-document.getElementById("chargeInfoModal").style.display = "none";
-}
-
-async function fetchDeliveryEstimate(orderAmount, vehicleType){
-const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-const wholesalerLoc = selectedProduct?.wholesalerLocation; // ✅ FIX
-
-if(!retailerLoc || !wholesalerLoc){
-console.warn("Location missing", { retailerLoc, wholesalerLoc });
-return;
-}
-
-const res = await fetch(${API}/api/delivery/calculate,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-orderAmount,
-vehicleType,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
-
-return await res.json();
-}
-
+/* ================== IMAGE ================== */
 function openImage(src){
-document.getElementById("fullImg").src = src;
-document.getElementById("imageModal").style.display = "flex";
+  document.getElementById("fullImg").src = src;
+  document.getElementById("imageModal").style.display="flex";
 }
-
 function closeImage(){
-document.getElementById("imageModal").style.display = "none";
-}
-
-function toggleDesc(){
-const desc = document.getElementById("dDesc");
-const toggle = document.getElementById("descToggle");
-
-if(desc.classList.contains("short")){
-desc.classList.remove("short");
-toggle.innerText = "Less ⬆";
-}else{
-desc.classList.add("short");
-toggle.innerText = "More ⬇";
-}
-}
-
-async function getDeliveryFromServer({ orderAmount, vehicleType }) {
-const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-if (!retailerLoc) throw new Error("Retailer location missing");
-
-// Cart me multiple products ho sakte hain, lekin first product se wholesalerLocation le lete hain
-const wholesalerLoc = cart?.[0]?.wholesalerLocation;
-if (!wholesalerLoc) throw new Error("Wholesaler location missing");
-
-const res = await fetch(${API}/api/delivery/calculate, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-orderAmount,
-vehicleType,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
-
-return await res.json();
-}
-async function directBuy(e) {
-e.preventDefault();
-
-// 🚚 Vehicle check
-if (!vehicleType.value) {
-alert("🚚 Select vehicle first");
-return;
-}
-
-// 👤 Retailer profile check
-const retailerProfile = JSON.parse(
-localStorage.getItem("retailerProfile") || "{}"
-);
-
-if (!retailerProfile.mobile) {
-alert("👤 Please save profile first");
-return;
-}
-
-// 📍 Locations
-const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-const wholesalerLoc = selectedProduct.wholesalerLocation;
-if (!retailerLoc || !wholesalerLoc) {
-alert("📍 Location missing");
-return;
-}
-
-// ===============================
-// ✅ DELIVERY FROM BACKEND
-// ===============================
-const deliveryRes = await fetch(${API}/api/delivery/calculate, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-orderAmount: selectedProduct.price,
-vehicleType: vehicleType.value,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
-
-const deliveryData = await deliveryRes.json();
-
-if (!deliveryData.success) {
-alert(deliveryData.message || "Delivery calculation failed");
-return;
-}
-
-// 🧾 UI update
-dDelivery.innerText =
-Delivery ₹${deliveryData.retailerPays}   (${deliveryData.retailerPercent}% retailer);
-
-const totalAmount =
-selectedProduct.price + deliveryData.retailerPays;
-
-dTotal.innerText = Total ₹${totalAmount};
-
-// ===============================
-// ✅ CREATE ORDER + PAYMENT
-// ===============================
-const res = await fetch(${API}/api/orders/pay-and-create, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-amount: totalAmount,
-notes: {
-type: "direct", // 🔥 IMPORTANT
-
-productId: selectedProduct._id,
-productName: selectedProduct.productName,
-price: selectedProduct.price,
-
-wholesalerId: selectedProduct.wholesalerId,    
-wholesalerName: selectedProduct.shopName,    
-wholesalerMobile: selectedProduct.mobile,    
-wholesalerAddress: selectedProduct.address,    
-
-retailerName: retailerProfile.name,    
-retailerMobile: retailerProfile.mobile,    
-retailerAddress: retailerProfile.address,    
-
-vehicleType: vehicleType.value,    
-
-// ✅ DELIVERY BREAKUP (VERY IMPORTANT)    
-deliveryCharge: deliveryData.totalDelivery,    
-retailerDeliveryPay: deliveryData.retailerPays,    
-wholesalerDeliveryPay: deliveryData.wholesalerPays,    
-distanceKm: deliveryRes.distanceKm
-
-}
-})
-
-});
-
-const data = await res.json();
-
-if (!data.success) {
-alert("❌ Order create failed");
-return;
-}
-
-// ===============================
-// ✅ RAZORPAY
-// ===============================
-const rzp = new Razorpay({
-key: data.key,
-amount: data.amount,
-currency: "INR",
-order_id: data.order.id,
-
-handler: function () {
-alert("✅ Payment Successful 🎉");
-alert("📦 Order processing ho raha hai");
-
-closeAll();
-setTimeout(openOrderStatus, 3000);
-},
-
-modal: {
-ondismiss: function () {
-alert("❌ Payment cancelled");
-}
-}
-
-});
-
-rzp.open();
-}
-
-// ------------------- DELIVERY UPDATE ON VEHICLE SELECT -------------------
-async function updateDelivery() {
-if (!selectedProduct) return; // safety
-
-const vehicle = vehicleType.value;
-if (!vehicle) {
-dDelivery.innerText = "";
-dTotal.innerText = "";
-return;
-}
-
-// ✅ check retailer location
-const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-const wholesalerLoc = selectedProduct.wholesalerLocation;
-
-if (!retailerLoc || !wholesalerLoc) {
-dDelivery.innerText = "📍 Location missing";
-dTotal.innerText = "";
-return;
-}
-
-try {
-const res = await fetch(${API}/api/delivery/calculate, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-orderAmount: selectedProduct.price,
-vehicleType: vehicle,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
-
-const data = await res.json();
-
-if (!data.success) {
-dDelivery.innerText = "⚠️ Delivery calculation failed";
-dTotal.innerText = "";
-return;
-}
-
-// ✅ Update UI
-dDelivery.innerText = Delivery ₹${data.retailerPays} (${data.retailerPercent}% retailer);
-const total = selectedProduct.price + data.retailerPays;
-dTotal.innerText = Total ₹${total};
-
-} catch (err) {
-console.error("Delivery fetch error:", err);
-dDelivery.innerText = "⚠️ Delivery fetch error";
-dTotal.innerText = "";
-}
-}
-
-let cartTimer = null;
-
-async function calcCartDelivery() {
-
-const vehicle = document.getElementById("cartVehicle")?.value;
-const box = document.getElementById("cartDeliveryBox");
-const dText = document.getElementById("cartDeliveryText");
-const tText = document.getElementById("cartTotalText");
-
-// 🔒 Safety check (DOM missing)
-if (!box || !dText || !tText) {
-console.error("Cart delivery DOM missing");
-return;
-}
-
-// 🔹 Reset if no vehicle or empty cart
-if (!vehicle || !Array.isArray(cart) || cart.length === 0) {
-box.style.display = "none";
-dText.innerText = "";
-tText.innerText = "";
-window.__cartDelivery = null;
-return;
-}
-
-/* ================= SUBTOTAL ================= */
-const subtotal = cart.reduce(
-(sum, item) => sum + (Number(item.price) * Number(item.quantity || 1)),
-0
-);
-
-/* ================= RETAILER LOCATION ================= */
-let retailerLoc =
-JSON.parse(localStorage.getItem("retailer_location")) ||
-JSON.parse(localStorage.getItem("retailerProfile") || "{}")?.location ||
-null;
-
-if (retailerLoc?.latitude && retailerLoc?.longitude) {
-retailerLoc = {
-lat: retailerLoc.latitude,
-lng: retailerLoc.longitude
-};
-}
-
-/* ================= WHOLESALER LOCATION ================= */
-let wholesalerLoc = null;
-
-try {
-const wid = cart[0]?.wholesalerId;
-if (!wid) throw new Error("Missing wholesalerId");
-
-const resWh = await fetch(`${API}/api/wholesalers/profile/${wid}`);  
-const whData = await resWh.json();  
-
-wholesalerLoc =  
-  whData?.profile?.location ||  
-  whData?.wholesaler?.location ||  
-  whData?.location ||  
-  null;  
-
-if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {  
-  wholesalerLoc = {  
-    lat: wholesalerLoc.latitude,  
-    lng: wholesalerLoc.longitude  
-  };  
-}
-
-} catch (e) {
-console.error("Wholesaler location fetch failed", e);
-}
-
-/* ================= LOCATION CHECK ================= */
-if (
-!retailerLoc?.lat ||
-!retailerLoc?.lng ||
-!wholesalerLoc?.lat ||
-!wholesalerLoc?.lng
-) {
-box.style.display = "block";
-dText.innerText = "📍 Location missing";
-tText.innerText = "";
-window.__cartDelivery = null;
-return;
-}
-
-/* ================= SAVE GLOBAL FOR PAYMENT ================= */
-currentRetailerLoc = retailerLoc;
-currentWholesalerLoc = wholesalerLoc;
-
-/* ================= DELIVERY CALC ================= */
-try {
-const res = await fetch(${API}/api/delivery/calculate, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-orderAmount: subtotal,
-vehicleType: vehicle,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
-
-const data = await res.json();
-
-if (!data.success) {
-box.style.display = "block";
-dText.innerText = "❌ Delivery calculation failed";
-tText.innerText = "";
-return;
-}
-
-/* 🔁 DOUBLE distance & time */
-const doubleDistance = (Number(data.distanceKm) * 2).toFixed(2);
-const doubleTime = Math.round(Number(data.timeMinutes) * 2);
-const total = subtotal + Number(data.retailerPays);
-
-/* ================= UI UPDATE ================= */
-box.style.display = "block";
-
-dText.innerText =
-
-🚚 Delivery ₹${data.totalDelivery}   (Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)   ⏱️ ${doubleTime} min   📍 टोटल आने जाने का = ${doubleDistance} km;
-
-tText.innerText = 💰 Total ₹${total};
-
-/* ================= STORE FOR PAYMENT ================= */
-window.__cartDelivery = {
-subtotal,
-retailerPays: Number(data.retailerPays),
-wholesalerPays: Number(data.wholesalerPays || 0),
-total,
-distanceKm: doubleDistance,
-timeMinutes: doubleTime
-};
-
-} catch (err) {
-console.error("Cart delivery error", err);
-box.style.display = "block";
-dText.innerText = "⚠️ Server error";
-tText.innerText = "";
-}
-}
-// ------------------- CART -------------------
-async function addToCart(p){
-const retailerId = localStorage.getItem("userId");
-if(!retailerId){
-alert("🔐 Please login first");
-return;
-}
-
-try{
-const res = await fetch(${API}/api/cart/save,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-retailerId,
-item:{
-productId: p._id,
-productName: p.productName,
-price: p.price,
-image: p.images?.[0] || "",
-wholesalerId: p.wholesalerId,
-shopName: p.shopName,
-mobile: p.mobile,
-address: p.address
-}
-})
-});
-
-const data = await res.json();
-
-// ❌ DIFFERENT WHOLESALER FOUND
-if (!data.success && data.message && data.message.includes("Only one wholesaler")) {
-// 🔹 Backend cart clear
-await fetch(${API}/api/cart/clear/${retailerId}, { method: "DELETE" });
-
-// 🔹 Frontend cart clear
-cart = [];
-localStorage.removeItem("cart");
-currentWholesalerId = null;
-
-alert("🧹 पुराना cart clear कर दिया गया। अब नया product add हो रहा है।");
-
-// 🔹 नया product फिर से add करो
-addToCart(p);
-return;
-}
-
-if(data.success){
-cart.push(p);
-currentWholesalerId = p.wholesalerId;
-localStorage.setItem("cart", JSON.stringify(cart));
-
-alert(
-"🛒 Added to cart successfully ✅\n\n" +
-"Product: " + p.productName +
-"\nPrice: ₹" + p.price
-);
-}else{
-alert("❌ Failed to add item");
-}
-
-}catch(err){
-console.error(err);
-alert("❌ Server error");
-}
-}
-async function loadCart(){
-
-const retailerId = localStorage.getItem("userId");
-const cartDiv = document.getElementById("cartItems");
-
-if(!retailerId){
-cartDiv.innerHTML = "<p style='text-align:center'>🔐 Please login</p>";
-cart = [];
-return;
-}
-
-try{
-
-const res = await fetch(${API}/api/cart/${retailerId});
-const data = await res.json();
-
-if(!data.items || !data.items.length){
-cartDiv.innerHTML = "<p style='text-align:center'>🛒 Cart is empty</p>";
-cart = [];
-return;
-}
-
-/* 🔥 CURRENT WHOLESALER FILTER */
-const currentWholesalerId =
-new URLSearchParams(location.search).get("wid") ||
-localStorage.getItem("currentWholesalerId");
-
-const filteredItems = currentWholesalerId
-? data.items.filter(
-i => i.wholesalerId === currentWholesalerId
-)
-: data.items;
-
-if(!filteredItems.length){
-cartDiv.innerHTML =
-"<p style='text-align:center'>🛒 Is wholesaler ka cart empty hai</p>";
-cart = [];
-return;
-}
-
-/* 🧺 RENDER CART */
-cartDiv.innerHTML = filteredItems.map(i => `
-
-  <div class="cart-card" style="display:flex;gap:10px;align-items:center;padding:8px;border-bottom:1px solid #eee">    <img src="${i.image || ''}"    
-     class="cart-img"    
-     style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:#f8fafc">    
-
-<div class="cart-info" style="flex:1">    
-  <div class="cart-name" style="font-weight:600">    
-    ${i.productName}    
-  </div>    
-
-  <div class="cart-price" style="font-size:14px;color:#334155">    
-    ₹${i.price} × ${i.quantity || 1} =    
-    <b>₹${Number(i.price) * Number(i.quantity || 1)}</b>    
-  </div>    
-</div>    
-
-<div class="cart-actions">    
-  <button onclick="removeFromCart('${i.productId}')"    
-    style="border:none;background:#fee2e2;color:#991b1b;border-radius:6px;padding:4px 8px;cursor:pointer">    
-    ❌    
-  </button>    
-</div>
-
-  </div>    
-`).join("");    /* 🔄 LOCAL CART SYNC (IMPORTANT) */
-cart = filteredItems.map(i => ({
-...i,
-quantity: Number(i.quantity || 1),
-price: Number(i.price)
-}));
-
-/* 🚚 DELIVERY RECALC */
-calcCartDelivery();
-
-}catch(err){
-console.error("❌ loadCart error", err);
-cartDiv.innerHTML =
-"<p style='text-align:center'>⚠️ Cart load failed</p>";
-cart = [];
-}
-}
-
-function openCart(){
-document.getElementById("cartModal").style.display = "flex";
-loadCart(); // ✅ yahin se cart load hoga
-}
-async function removeCart(i){
-cart.splice(i,1);
-try{
-await fetch(${API}/api/cart/save,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ retailerId: localStorage.getItem("userId"), items: cart })
-});
-localStorage.setItem("cart", JSON.stringify(cart));
-openCart();
-}catch(e){ alert("Failed to remove item"); }
-}
-async function removeFromCart(productId){
-const retailerId = localStorage.getItem("userId");
-
-const res = await fetch(${API}/api/cart/remove,{
-method:"DELETE",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ retailerId, productId })
-});
-
-const data = await res.json();
-
-if(data.success){
-loadCart(); // 🔄 refresh
-}else{
-alert("❌ Failed to remove item");
-}
-}
-
-async function payCart(e){
-// Prevent default only if event is passed
-if(e?.preventDefault) e.preventDefault();
-
-// 1️⃣ Cart check
-if(!cart || cart.length === 0){
-alert("🛒 Cart is empty");
-return;
-}
-
-// 2️⃣ Location check
-if(!currentRetailerLoc || !currentWholesalerLoc){
-alert("📍 Location missing. Please calculate delivery first");
-return;
-}
-
-// 3️⃣ Vehicle check
-const vehicle = document.getElementById("cartVehicle")?.value;
-if(!vehicle){
-alert("🚚 Select vehicle first");
-return;
-}
-
-// 4️⃣ Retailer profile check
-const retailerProfile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-if(!retailerProfile.mobile){
-alert("👤 Please save retailer profile first");
-return;
-}
-
-// 5️⃣ Delivery calculation check
-if(!window.__cartDelivery){
-alert("🚚 Please calculate delivery first");
-return;
-}
-
-const {
-subtotal,
-retailerPays,
-wholesalerPays,
-total,
-distanceKm,
-timeMinutes
-} = window.__cartDelivery;
-
-// 🛡️ Helper to ensure numbers are safe
-const safe = (v) => isNaN(Number(v)) ? 0 : Number(v);
-
-try{
-// 6️⃣ API call to create order
-const res = await fetch(${API}/api/orders/pay-and-create, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-amount: safe(total),
-notes: {
-type: "cart",
-items: cart.map(item => ({
-productId: item.productId,
-productName: item.productName,
-price: safe(item.price),
-quantity: safe(item.quantity)
-})),
-wholesalerId: cart[0].wholesalerId,
-wholesalerName: cart[0].shopName,
-wholesalerMobile: cart[0].mobile,
-wholesalerLocation: currentWholesalerLoc,
-retailerName: retailerProfile.name,
-retailerMobile: retailerProfile.mobile,
-retailerLocation: currentRetailerLoc,
-vehicleType: vehicle,
-totalDelivery: safe(retailerPays + wholesalerPays),
-retailerPays: safe(retailerPays),
-wholesalerPays: safe(wholesalerPays),
-totalAmount: safe(total),
-distanceKm: safe(distanceKm),
-timeMinutes: safe(timeMinutes)
-}
-})
-});
-
-const data = await res.json();
-
-if(!data.success){
-alert("❌ Order creation failed");
-return;
-}
-
-// 7️⃣ Razorpay payment
-const rzp = new Razorpay({
-key: data.key,
-amount: data.amount,
-currency: "INR",
-order_id: data.order.id,
-handler(){
-alert("✅ Payment Successful 🎉");
-closeAll();
-},
-modal: {
-ondismiss(){
-alert("❌ Payment cancelled");
-}
-}
-});
-
-rzp.open();
-
-} catch(err) {
-console.error("❌ Cart payment error:", err);
-alert("Something went wrong");
-}
-}
-function clearCartCompletely(){
-cart = [];
-localStorage.removeItem("cart");
-
-// backend cart bhi clear
-const retailerId = localStorage.getItem("userId");
-if(retailerId){
-fetch(${API}/api/cart/clear,{
-method:"DELETE",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ retailerId })
-});
-}
-
-// UI reset
-const cartBox = document.getElementById("cartItems");
-if(cartBox) cartBox.innerHTML = "<p>🛒 Cart empty hai</p>";
-
-document.getElementById("cartDeliveryBox").style.display = "none";
-window.__cartDelivery = null;
-}
-
-// ------------------- DELIVERY -------------------
-async function openDeliveryDetails(){
-deliveryModal.style.display="flex";
-
-const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!profile.mobile){
-deliveryData.innerHTML="Profile not found";
-return;
-}
-
-try{
-const res = await fetch(${API}/api/orders/retailer/${profile.mobile});
-const data = await res.json();
-
-const visibleOrders = data.orders.filter(o =>
-o.status === "delivery_code_generated" || o.status === "delivered"
-);
-
-if(visibleOrders.length===0){
-deliveryData.innerHTML="<p style='text-align:center;color:#666'>No delivery details yet</p>";
-return;
-}
-
-deliveryData.innerHTML = visibleOrders.map(o=>{
-const lastStatusTime =
-o.statusHistory && o.statusHistory.length
-? o.statusHistory[o.statusHistory.length - 1].time
-: o.createdAt;
-
-const d = new Date(lastStatusTime);
-
-return `
-
-  <div class="delivery-card">    
-    <div class="delivery-row">    
-      <span class="delivery-label">📦 Product</span>    
-      <span class="delivery-value">${o.productName || "-"}</span>    
-    </div>    <div class="delivery-row">    
-  <span class="delivery-label">👤 Delivery Boy</span>    
-  <span class="delivery-value">${o.deliveryBoyName || "Assigned"}</span>    
-</div>    
-
-<div class="delivery-row">    
-  <span class="delivery-label">🕒 Time</span>    
-  <span class="delivery-value">${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</span>    
-</div>    
-
-${o.deliveryCode    
-  ? `<div class="delivery-code">🔐 Delivery Code : ${o.deliveryCode}</div>`    
-  : `<div class="delivery-code">⏳ Waiting for code...</div>`    
-}
-
-  </div>`;    
-}).join("");  }catch(e){
-deliveryData.innerHTML="Failed to load delivery details";
-}
-}
-
-// ------------------- ORDER STATUS -------------------
-async function openOrderStatus(){
-orderStatusModal.style.display="flex";
-const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!profile.mobile){
-orderStatusData.innerHTML="Profile not found";
-return;
-}
-try{
-const res = await fetch(${API}/api/orders/retailer/${profile.mobile});
-const data = await res.json();
-if(!data.orders || data.orders.length===0){
-orderStatusData.innerHTML="<p style='text-align:center;color:#666'>No orders found</p>";
-return;
-}
-orderStatusData.innerHTML = data.orders.map(o=>{
-const d = new Date(o.updatedAt || o.createdAt);
-let cls = "status-pending";
-if(o.status.includes("confirmed")) cls="status-confirmed";
-if(o.status.includes("delivery")) cls="status-delivery";
-if(o.status==="delivered") cls="status-delivered";
-return <div class="status-card">   <div class="status-product">${o.productName}</div>   <div class="status-badge ${cls}">${o.status.replaceAll("_"," ").toUpperCase()}</div>   <div class="status-time">🕒 ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</div>   </div>;
-}).join("");
-}catch(e){ orderStatusData.innerHTML="Failed to load orders"; }
-}
-
-// ------------------- PROFILE -------------------
-/* PROFILE */
-
-async function openRetailerProfile() {
-
-profileModal.style.display = "flex";
-
-const retailerId = localStorage.getItem("userId");
-if (!retailerId) {
-alert("Login required");
-return;
-}
-
-try {
-const res = await fetch(${API}/api/retailers/profile/${retailerId});
-const data = await res.json();
-
-if (data.success && data.profile) {
-
-profileName.value    = data.profile.name || "";
-profileMobile.value  = data.profile.mobile || "";
-
-// 🔥 CHECK: user ne abhi location update ki hai kya?
-const locationUpdated =
-localStorage.getItem("location_updated") === "yes";
-
-// ✅ LOCATION LOGIC (FIXED)
-if (!locationUpdated && data.profile.location) {
-
-// 👉 Sirf tab hi server wali location lagao    
-profileLocation.value =    
-  data.profile.location.lat.toFixed(6) + ", " +    
-  data.profile.location.lng.toFixed(6);    
-
-// cache    
-localStorage.setItem(    
-  "retailer_location",    
-  JSON.stringify(data.profile.location)    
-);
-
-} else if (locationUpdated) {
-
-// 👉 User ki nayi location ko chhedo mat    
-const loc =    
-  JSON.parse(localStorage.getItem("retailer_location") || "{}");    
-
-if (loc.lat && loc.lng) {    
-  profileLocation.value =    
-    Number(loc.lat).toFixed(6) + ", " +    
-    Number(loc.lng).toFixed(6);    
-}
-
-} else {
-profileLocation.value = "";
-}
-
-// ✅ Profile cache
-localStorage.setItem(
-"retailerProfile",
-JSON.stringify(data.profile)
-);
-
-} else {
-profileName.value = "";
-profileMobile.value = "";
-profileLocation.value = "";
-}
-
-} catch (err) {
-alert("Server error");
-}
-}
-
-async function saveProfile() {
-
-if (!profileMobile.value.trim()) {
-alert("Mobile required");
-return;
-}
-
-// ✅ CURRENT LOCATION READ
-let location = null;
-
-const locLS = localStorage.getItem("retailer_location");
-if(locLS){
-location = JSON.parse(locLS);
-}
-
-const payload = {
-retailerId: localStorage.getItem("userId"),
-name: profileName.value.trim(),
-mobile: profileMobile.value.trim(),
-
-// 🔥 सबसे जरूरी
-location: location
-
-};
-
-sendProfile(payload);
-}
-
-// ✅ Helper function to send profile to server
-async function sendProfile(payload){
-try{
-const res = await fetch(${API}/api/retailers/saveProfile,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify(payload)
-});
-
-const data = await res.json();
-
-if(data.success){
-
-// ✅ Profile हमेशा update करो
-localStorage.setItem(
-"retailerProfile",
-JSON.stringify(data.profile)
-);
-
-// 🔥 सबसे जरूरी FIX
-const locationUpdated = localStorage.getItem("location_updated");
-
-if(locationUpdated === "yes"){
-// 👉 user ने नई location set की है
-// ❌ backend की location से कुछ मत करो
-console.log("📍 New location preserved (local)");
-} else {
-// 👉 user ने नई location set नहीं की
-if(data.profile.location){
-localStorage.setItem(
-"retailer_location",
-JSON.stringify(data.profile.location)
-);
-} else {
-localStorage.removeItem("retailer_location");
-}
-}
-
-// ✅ flag clear
-localStorage.removeItem("location_updated");
-
-alert("✅ Profile save ho gaya");
-closeAll();
-
-} else {
-alert("❌ Save failed");
-}
-
-}catch(err){
-console.error("SaveProfile Error:", err);
-alert("Server error");
-}
-}
-// ------------------- NOTIFY -------------------
-setInterval(async()=>{
-const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!profile.mobile) return;
-try{
-const res = await fetch(${API}/api/orders/retailer/${profile.mobile});
-const data = await res.json();
-deliveryDot.style.display = data.orders.some(o=>o.deliveryBoyName) ? "block":"none";
-}catch(e){}
-},8000);
-
-// ------------------- CLOSE MODALS -------------------
+  document.getElementById("imageModal").style.display="none";
+}
+
+/* ================== DELIVERY ================== */
+async function updateDelivery(){
+  if(!selectedProduct || !vehicleType.value) return;
+
+  const retailerLoc =
+    JSON.parse(localStorage.getItem("retailer_location"));
+  const wholesalerLoc = selectedProduct.wholesalerLocation;
+
+  if(!retailerLoc || !wholesalerLoc){
+    dDelivery.innerText="📍 Location missing";
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API}/api/delivery/calculate`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        orderAmount: safeNum(selectedProduct.price),
+        vehicleType: vehicleType.value,
+        retailerLocation: retailerLoc,
+        wholesalerLocation: wholesalerLoc
+      })
+    });
+
+    const data = await res.json();
+    if(!data.success) throw "fail";
+
+    dDelivery.innerText =
+      `Delivery ₹${data.retailerPays} (${data.retailerPercent}%)`;
+
+    dTotal.innerText =
+      `Total ₹${safeNum(selectedProduct.price)+safeNum(data.retailerPays)}`;
+  }catch{
+    dDelivery.innerText="Delivery error";
+  }
+}
+
+/* ================== DIRECT BUY ================== */
+async function directBuy(e){
+  e.preventDefault();
+
+  if(!vehicleType.value) return alert("Vehicle select karo");
+
+  const profile =
+    JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+  if(!profile.mobile) return alert("Profile save karo");
+
+  const retailerLoc =
+    JSON.parse(localStorage.getItem("retailer_location"));
+  const wholesalerLoc = selectedProduct.wholesalerLocation;
+  if(!retailerLoc || !wholesalerLoc)
+    return alert("Location missing");
+
+  const delRes = await fetch(`${API}/api/delivery/calculate`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      orderAmount:safeNum(selectedProduct.price),
+      vehicleType:vehicleType.value,
+      retailerLocation:retailerLoc,
+      wholesalerLocation:wholesalerLoc
+    })
+  });
+  const del = await delRes.json();
+
+  const total =
+    safeNum(selectedProduct.price)+safeNum(del.retailerPays);
+
+  const res = await fetch(`${API}/api/orders/pay-and-create`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      amount: total,
+      notes:{
+        type:"direct",
+        productId:selectedProduct._id,
+        productName:selectedProduct.productName,
+        price:selectedProduct.price,
+        wholesalerId:selectedProduct.wholesalerId,
+        retailerMobile:profile.mobile,
+        vehicleType:vehicleType.value,
+        retailerPays:del.retailerPays,
+        wholesalerPays:del.wholesalerPays,
+        distanceKm:del.distanceKm
+      }
+    })
+  });
+
+  const data = await res.json();
+  if(!data.success) return alert("Order failed");
+
+  const rzp = new Razorpay({
+    key:data.key,
+    amount:data.amount,
+    currency:"INR",
+    order_id:data.order.id,
+    handler(){
+      alert("Payment successful 🎉");
+      closeAll();
+      localStorage.removeItem("cart");
+      cart=[];
+    }
+  });
+  rzp.open();
+}
+
+/* ================== MODALS ================== */
 function closeAll(){
-document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
+  document
+    .querySelectorAll(".modal")
+    .forEach(m=>m.style.display="none");
 }
 </script>
-
 </body>    
 </html>    
