@@ -1447,32 +1447,36 @@ async function removeFromCart(productId){
 }
 
 async function payCart(e){
-  e.preventDefault();
+  // Prevent default only if event is passed
+  if(e?.preventDefault) e.preventDefault();
 
+  // 1️⃣ Cart check
   if(!cart || cart.length === 0){
     alert("🛒 Cart is empty");
     return;
   }
 
+  // 2️⃣ Location check
   if(!currentRetailerLoc || !currentWholesalerLoc){
     alert("📍 Location missing. Please calculate delivery first");
     return;
   }
 
+  // 3️⃣ Vehicle check
   const vehicle = document.getElementById("cartVehicle")?.value;
   if(!vehicle){
     alert("🚚 Select vehicle first");
     return;
   }
 
-  const retailerProfile =
-    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-
+  // 4️⃣ Retailer profile check
+  const retailerProfile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
   if(!retailerProfile.mobile){
     alert("👤 Please save retailer profile first");
     return;
   }
 
+  // 5️⃣ Delivery calculation check
   if(!window.__cartDelivery){
     alert("🚚 Please calculate delivery first");
     return;
@@ -1487,43 +1491,36 @@ async function payCart(e){
     timeMinutes
   } = window.__cartDelivery;
 
-  // 🛡️ NaN protection
+  // 🛡️ Helper to ensure numbers are safe
   const safe = (v) => isNaN(Number(v)) ? 0 : Number(v);
 
   try{
-    const res = await fetch(`${API}/api/orders/pay-and-create`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
+    // 6️⃣ API call to create order
+    const res = await fetch(`${API}/api/orders/pay-and-create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount: safe(total),
-
-        notes:{
-          type:"cart",
-
+        notes: {
+          type: "cart",
           items: cart.map(item => ({
             productId: item.productId,
             productName: item.productName,
             price: safe(item.price),
             quantity: safe(item.quantity)
           })),
-
           wholesalerId: cart[0].wholesalerId,
           wholesalerName: cart[0].shopName,
           wholesalerMobile: cart[0].mobile,
-          wholesalerLocation: currentWholesalerLoc,   // ✅
-
+          wholesalerLocation: currentWholesalerLoc,
           retailerName: retailerProfile.name,
           retailerMobile: retailerProfile.mobile,
-          retailerLocation: currentRetailerLoc,       // ✅
-
+          retailerLocation: currentRetailerLoc,
           vehicleType: vehicle,
-
-          // 🔥 VERY IMPORTANT (NaN FIX)
           totalDelivery: safe(retailerPays + wholesalerPays),
           retailerPays: safe(retailerPays),
           wholesalerPays: safe(wholesalerPays),
           totalAmount: safe(total),
-
           distanceKm: safe(distanceKm),
           timeMinutes: safe(timeMinutes)
         }
@@ -1533,22 +1530,21 @@ async function payCart(e){
     const data = await res.json();
 
     if(!data.success){
-      alert("❌ Order create failed");
+      alert("❌ Order creation failed");
       return;
     }
 
+    // 7️⃣ Razorpay payment
     const rzp = new Razorpay({
       key: data.key,
       amount: data.amount,
       currency: "INR",
       order_id: data.order.id,
-
       handler(){
         alert("✅ Payment Successful 🎉");
         closeAll();
       },
-
-      modal:{
+      modal: {
         ondismiss(){
           alert("❌ Payment cancelled");
         }
@@ -1557,7 +1553,7 @@ async function payCart(e){
 
     rzp.open();
 
-  }catch(err){
+  } catch(err) {
     console.error("❌ Cart payment error:", err);
     alert("Something went wrong");
   }
