@@ -1,11 +1,9 @@
-<!DOCTYPE html>  <html lang="hi">    <head>    
+<!DOCTYPE html>  <html lang="en">    <head>    
 <meta charset="UTF-8">    
 <title>Retailer Dashboard</title>    
-<meta name="viewport" content="width=device-width, initial-scale=1.0">    
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">    
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">    
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">    
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>    
-<style>    
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>  <style>    
 *{box-sizing:border-box;font-family:Poppins,sans-serif}    
 body{margin:0;background:#f3f6fb}    
 .main{padding:20px}    
@@ -15,14 +13,7 @@ body{margin:0;background:#f3f6fb}
 .header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.08)}    
 .products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}    
 .product-card{background:#fff;padding:8px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}    
-.product-card img{    
-  width:100%;    
-  height:110px;              /* thoda bada */    
-  object-fit:contain;        /* 🔥 FULL IMAGE dikhegi */    
-  background:#f8fafc;        /* white/soft bg */    
-  padding:6px;               /* breathing space */    
-  border-radius:10px;    
-}    
+.product-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}    
 .price{color:#16a34a;font-weight:600;font-size:13px}    
 .actions{display:flex;gap:5px;margin-top:6px}    
 .actions button{flex:1;border:none;border-radius:8px;padding:6px;font-size:12px;cursor:pointer}    
@@ -36,504 +27,344 @@ button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-rad
 .order-card{background:#fff;padding:12px;margin-bottom:10px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}    
 .badge{background:#e0f2fe;padding:4px 10px;border-radius:20px;font-size:12px}    
 .small{font-size:12px;color:#555}    
-.delivery-card{background:#f8fafc;border-left:5px solid #16a34a;padding:14px;border-radius:12px;margin-bottom:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)}    
-.delivery-row{display:flex;justify-content:space-between;font-size:14px;margin:4px 0;}    
-.delivery-label{color:#555;}    
-.delivery-value{font-weight:600;color:#111;}    
-.delivery-code{background:#dcfce7;color:#166534;padding:4px 10px;border-radius:20px;font-weight:600;display:inline-block;margin-top:6px;}    
-.status-card{background:#ffffff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 6px 14px rgba(0,0,0,.08);border-left:6px solid #2563eb;}    
-.status-product{font-size:16px;font-weight:600;color:#111;margin-bottom:6px;}    
-.status-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:8px;}    
-.status-pending{ background:#fef3c7;color:#92400e; }    
-.status-confirmed{ background:#dcfce7;color:#166534; }    
-.status-delivery{ background:#e0f2fe;color:#075985; }    
-.status-delivered{ background:#ede9fe;color:#5b21b6; }    
-.status-time{font-size:13px;color:#555;}    
-.slider{    
-  display:flex;    
-  overflow-x:auto;    
-  scroll-snap-type:x mandatory;    
-}  .slider img{  
-min-width:100%;  
-height:200px;  
-object-fit:cover;  
-scroll-snap-align:center;  
-border-radius:10px;  
-flex-shrink:0;  
-}  .dots{
+.delivery-card{    
+  background:#f8fafc;    
+  border-left:5px solid #16a34a;    
+  padding:14px;    
+  border-radius:12px;    
+  margin-bottom:12px;    
+  box-shadow:0 4px 10px rgba(0,0,0,.08);    
+}    .delivery-row{
 display:flex;
-justify-content:center;
-gap:6px;
-margin:8px 0;
-}
-
-.dot{
-width:8px;
-height:8px;
-border-radius:50%;
-background:#cbd5e1;
-}
-
-.dot.active{
-background:#16a34a;
-}
-
-#imageModal .modal-content{
-max-width:95%;
-max-height:90vh;
-text-align:center;
-}
-
-#imageModal img{
-max-height:80vh;
-object-fit:contain;
-}
-.desc{
+justify-content:space-between;
 font-size:14px;
-line-height:1.5;
-color:#333;
+margin:4px 0;
 }
 
-.desc.short{
-display:-webkit-box;
--webkit-line-clamp:3;   /* 👈 kitni line dikhani hai */
--webkit-box-orient:vertical;
-overflow:hidden;
-}
-
-.desc-toggle{
-display:inline-block;
-color:#2563eb;
-font-size:13px;
-cursor:pointer;
-margin-top:4px;
-user-select:none;
-}
-.price-box{
-margin:8px 0;
-padding:8px 12px;
-
-background: linear-gradient(135deg,#f0fdf4,#ecfeff);
-border:1px solid #bbf7d0;
-border-radius:10px;
-}
-
-.price-label{
-font-size:10px;
-color:#16a34a;
-font-weight:600;
-text-transform:uppercase;
-letter-spacing:.4px;
-}
-
-.price-row{
-display:flex;
-align-items:center;
-gap:2px;
-margin-top:2px;
-}
-
-.price-row i{
-font-size:16px;
-color:#16a34a;
-}
-
-.price-value{
-font-size:20px;
-font-weight:700;
-color:#14532d;
-}
-/* CATEGORY GRID (Retailer Dashboard) */
-.category-card{
-background: linear-gradient(135deg,#ecfeff,#f0fdf4);
-border:1px solid #bbf7d0;
-border-radius:16px;
-padding:20px 12px;
-text-align:center;
-cursor:pointer;
-box-shadow:0 6px 14px rgba(0,0,0,.08);
-transition:all .25s ease;
-position:relative;
-}
-
-.category-card:hover{
-transform:translateY(-5px);
-box-shadow:0 12px 24px rgba(0,0,0,.15);
-}
-
-.category-icon{
-width:52px;
-height:52px;
-margin:auto;
-border-radius:50%;
-background:#16a34a;
-color:#fff;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:26px;
-margin-bottom:10px;
-}
-
-.category-name{
-font-size:15px;
-font-weight:600;
-color:#14532d;
-letter-spacing:.3px;
-}
-
-/* grid spacing improvement */
-.products-grid{
-gap:16px;
-}
-
-/* ===== CART UI ===== */
-.cart-card{
-display:flex;
-align-items:center;
-gap:10px;
-background:#fff;
-padding:10px;
-border-radius:12px;
-box-shadow:0 3px 8px rgba(0,0,0,.08);
-margin-bottom:10px;
-}
-
-.cart-img{
-width:55px;
-height:55px;
-object-fit:cover;
-border-radius:8px;
-background:#f8fafc;
-}
-
-.cart-info{
-flex:1;
-}
-
-.cart-name{
-font-size:14px;
-font-weight:600;
-}
-
-.cart-price{
-font-size:13px;
-color:#16a34a;
-}
-
-.cart-qty{
-font-size:12px;
+.delivery-label{
 color:#555;
 }
 
-.cart-actions button{
-background:#ef4444;
-color:#fff;
-border:none;
-border-radius:8px;
-padding:6px 8px;
-font-size:12px;
-cursor:pointer;
-}
-/* ===== PROFILE MODAL ===== */
-#profileModal .modal-content {
-background: #fff;
-padding: 20px 20px 30px 20px;
-width: 90%;
-max-width: 450px;
-border-radius: 15px;
-max-height: 85vh;
-overflow-y: auto;
-box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+.delivery-value{
+font-weight:600;
+color:#111;
 }
 
-/* Heading */
-#profileModal h3 {
-text-align: center;
-margin-bottom: 20px;
-font-size: 22px;
-color: #14532d;
-font-weight: 600;
+.delivery-code{
+background:#dcfce7;
+color:#166534;
+padding:4px 10px;
+border-radius:20px;
+font-weight:600;
+display:inline-block;
+margin-top:6px;
 }
 
-/* Inputs & Textarea */
-#profileModal input,
-#profileModal textarea {
-width: 100%;
-padding: 12px 10px;
-margin: 10px 0;
-border-radius: 10px;
-border: 1px solid #ccc;
-font-size: 14px;
-font-family: Poppins, sans-serif;
-box-sizing: border-box;
-transition: border 0.2s, box-shadow 0.2s;
+.status-card{
+background:#ffffff;
+border-radius:14px;
+padding:14px;
+margin-bottom:14px;
+box-shadow:0 6px 14px rgba(0,0,0,.08);
+border-left:6px solid #2563eb;
 }
 
-#profileModal input:focus,
-#profileModal textarea:focus {
-outline: none;
-border-color: #16a34a;
-box-shadow: 0 0 5px rgba(22,163,74,0.3);
+.status-product{
+font-size:16px;
+font-weight:600;
+color:#111;
+margin-bottom:6px;
 }
 
-#profileModal textarea {
-resize: vertical;
-min-height: 70px;
+.status-badge{
+display:inline-block;
+padding:4px 12px;
+border-radius:20px;
+font-size:13px;
+font-weight:600;
+margin-bottom:8px;
 }
 
-/* Buttons */
-#profileModal button.primary {
-background: #16a34a;
-color: #fff;
-border: none;
-padding: 12px;
-border-radius: 10px;
-cursor: pointer;
-width: 100%;
-margin-top: 15px;
-font-size: 16px;
-font-weight: 600;
-transition: background 0.2s;
+.status-pending{ background:#fef3c7;color:#92400e; }
+.status-confirmed{ background:#dcfce7;color:#166534; }
+.status-delivery{ background:#e0f2fe;color:#075985; }
+.status-delivered{ background:#ede9fe;color:#5b21b6; }
+
+.status-time{
+font-size:13px;
+color:#555;
 }
 
-#profileModal button.primary:hover {
-background: #14532d;
-}
+</style>  </head>  <body>
 
-#profileModal button:not(.primary) {
-background: #f3f6fb;
-color: #111;
-border: none;
-padding: 12px;
-border-radius: 10px;
-cursor: pointer;
-width: 100%;
-margin-top: 10px;
-font-size: 14px;
-transition: background 0.2s;
-}
-
-#profileModal button:not(.primary):hover {
-background: #e0e7ff;
-}
-
-/* ===== CURRENT LOCATION SECTION ===== /
-#profileModal .location-group {
-display: flex;
-flex-direction: column; / vertical layout /
-gap: 8px;              / space between input & button */
-margin: 12px 0;
-}
-
-#profileModal .location-group label {
-font-size: 14px;
-font-weight: 500;
-color: #14532d;
-}
-
-#profileModal .location-group input {
-width: 100%;
-padding: 12px;
-font-size: 14px;
-border: 1px solid #16a34a;
-border-radius: 10px;
-background: #f8fafc;
-box-sizing: border-box;
-}
-
-#profileModal .location-group button {
-width: 100%;            /* button full width like input */
-padding: 12px;
-font-size: 15px;
-font-weight: 600;
-border: none;
-border-radius: 10px;
-background: #16a34a;
-color: #fff;
-cursor: pointer;
-transition: background 0.2s;
-}
-
-#profileModal .location-group button:hover {
-background: #14532d;
-}
-
-/* Responsive tweaks for small height screens */
-@media (max-height: 500px) {
-#profileModal .modal-content {
-max-height: 90vh;
-}
-}
-#chargeInfoModal {
-position: fixed;
-inset: 0;
-display: none;
-align-items: center;
-justify-content: center;
-background: rgba(0,0,0,0.5);
-z-index: 1000;
-}
-#chargeInfoModal ul li {
-padding: 6px 0;
-border-bottom: 1px solid #444;
-}
-#chargeInfoModal ul li:last-child {
-border-bottom: none;
-}
-#chargeInfoModal ul li.highlight {
-background: #333;
-font-weight: 600;
-color: #16a34a;
-padding-left: 6px;
-border-radius: 4px;
-}
-</style>
-
-</head>    
-<body>  <div class="main">    
-  <div class="icon-bar">    
-    <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>    
-    <button class="icon-btn" onclick="openOrderStatus()"><i class="bi bi-bag-check"></i></button>    
-    <button class="icon-btn" onclick="openCart()"><i class="bi bi-cart"></i></button>    
-    <button class="icon-btn" onclick="openDeliveryDetails()">    
-      <i class="bi bi-truck"></i><span id="deliveryDot" class="notify-dot"></span>    
-    </button>    
-  </div>    <!-- 🔹 DELIVERY CHARGE INFO PATTi -->    <div     
-    onclick="showChargeInfo(0)"     
-    style="    
-      background:#16a34a;     
-      color:#fff;     
-      text-align:center;     
-      padding:8px 12px;     
-      border-radius:8px;     
-      font-weight:600;     
-      cursor:pointer;    
-      margin-bottom:10px;    
-      max-width:400px;    
-      margin-left:auto;    
-      margin-right:auto;    
-      box-shadow:0 4px 8px rgba(0,0,0,0.1);    
-      font-size:14px;    
-    ">    
-    डिलीवरी चार्ज की जानकारी    
-  </div>    <!-- 🔹 HEADER / DASHBOARD TITLE -->    <div class="header">    
-    <h3>🛒 Retailer Dashboard</h3>    
-  </div>    <!-- 🔹 CATEGORY / PRODUCTS GRID -->    <div class="header">    
-    <input id="wid" placeholder="Enter Wholesaler ID">    
-    <button class="primary" onclick="loadProducts()">Search</button>    
-  </div>    
-  <div class="products-grid" id="categories"></div>    
+<div class="main">  <div class="icon-bar">    
+  <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>    
+  <button class="icon-btn" onclick="openOrders()"><i class="bi bi-bag-check"></i></button>    
+  <button class="icon-btn" onclick="openCart()"><i class="bi bi-cart"></i></button>    
+  <button class="icon-btn" onclick="openDeliveryDetails()">    
+    <i class="bi bi-truck"></i><span id="deliveryDot" class="notify-dot"></span>    
+  </button>    
+</div>  <div class="header"><h3>🛒 Retailer Dashboard</h3></div>  <div class="header">    
+  <input id="wid" placeholder="Enter Wholesaler ID">    
+  <button class="primary" onclick="loadProducts()">Search</button>    
+</div>  <div class="products-grid" id="products"></div>    
 </div>  <!-- PRODUCT DETAIL -->  <div class="modal" id="detailModal">    
-  <div class="modal-content">    
-    <h3 id="dName"></h3>    
-    <div class="slider" id="dImages"></div>    
-<div class="dots" id="dDots"></div>    
-    <p id="dDesc" class="desc short"></p>    
-<span id="descToggle" class="desc-toggle" onclick="toggleDesc()">More ⬇</span>    
-    <div class="price-box">    
-  <div class="price-row">    
-  <span id="dPrice" class="price-value">0</span>    
-</div>    
-</div>    
-    <!-- VEHICLE DROPDOWN -->    
-<select id="vehicleType" onchange="updateDelivery()">      
-  <option value="">Select Vehicle</option>      
-  <option value="two_wheeler">Two Wheeler</option>      
-  <option value="three_wheeler">Three Wheeler</option>      
-  <option value="four_wheeler">Four Wheeler</option>      
-</select>  <p id="dDelivery"></p>    
-<p id="dTotal"></p>    
-    <button class="buy-btn" onclick="directBuy(event)">    
-  <i class="bi bi-lightning-fill"></i>    
-  Buy Now    
-</button>    
-<button type="button" onclick="closeAll()">Close</button>    
-  </div>    
+ <div class="modal-content">    
+  <h3 id="dName"></h3>    
+  <img id="dImg" style="width:100%;border-radius:10px">    
+  <p id="dDesc"></p>    
+  <p id="dPrice"></p>    
+  <select id="vehicleType">    
+    <option value="">Select Vehicle</option>    
+    <option value="two_wheeler">Two Wheeler</option>    
+    <option value="three_wheeler">Three Wheeler</option>    
+    <option value="four_wheeler">Four Wheeler</option>    
+  </select>    
+  <p id="dDelivery"></p>    
+  <p id="dTotal"></p>    
+  <button class="primary" onclick="directBuy()">⚡ Buy Now</button>    
+  <button onclick="closeAll()">Close</button>    
+ </div>    
 </div>  <!-- CART -->  <div class="modal" id="cartModal">    
-  <div class="modal-content">    
-    <h3 style="text-align:center">🧺 My Cart</h3>    
-    <div id="cartItems" style="margin-top:10px"></div>    
-    <!-- 🚚 CART VEHICLE SELECT -->    
-<select id="cartVehicle" onchange="updateCartDelivery()">    
-  <option value="">🚚 Select Vehicle</option>    
-  <option value="two_wheeler">Two Wheeler</option>    
-  <option value="three_wheeler">Three Wheeler</option>    
-  <option value="four_wheeler">Four Wheeler</option>    
-</select>  <div    
-  id="cartDeliveryBox"    
-  style="    
-    display:none;    
-    background:#f0fdf4;    
-    border-left:4px solid #16a34a;    
-    padding:12px;    
-    border-radius:10px;    
-    margin-top:12px;    
-    box-shadow:0 4px 10px rgba(0,0,0,0.08)    
-  "    
->    
-  <div id="cartDeliveryText"></div>    
-  <hr>    
-  <b id="cartTotalText"></b>    
-</div>    
-    <button class="primary" style="margin-top:12px" onclick="payCart()">💳 Pay & Order</button>    
-    <button onclick="closeAll()">Close</button>    
-  </div>    
+ <div class="modal-content">    
+  <h3 style="text-align:center">🧺 My Cart</h3>    <div id="cartItems" style="margin-top:10px"></div>    <div style="margin-top:12px">    
+    <select id="cartVehicle" onchange="updateCartTotal()">    
+      <option value="">🚚 Select Vehicle</option>    
+      <option value="two_wheeler">Two Wheeler</option>    
+      <option value="three_wheeler">Three Wheeler</option>    
+      <option value="four_wheeler">Four Wheeler</option>    
+    </select>    
+  </div>    <div style="background:#f8fafc;padding:12px;border-radius:10px;margin-top:12px">    
+    <div id="cartSubtotal" class="small"></div>    
+    <div id="cartDelivery" class="small"></div>    
+    <hr>    
+    <b id="cartGrandTotal"></b>    
+  </div>  <button class="primary" style="margin-top:12px" onclick="payCart()">💳 Pay & Order</button>  
+<button onclick="closeAll()">Close</button>   </div>    
 </div>  <!-- PROFILE -->  <div class="modal" id="profileModal">    
-  <div class="modal-content">    
-    <h3>Retailer Profile</h3>  <input id="profileName" placeholder="Shop Name (Short address)">    
-<input id="profileMobile" placeholder="Mobile">    <!-- ✅ Current Location (Modified) -->  <div class="location-group">    
-  <label>📍 Current Location (lat, lng)</label>    
-  <input id="profileLocation" placeholder="Fetching location..." readonly>    
-  <button onclick="getRetailerLocation()">📌 Set Current Location</button>    
-</div>    
-    <button class="primary" onclick="saveProfile()">Save</button>    
-    <button onclick="closeAll()">Close</button>    
-  </div>    
+ <div class="modal-content">    
+  <h3>Retailer Profile</h3>    
+  <input id="profileName" placeholder="Name">    
+  <input id="profileMobile" placeholder="Mobile">    
+  <textarea id="profileAddress" placeholder="Address"></textarea>    
+  <button class="primary" onclick="saveProfile()">Save</button>    
+  <button onclick="closeAll()">Close</button>    
+ </div>    
 </div>  <!-- ORDER STATUS -->  <div class="modal" id="orderStatusModal">    
   <div class="modal-content">    
-    <h3 style="text-align:center;margin-bottom:16px">📦 Order Status</h3>    
-    <div id="orderStatusData"></div>    
-    <button class="primary" onclick="closeAll()">Close</button>    
+    <h3 style="text-align:center;margin-bottom:16px">📦 Order Status</h3>  <div id="orderStatusData"></div>    <button class="primary" onclick="closeAll()">Close</button>
+
   </div>    
 </div>  <!-- DELIVERY DETAILS -->  <div class="modal" id="deliveryModal">    
   <div class="modal-content">    
-    <h3 style="text-align:center;margin-bottom:15px">🚚 Delivery Details</h3>    
-    <div id="deliveryData"></div>    
-    <button class="primary" onclick="closeAll()">Close</button>    
+    <h3 style="text-align:center;margin-bottom:15px">🚚 Delivery Details</h3>  <div id="deliveryData"></div>    <button class="primary" onclick="closeAll()">Close</button>
+
   </div>    
-</div>    
-<!-- FULL IMAGE VIEW -->    
-<div class="modal" id="imageModal">    
-  <div class="modal-content" style="padding:10px;background:#000">    
-    <img id="fullImg" style="width:100%;height:auto;border-radius:10px">    
-    <button onclick="closeImage()"    
-      style="margin-top:10px;background:#fff;border:none;padding:8px 14px;border-radius:8px">    
-      ❌ Close    
-    </button>    
+</div>  <script>    
+const API="https://shopbacked-vmhs.onrender.com";    
+let selectedProduct=null;    
+let cart=JSON.parse(localStorage.getItem("cart")||"[]");    /* TIME FORMAT */
+function formatDT(d){
+const dt=new Date(d);
+return dt.toLocaleDateString()+" "+dt.toLocaleTimeString();
+}
+function deliveryChargeByVehicle(v){
+return v==="two_wheeler"?1:v==="three_wheeler"?50:80;
+}
+
+/* LOAD PRODUCTS */
+async function loadProducts(){
+const wid=widInput= document.getElementById("wid").value.trim();
+const r=await fetch(${API}/api/products/wholesaler/${wid});
+const d=await r.json();
+products.innerHTML=d.products.map(p=>`
+
+ <div class="product-card">    
+  <img src="${p.image}">    
+  <div>${p.productName}</div>    
+  <div class="price">₹${p.price}</div>    
+  <div class="actions">    
+   <button class="cart-btn" onclick='addToCart(${JSON.stringify(p)})'>🛒</button>    
+   <button class="buy-btn" onclick='openDetail(${JSON.stringify(p)})'>⚡</button>    
   </div>    
-</div>    
- <div class="modal" id="chargeInfoModal">    
-  <div class="modal-content" style="max-width:400px; padding:20px; border-radius:12px; background:#000; color:#fff;">    
-    <h3 style="margin-top:0; text-align:center;">Delivery Charge Info</h3>    
-    <ul id="chargeList" style="list-style:none; padding:0; margin:10px 0;"></ul>    
-    <button onclick="closeChargeModal()" style="    
-      display:block;    
-      margin:10px auto 0 auto;    
-      padding:8px 16px;    
-      border:none;    
-      border-radius:8px;    
-      background:#fff;    
-      color:#000;    
-      cursor:pointer;    
-    ">Close</button>    
-  </div>    
- </div>     
+ </div>`).join("");    
+}    /* DETAIL */
+function openDetail(p){
+selectedProduct=p;
+dName.innerText=p.productName;
+dImg.src=p.image;
+dDesc.innerText=p.detail||"No description";
+dPrice.innerText="Price ₹"+p.price;
+dDelivery.innerText="";
+dTotal.innerText="";
+detailModal.style.display="flex";
+}
+
+/* DIRECT BUY */
+async function directBuy(){
+const v=vehicleType.value;
+if(!v) return alert("Select vehicle");
+const profile=JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+if(!profile.mobile) return alert("Save profile first");
+
+const dc=deliveryChargeByVehicle(v);
+const total=selectedProduct.price+dc;
+dDelivery.innerText="Delivery ₹"+dc;
+dTotal.innerText="Total ₹"+total;
+
+const r=await fetch(API+"/api/orders/pay-and-create",{
+method:"POST",headers:{'Content-Type':'application/json'},
+body:JSON.stringify({amount:total})
+});
+const d=await r.json();
+
+new Razorpay({
+key:d.key,amount:d.amount,order_id:d.order.id,currency:"INR",
+handler:async resp=>{
+await fetch(API+"/api/orders/confirm-after-payment",{
+method:"POST",headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+paymentId:resp.razorpay_payment_id,
+productId:selectedProduct._id,
+totalAmount:total,
+deliveryCharge:dc,
+retailerName:profile.name,
+retailerMobile:profile.mobile,
+retailerAddress:profile.address
+})
+});
+alert("Order placed");
+closeAll();
+}
+}).open();
+}
+
+/* CART */
+async function addToCart(p){
+cart.push(p);
+
+await fetch(${API}/api/cart/save,{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body: JSON.stringify({
+retailerId: localStorage.getItem("userId"),
+items: cart
+})
+});
+
+alert("🛒 Cart me add ho gaya");
+}
+async function openCart(){
+const retailerId = localStorage.getItem("userId");
+
+const res = await fetch(${API}/api/cart/${retailerId});
+const data = await res.json();
+
+cart = data.cart ? data.cart.items : [];
+
+if(cart.length===0){
+cartItems.innerHTML="🛒 Cart empty";
+cartModal.style.display="flex";
+return;
+}
+
+let subtotal=0;
+cartItems.innerHTML = cart.map((c,i)=>{
+subtotal+=c.price;
+return      <div class="cart-item">     ${c.productName} ₹${c.price}     <button onclick="removeCart(${i})">❌</button>     </div>;
+}).join("");
+
+cartSubtotal.innerText="Subtotal ₹"+subtotal;
+cartDelivery.innerText="Delivery ₹0";
+cartGrandTotal.innerText="Total ₹"+subtotal;
+
+cartModal.style.display="flex";
+}
+async function removeCart(i){
+cart.splice(i,1);
+
+await fetch(${API}/api/cart/save,{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body: JSON.stringify({
+retailerId: localStorage.getItem("userId"),
+items: cart
+})
+});
+
+openCart();
+}
+
+function updateCartTotal(){
+const vehicle = document.getElementById("cartVehicle").value;
+let subtotal = cart.reduce((s,i)=>s+i.price,0);
+let delivery = 0;
+
+if(vehicle==="two_wheeler") delivery=1;
+else if(vehicle==="three_wheeler") delivery=50;
+else if(vehicle==="four_wheeler") delivery=80;
+
+cartDelivery.innerText = "Delivery ₹"+delivery;
+cartGrandTotal.innerText = "Total ₹"+(subtotal+delivery);
+}
+
+/* PAY CART */
+async function payCart(){
+const vehicle = cartVehicle.value;
+if(!vehicle) return alert("Select vehicle first");
+
+const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
+if(!profile.mobile) return alert("Save profile first");
+
+let delivery = vehicle==="two_wheeler"?1:vehicle==="three_wheeler"?50:80;
+let subtotal = cart.reduce((s,i)=>s+i.price,0);
+let total = subtotal + delivery;
+
+const r = await fetch(API+"/api/orders/pay-and-create",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({amount:total})
+});
+const d = await r.json();
+
+new Razorpay({
+key:d.key,
+amount:d.amount,
+order_id:d.order.id,
+currency:"INR",
+handler: async resp=>{
+await fetch(API+"/api/orders/confirm-after-payment",{
+method:"POST",
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+paymentId:resp.razorpay_payment_id,
+products:cart,
+totalAmount:total,
+deliveryCharge:delivery,
+retailerName:profile.name,
+retailerMobile:profile.mobile,
+retailerAddress:profile.address
+})
+});
+localStorage.removeItem("cart");
+cart=[];
+alert("Order placed successfully");
+closeAll();
+}
+}).open();
+}
+
+/* ORDERS */
+function openCart(){
+cart = JSON.parse(localStorage.getItem("cart")||"[]");
+
+if(cart.length===0){
+cartItems.innerHTML="<p style='text-align:center'>🛒 Cart is empty</p>";
 <script>
-/* ================== CONFIG ================== */
+/* ================= CONFIG ================= */
 const API = "https://shopbacked-vmhs.onrender.com";
 
-/* ================== GLOBAL STATE ================== */
+/* ================= GLOBAL STATE ================= */
 let selectedProduct = null;
 let cart = [];
 let currentWholesalerId = null;
@@ -541,7 +372,7 @@ let currentRetailerLoc = null;
 let currentWholesalerLoc = null;
 let cartTimer = null;
 
-/* ================== DOM ================== */
+/* ================= DOM ================= */
 const dImages = document.getElementById("dImages");
 const dDots = document.getElementById("dDots");
 const dName = document.getElementById("dName");
@@ -550,72 +381,90 @@ const dPrice = document.getElementById("dPrice");
 const dDelivery = document.getElementById("dDelivery");
 const dTotal = document.getElementById("dTotal");
 const vehicleType = document.getElementById("vehicleType");
-/* ========== TOP ICON ACTIONS ========== */
-document.addEventListener("DOMContentLoaded",()=>{
 
-  const home = document.getElementById("homeIcon");
-  const cart = document.getElementById("cartIcon");
-  const profile = document.getElementById("profileIcon");
-  const orders = document.getElementById("orderIcon");
+const cartModal = document.getElementById("cartModal");
+const cartItems = document.getElementById("cartItems");
 
-  if(home){
-    home.onclick = ()=> {
-      window.location.href = "index.html";
-    };
+const profileModal = document.getElementById("profileModal");
+const profileName = document.getElementById("profileName");
+const profileMobile = document.getElementById("profileMobile");
+const profileLocation = document.getElementById("profileLocation");
+
+const orderStatusModal = document.getElementById("orderStatusModal");
+const orderStatusData = document.getElementById("orderStatusData");
+
+const deliveryModal = document.getElementById("deliveryModal");
+const deliveryData = document.getElementById("deliveryData");
+
+const deliveryDot = document.getElementById("deliveryDot");
+
+/* ================= UTILS ================= */
+function formatDT(d) {
+  const dt = new Date(d);
+  return dt.toLocaleDateString("en-IN") + " " + dt.toLocaleTimeString("en-IN");
+}
+
+function closeAll() {
+  document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+}
+
+/* ================= GEO LOCATION ================= */
+function getRetailerLocation() {
+  if (!navigator.geolocation) {
+    alert("Geolocation supported nahi hai");
+    return;
   }
 
-  if(cart){
-    cart.onclick = ()=> {
-      window.location.href = "cart.html";
-    };
-  }
+  profileLocation.value = "Fetching location...";
 
-  if(profile){
-    profile.onclick = ()=> {
-      const prof = localStorage.getItem("retailerProfile");
-      if(!prof){
-        alert("Pehle profile complete karo");
-        window.location.href = "profile.html";
-      }else{
-        window.location.href = "profile.html";
-      }
-    };
-  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const loc = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
 
-  if(orders){
-    orders.onclick = ()=> {
-      window.location.href = "orders.html";
-    };
-  }
+      profileLocation.value = loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);
+      localStorage.setItem("retailer_location", JSON.stringify(loc));
+      localStorage.setItem("location_updated", "yes");
+      alert("📍 Location saved");
+    },
+    () => {
+      alert("Location access denied");
+      profileLocation.value = "";
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
 
-});
-/* ================== UTIL ================== */
-const safeNum = v => isNaN(Number(v)) ? 0 : Number(v);
-
-/* ================== LOAD PRODUCTS ================== */
-async function loadProducts(){
+/* ================= PRODUCTS ================= */
+async function loadProducts() {
   const wid = document.getElementById("wid").value.trim();
-  if(!wid) return alert("Wholesaler ID daalo");
+  if (!wid) return alert("Enter Wholesaler ID");
 
   sessionStorage.setItem("lastWid", wid);
+
+  if (currentWholesalerId && currentWholesalerId !== wid) {
+    clearCartCompletely();
+  }
   currentWholesalerId = wid;
 
-  try{
+  try {
     const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
     const data = await res.json();
 
-    const container = document.getElementById("categories");
-    if(!data.products || !data.products.length){
-      container.innerHTML = "<p>No categories found</p>";
+    const categories = document.getElementById("categories");
+    if (!data.products || !data.products.length) {
+      categories.innerHTML = "<p>No categories found</p>";
       return;
     }
 
-    const cats = {};
-    data.products.forEach(p=>{
-      cats[p.category || "Other"] = true;
+    const map = {};
+    data.products.forEach(p => {
+      map[p.category || "Other"] = true;
     });
 
-    container.innerHTML = Object.keys(cats).map(cat=>`
+    categories.innerHTML = Object.keys(map).map(cat => `
       <div class="category-card"
         onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
         <div class="category-icon"><i class="bi bi-box-seam"></i></div>
@@ -623,179 +472,211 @@ async function loadProducts(){
       </div>
     `).join("");
 
-    sessionStorage.setItem("lastCategoriesHTML", container.innerHTML);
-  }catch(err){
-    console.error(err);
-    alert("Products load failed");
+    sessionStorage.setItem("lastCategoriesHTML", categories.innerHTML);
+
+  } catch (e) {
+    alert("Failed to load products");
   }
 }
 
-function openCategory(cat,wid){
-  window.location.href =
-    `categoryProducts.html?wid=${wid}&category=${cat}`;
+function openCategory(cat, wid) {
+  window.location.href = `categoryProducts.html?wid=${wid}&category=${cat}`;
 }
 
-/* ================== PRODUCT DETAIL ================== */
-function openDetail(p){
+/* ================= PRODUCT DETAIL ================= */
+function openDetail(p) {
   selectedProduct = JSON.parse(JSON.stringify(p));
+  document.getElementById("detailModal").style.display = "flex";
 
-  document.getElementById("detailModal").style.display="flex";
+  dName.innerText = p.productName || "";
+  dPrice.innerText = "₹" + (p.price || 0);
 
-  dName.innerText = selectedProduct.productName || "";
-  dPrice.innerText = "₹" + safeNum(selectedProduct.price);
-  dDesc.innerText = selectedProduct.detail || "No description";
+  dDesc.innerText = p.detail || "No description";
   dDesc.classList.add("short");
-  dDelivery.innerText = "";
-  dTotal.innerText = "";
-  vehicleType.value = "";
 
-  dImages.innerHTML="";
-  dDots.innerHTML="";
+  dImages.innerHTML = "";
+  dDots.innerHTML = "";
 
-  const imgs = selectedProduct.images?.length
-    ? selectedProduct.images
-    : [selectedProduct.image];
-
-  imgs.forEach((img,i)=>{
-    dImages.innerHTML +=
-      `<img src="${img}"
-        onclick="openImage('${img}')"
-        style="min-width:100%;object-fit:contain">`;
-
-    dDots.innerHTML +=
-      `<div class="dot ${i===0?"active":""}"></div>`;
+  const imgs = p.images?.length ? p.images : [p.image];
+  imgs.forEach((img, i) => {
+    dImages.innerHTML += `<img src="${img}" onclick="openImage('${img}')">`;
+    dDots.innerHTML += `<div class="dot ${i === 0 ? "active" : ""}"></div>`;
   });
 
-  dImages.onscroll = ()=>{
-    const idx = Math.round(dImages.scrollLeft/dImages.clientWidth);
-    [...dDots.children].forEach((d,i)=>{
-      d.classList.toggle("active",i===idx);
-    });
+  dImages.onscroll = () => {
+    const idx = Math.round(dImages.scrollLeft / dImages.clientWidth);
+    [...dDots.children].forEach((d, i) => d.classList.toggle("active", i === idx));
   };
 }
 
-/* ================== IMAGE ================== */
-function openImage(src){
+/* ================= IMAGE ================= */
+function openImage(src) {
   document.getElementById("fullImg").src = src;
-  document.getElementById("imageModal").style.display="flex";
+  document.getElementById("imageModal").style.display = "flex";
 }
-function closeImage(){
-  document.getElementById("imageModal").style.display="none";
+function closeImage() {
+  document.getElementById("imageModal").style.display = "none";
 }
 
-/* ================== DELIVERY ================== */
-async function updateDelivery(){
-  if(!selectedProduct || !vehicleType.value) return;
+/* ================= DELIVERY ================= */
+async function updateDelivery() {
+  if (!selectedProduct || !vehicleType.value) return;
 
-  const retailerLoc =
-    JSON.parse(localStorage.getItem("retailer_location"));
+  const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
   const wholesalerLoc = selectedProduct.wholesalerLocation;
 
-  if(!retailerLoc || !wholesalerLoc){
-    dDelivery.innerText="📍 Location missing";
+  if (!retailerLoc || !wholesalerLoc) {
+    dDelivery.innerText = "📍 Location missing";
     return;
   }
 
-  try{
-    const res = await fetch(`${API}/api/delivery/calculate`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        orderAmount: safeNum(selectedProduct.price),
-        vehicleType: vehicleType.value,
-        retailerLocation: retailerLoc,
-        wholesalerLocation: wholesalerLoc
-      })
-    });
-
-    const data = await res.json();
-    if(!data.success) throw "fail";
-
-    dDelivery.innerText =
-      `Delivery ₹${data.retailerPays} (${data.retailerPercent}%)`;
-
-    dTotal.innerText =
-      `Total ₹${safeNum(selectedProduct.price)+safeNum(data.retailerPays)}`;
-  }catch{
-    dDelivery.innerText="Delivery error";
-  }
-}
-
-/* ================== DIRECT BUY ================== */
-async function directBuy(e){
-  e.preventDefault();
-
-  if(!vehicleType.value) return alert("Vehicle select karo");
-
-  const profile =
-    JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-  if(!profile.mobile) return alert("Profile save karo");
-
-  const retailerLoc =
-    JSON.parse(localStorage.getItem("retailer_location"));
-  const wholesalerLoc = selectedProduct.wholesalerLocation;
-  if(!retailerLoc || !wholesalerLoc)
-    return alert("Location missing");
-
-  const delRes = await fetch(`${API}/api/delivery/calculate`,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
+  const res = await fetch(`${API}/api/delivery/calculate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      orderAmount:safeNum(selectedProduct.price),
-      vehicleType:vehicleType.value,
-      retailerLocation:retailerLoc,
-      wholesalerLocation:wholesalerLoc
-    })
-  });
-  const del = await delRes.json();
-
-  const total =
-    safeNum(selectedProduct.price)+safeNum(del.retailerPays);
-
-  const res = await fetch(`${API}/api/orders/pay-and-create`,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      amount: total,
-      notes:{
-        type:"direct",
-        productId:selectedProduct._id,
-        productName:selectedProduct.productName,
-        price:selectedProduct.price,
-        wholesalerId:selectedProduct.wholesalerId,
-        retailerMobile:profile.mobile,
-        vehicleType:vehicleType.value,
-        retailerPays:del.retailerPays,
-        wholesalerPays:del.wholesalerPays,
-        distanceKm:del.distanceKm
-      }
+      orderAmount: selectedProduct.price,
+      vehicleType: vehicleType.value,
+      retailerLocation: retailerLoc,
+      wholesalerLocation: wholesalerLoc
     })
   });
 
   const data = await res.json();
-  if(!data.success) return alert("Order failed");
+  if (!data.success) return;
 
-  const rzp = new Razorpay({
-    key:data.key,
-    amount:data.amount,
-    currency:"INR",
-    order_id:data.order.id,
-    handler(){
-      alert("Payment successful 🎉");
-      closeAll();
-      localStorage.removeItem("cart");
-      cart=[];
-    }
+  dDelivery.innerText = `Delivery ₹${data.retailerPays}`;
+  dTotal.innerText = `Total ₹${selectedProduct.price + data.retailerPays}`;
+}
+
+/* ================= CART ================= */
+function openCart() {
+  cartModal.style.display = "flex";
+  loadCart();
+}
+
+async function loadCart() {
+  const retailerId = localStorage.getItem("userId");
+  if (!retailerId) {
+    cartItems.innerHTML = "<p>Login required</p>";
+    return;
+  }
+
+  const res = await fetch(`${API}/api/cart/${retailerId}`);
+  const data = await res.json();
+
+  if (!data.items?.length) {
+    cartItems.innerHTML = "<p>🛒 Cart empty</p>";
+    cart = [];
+    return;
+  }
+
+  cart = data.items;
+  cartItems.innerHTML = cart.map(i => `
+    <div class="cart-card">
+      <img src="${i.image}" class="cart-img">
+      <div class="cart-info">
+        <div class="cart-name">${i.productName}</div>
+        <div class="cart-price">₹${i.price} × ${i.quantity}</div>
+      </div>
+      <button onclick="removeFromCart('${i.productId}')">❌</button>
+    </div>
+  `).join("");
+}
+
+async function removeFromCart(pid) {
+  const retailerId = localStorage.getItem("userId");
+  await fetch(`${API}/api/cart/remove`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ retailerId, productId: pid })
   });
-  rzp.open();
+  loadCart();
 }
 
-/* ================== MODALS ================== */
-function closeAll(){
-  document
-    .querySelectorAll(".modal")
-    .forEach(m=>m.style.display="none");
+function clearCartCompletely() {
+  cart = [];
+  localStorage.removeItem("cart");
 }
-</script>
-</body>    
-</html>    
+
+/* ================= PROFILE ================= */
+async function openRetailerProfile() {
+  profileModal.style.display = "flex";
+  const id = localStorage.getItem("userId");
+  if (!id) return alert("Login required");
+
+  const res = await fetch(`${API}/api/retailers/profile/${id}`);
+  const data = await res.json();
+
+  if (data.profile) {
+    profileName.value = data.profile.name || "";
+    profileMobile.value = data.profile.mobile || "";
+
+    if (data.profile.location) {
+      profileLocation.value =
+        data.profile.location.lat.toFixed(6) + ", " +
+        data.profile.location.lng.toFixed(6);
+    }
+  }
+}
+
+async function saveProfile() {
+  if (!profileMobile.value.trim()) return alert("Mobile required");
+
+  const loc = JSON.parse(localStorage.getItem("retailer_location"));
+  const payload = {
+    retailerId: localStorage.getItem("userId"),
+    name: profileName.value.trim(),
+    mobile: profileMobile.value.trim(),
+    location: loc
+  };
+
+  const res = await fetch(`${API}/api/retailers/saveProfile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    localStorage.setItem("retailerProfile", JSON.stringify(data.profile));
+    alert("Profile saved");
+    closeAll();
+  }
+}
+
+/* ================= ORDER STATUS ================= */
+async function openOrderStatus() {
+  orderStatusModal.style.display = "flex";
+  const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+  if (!profile.mobile) return;
+
+  const res = await fetch(`${API}/api/orders/retailer/${profile.mobile}`);
+  const data = await res.json();
+
+  orderStatusData.innerHTML = data.orders.map(o => `
+    <div class="status-card">
+      <div class="status-product">${o.productName}</div>
+      <div class="status-badge">${o.status}</div>
+      <div class="status-time">${formatDT(o.updatedAt)}</div>
+    </div>
+  `).join("");
+}
+
+/* ================= DELIVERY DETAILS ================= */
+async function openDeliveryDetails() {
+  deliveryModal.style.display = "flex";
+  const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+
+  const res = await fetch(`${API}/api/orders/retailer/${profile.mobile}`);
+  const data = await res.json();
+
+  deliveryData.innerHTML = data.orders.map(o => `
+    <div class="delivery-card">
+      <div>${o.productName}</div>
+      <div>${o.deliveryBoyName || "Pending"}</div>
+    </div>
+  `).join("");
+}
+</script>  </body>
+
+</html>
