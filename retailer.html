@@ -1139,16 +1139,29 @@ async function calcCartDelivery(){
   const dText = document.getElementById("cartDeliveryText");
   const tText = document.getElementById("cartTotalText");
 
+  // ✅ STEP 1: GET LOCATIONS FIRST
+  const retailerLoc = window.currentRetailerLocation;
+  const wholesalerLoc = window.currentWholesalerLocation;
+
+  // ✅ STEP 2: CHECK LOCATIONS
   if (
-  !retailerLoc?.lat ||
-  !retailerLoc?.lng ||
-  !wholesalerLoc?.lat ||
-  !wholesalerLoc?.lng
-) {
-  box.style.display = "block";
-  dText.innerText = "📍 Location missing";
-  tText.innerText = "";
-  return;
+    !retailerLoc?.lat ||
+    !retailerLoc?.lng ||
+    !wholesalerLoc?.lat ||
+    !wholesalerLoc?.lng
+  ) {
+    box.style.display = "block";
+    dText.innerText = "📍 Location missing";
+    tText.innerText = "";
+    return;
+  }
+
+  // ✅ STEP 3: SAVE LOCATIONS FOR PAYMENT
+  currentRetailerLoc = retailerLoc;
+  currentWholesalerLoc = wholesalerLoc;
+
+  // 👉 Aage yahin se aapka existing delivery API / distance code rahega
+  // fetch(...)
 }
 
   /* ================= SUBTOTAL ================= */
