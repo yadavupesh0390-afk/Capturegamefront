@@ -1108,153 +1108,182 @@ async function directBuy(e) {
 }
 // ------------------- DELIVERY UPDATE ON VEHICLE SELECT -------------------
 async function updateDelivery() {
-if (!selectedProduct) return; // safety
+  if (!selectedProduct) return; // safety
 
-const vehicle = vehicleType.value;
-if (!vehicle) {
-dDelivery.innerText = "";
-dTotal.innerText = "";
-return;
+  const vehicle = vehicleType.value;
+
+  if (!vehicle) {
+    dDelivery.innerText = "";
+    dTotal.innerText = "";
+    return;
+  }
+
+  /* ---------- RETAILER LOCATION ---------- */
+  const retailerLoc = JSON.parse(
+    localStorage.getItem("retailer_location")
+  );
+
+  const wholesalerLoc = selectedProduct?.wholesalerLocation;
+
+  if (!retailerLoc || !wholesalerLoc) {
+    dDelivery.innerText = "📍 Location missing";
+    dTotal.innerText = "";
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/api/delivery/calculate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderAmount: selectedProduct.price,
+          vehicleType: vehicle,
+          retailerLocation: retailerLoc,
+          wholesalerLocation: wholesalerLoc
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data.success) {
+      dDelivery.innerText = "⚠️ Delivery calculation failed";
+      dTotal.innerText = "";
+      return;
+    }
+
+    /* ---------- UI UPDATE ---------- */
+    dDelivery.innerText =
+      `Delivery ₹${data.retailerPays} ` +
+      `(${data.retailerPercent}% retailer)`;
+
+    const total =
+      selectedProduct.price + data.retailerPays;
+
+    dTotal.innerText = `Total ₹${total}`;
+
+  } catch (err) {
+    console.error("❌ Delivery fetch error:", err);
+    dDelivery.innerText = "⚠️ Delivery fetch error";
+    dTotal.innerText = "";
+  }
 }
 
-// ✅ check retailer location
-const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-const wholesalerLoc = selectedProduct.wholesalerLocation;
-
-if (!retailerLoc || !wholesalerLoc) {
-dDelivery.innerText = "📍 Location missing";
-dTotal.innerText = "";
-return;
-}
-
-try {
-const res = await fetch(${API}/api/delivery/calculate, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-orderAmount: selectedProduct.price,
-vehicleType: vehicle,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
-
-const data = await res.json();    
-
-if (!data.success) {    
-  dDelivery.innerText = "⚠️ Delivery calculation failed";    
-  dTotal.innerText = "";    
-  return;    
-}    
-
-// ✅ Update UI    
-dDelivery.innerText = `Delivery ₹${data.retailerPays} (${data.retailerPercent}% retailer)`;    
-const total = selectedProduct.price + data.retailerPays;    
-dTotal.innerText = `Total ₹${total}`;
-
-} catch (err) {
-console.error("Delivery fetch error:", err);
-dDelivery.innerText = "⚠️ Delivery fetch error";
-dTotal.innerText = "";
-}
-}
-
+/* ================= CART DELIVERY ================= */
 let cartTimer = null;
 
-async function calcCartDelivery(){
+async function calcCartDelivery() {
 
-const vehicle = document.getElementById("cartVehicle").value;
-const box = document.getElementById("cartDeliveryBox");
-const dText = document.getElementById("cartDeliveryText");
-const tText = document.getElementById("cartTotalText");
+  const vehicle =
+    document.getElementById("cartVehicle").value;
 
-if (!vehicle || cart.length === 0) {
-box.style.display = "none";
-dText.innerText = "";
-tText.innerText = "";
-window.__cartDelivery = null;
-return;
-}
+  const box =
+    document.getElementById("cartDeliveryBox");
 
-/* ================= SUBTOTAL ================= */
-const subtotal = cart.reduce(
-(sum, item) => sum + (Number(item.price) * Number(item.quantity || 1)),
-0
-);
+  const dText =
+    document.getElementById("cartDeliveryText");
 
-/* ================= RETAILER LOCATION ================= */
-let retailerLoc =
-JSON.parse(localStorage.getItem("retailer_location")) ||
-JSON.parse(localStorage.getItem("retailerProfile") || "{}").location ||
-null;
+  const tText =
+    document.getElementById("cartTotalText");
 
-if (retailerLoc?.latitude && retailerLoc?.longitude) {
-retailerLoc = {
-lat: retailerLoc.latitude,
-lng: retailerLoc.longitude
-};
-}
+  if (!vehicle || !cart.length) {
+    box.style.display = "none";
+    dText.innerText = "";
+    tText.innerText = "";
+    window.__cartDelivery = null;
+    return;
+  }
 
-/* ================= WHOLESALER LOCATION ================= */
-let wholesalerLoc = null;
+  /* ---------- SUBTOTAL ---------- */
+  const subtotal = cart.reduce(
+    (sum, item) =>
+      sum + (Number(item.price) * Number(item.quantity || 1)),
+    0
+  );
 
-try {
-const wid = cart[0].wholesalerId;
+  /* ---------- RETAILER LOCATION ---------- */
+  let retailerLoc =
+    JSON.parse(localStorage.getItem("retailer_location")) ||
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}")?.location ||
+    null;
 
-const resWh = await fetch(`${API}/api/wholesalers/profile/${wid}`);    
-const whData = await resWh.json();    
+  if (retailerLoc?.latitude && retailerLoc?.longitude) {
+    retailerLoc = {
+      lat: retailerLoc.latitude,
+      lng: retailerLoc.longitude
+    };
+  }
 
-wholesalerLoc =    
-  whData?.profile?.location ||    
-  whData?.wholesaler?.location ||    
-  whData?.location ||    
-  null;    
+  /* ---------- WHOLESALER LOCATION ---------- */
+  let wholesalerLoc = null;
 
-if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {    
-  wholesalerLoc = {    
-    lat: wholesalerLoc.latitude,    
-    lng: wholesalerLoc.longitude    
-  };    
-}
+  try {
+    const wid = cart[0].wholesalerId;
 
-} catch (e) {
-console.error("Wholesaler location fetch failed", e);
-}
+    const resWh = await fetch(
+      `${API}/api/wholesalers/profile/${wid}`
+    );
 
-/* ================= LOCATION CHECK ================= */
-if (
-!retailerLoc?.lat ||
-!retailerLoc?.lng ||
-!wholesalerLoc?.lat ||
-!wholesalerLoc?.lng
-) {
-box.style.display = "block";
-dText.innerText = "📍 Location missing";
-tText.innerText = "";
-return;
-}
+    const whData = await resWh.json();
 
-/* ================= DELIVERY CALC ================= */
-try {
-const res = await fetch(${API}/api/delivery/calculate, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-orderAmount: subtotal,
-vehicleType: vehicle,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
+    wholesalerLoc =
+      whData?.profile?.location ||
+      whData?.wholesaler?.location ||
+      whData?.location ||
+      null;
 
-const data = await res.json();    
+    if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {
+      wholesalerLoc = {
+        lat: wholesalerLoc.latitude,
+        lng: wholesalerLoc.longitude
+      };
+    }
 
-if (!data.success) {    
-  box.style.display = "block";    
-  dText.innerText = "❌ Delivery calculation failed";    
-  tText.innerText = "";    
-  return;    
-}    
+  } catch (err) {
+    console.error("❌ Wholesaler location fetch failed", err);
+  }
+
+  /* ---------- LOCATION CHECK ---------- */
+  if (
+    !retailerLoc?.lat ||
+    !retailerLoc?.lng ||
+    !wholesalerLoc?.lat ||
+    !wholesalerLoc?.lng
+  ) {
+    box.style.display = "block";
+    dText.innerText = "📍 Location missing";
+    tText.innerText = "";
+    return;
+  }
+
+  /* ---------- DELIVERY FROM BACKEND ---------- */
+  try {
+    const res = await fetch(
+      `${API}/api/delivery/calculate`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderAmount: subtotal,
+          vehicleType: vehicle,
+          retailerLocation: retailerLoc,
+          wholesalerLocation: wholesalerLoc
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data.success) {
+      box.style.display = "block";
+      dText.innerText = "⚠️ Delivery calculation failed";
+      tText.innerText = "";
+      return;
+    }
+
+    
 
 /* 🔁 DOUBLE distance & time */    
 const doubleDistance = (Number(data.distanceKm) * 2).toFixed(2);    
