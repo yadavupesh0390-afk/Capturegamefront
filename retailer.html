@@ -1291,96 +1291,111 @@ const doubleTime = Math.round(Number(data.timeMinutes) * 2);
 const total = subtotal + Number(data.retailerPays);    
 
 /* ================= UI UPDATE ================= */    
-box.style.display = "block";    
+box.style.display = "block";
 
 dText.innerText =
+  `🚚 Delivery ₹${data.totalDelivery} ` +
+  `(Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)\n` +
+  `⏱️ ${doubleTime} min\n` +
+  `📍 टोटल आने-जाने का = ${doubleDistance} km`;
 
-🚚 Delivery ₹${data.totalDelivery}     (Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)     ⏱️ ${doubleTime} min     📍 टोटल आने जाने का = ${doubleDistance} km;
+tText.innerText = `💰 Total ₹${total}`;
 
-tText.innerText = `💰 Total ₹${total}`;    
-
-/* ================= STORE FOR PAYMENT ================= */    
-window.__cartDelivery = {    
-  subtotal,    
-  retailerPays: Number(data.retailerPays),    
-  wholesalerPays: Number(data.wholesalerPays || 0),    
-  total,    
-  distanceKm: doubleDistance,    
-  timeMinutes: doubleTime    
+/* ================= STORE FOR PAYMENT ================= */
+window.__cartDelivery = {
+  subtotal,
+  retailerPays: Number(data.retailerPays),
+  wholesalerPays: Number(data.wholesalerPays || 0),
+  total,
+  distanceKm: doubleDistance,
+  timeMinutes: doubleTime
 };
 
 } catch (err) {
-console.error("Cart delivery error", err);
-box.style.display = "block";
-dText.innerText = "⚠️ Server error";
-tText.innerText = "";
+  console.error("Cart delivery error", err);
+  box.style.display = "block";
+  dText.innerText = "⚠️ Server error";
+  tText.innerText = "";
 }
 }
-// ------------------- CART -------------------
-async function addToCart(p){
-const retailerId = localStorage.getItem("userId");
-if(!retailerId){
-alert("🔐 Please login first");
-return;
+
+
+/* ================= ADD TO CART ================= */
+async function addToCart(p) {
+  const retailerId = localStorage.getItem("userId");
+
+  if (!retailerId) {
+    alert("🔐 Please login first");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/cart/save`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        retailerId,
+        item: {
+          productId: p._id,
+          productName: p.productName,
+          price: p.price,
+          image: p.images?.[0] || "",
+          wholesalerId: p.wholesalerId,
+          shopName: p.shopName,
+          mobile: p.mobile,
+          address: p.address
+        }
+      })
+    });
+
+    const data = await res.json();
+
+    /* ❌ DIFFERENT WHOLESALER FOUND */
+    if (
+      !data.success &&
+      data.message &&
+      data.message.includes("Only one wholesaler")
+    ) {
+      // Backend cart clear
+      await fetch(`${API}/api/cart/clear/${retailerId}`, {
+        method: "DELETE"
+      });
+
+      // Frontend cart clear
+      cart = [];
+      localStorage.removeItem("cart");
+      currentWholesalerId = null;
+
+      alert(
+        "🧹 पुराना cart clear कर दिया गया है.\nअब नया product add ho raha hai."
+      );
+
+      // Re-add product
+      addToCart(p);
+      return;
+    }
+
+    if (data.success) {
+      cart.push(p);
+      currentWholesalerId = p.wholesalerId;
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      alert(
+        "🛒 Added to cart successfully ✅\n\n" +
+        "Product: " + p.productName +
+        "\nPrice: ₹" + p.price
+      );
+    } else {
+      alert("❌ Failed to add item");
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Server error");
+  }
 }
 
-try{
-const res = await fetch(${API}/api/cart/save,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-retailerId,
-item:{
-productId: p._id,
-productName: p.productName,
-price: p.price,
-image: p.images?.[0] || "",
-wholesalerId: p.wholesalerId,
-shopName: p.shopName,
-mobile: p.mobile,
-address: p.address
-}
-})
-});
 
-const data = await res.json();    
-
-// ❌ DIFFERENT WHOLESALER FOUND    
-if (!data.success && data.message && data.message.includes("Only one wholesaler")) {    
-  // 🔹 Backend cart clear    
-  await fetch(`${API}/api/cart/clear/${retailerId}`, { method: "DELETE" });    
-
-  // 🔹 Frontend cart clear    
-  cart = [];    
-  localStorage.removeItem("cart");    
-  currentWholesalerId = null;    
-
-  alert("🧹 पुराना cart clear कर दिया गया। अब नया product add हो रहा है।");    
-
-  // 🔹 नया product फिर से add करो    
-  addToCart(p);    
-  return;    
-}    
-
-if(data.success){    
-  cart.push(p);    
-  currentWholesalerId = p.wholesalerId;    
-  localStorage.setItem("cart", JSON.stringify(cart));    
-
-  alert(    
-    "🛒 Added to cart successfully ✅\n\n" +    
-    "Product: " + p.productName +    
-    "\nPrice: ₹" + p.price    
-  );    
-}else{    
-  alert("❌ Failed to add item");    
-}
-
-}catch(err){
-console.error(err);
-alert("❌ Server error");
-}
-}
 async function loadCart(){
 
 const retailerId = localStorage.getItem("userId");
