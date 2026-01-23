@@ -1139,13 +1139,17 @@ async function calcCartDelivery(){
   const dText = document.getElementById("cartDeliveryText");
   const tText = document.getElementById("cartTotalText");
 
-  if (!vehicle || cart.length === 0) {
-    box.style.display = "none";
-    dText.innerText = "";
-    tText.innerText = "";
-    window.__cartDelivery = null;
-    return;
-  }
+  if (
+  !retailerLoc?.lat ||
+  !retailerLoc?.lng ||
+  !wholesalerLoc?.lat ||
+  !wholesalerLoc?.lng
+) {
+  box.style.display = "block";
+  dText.innerText = "📍 Location missing";
+  tText.innerText = "";
+  return;
+}
 
   /* ================= SUBTOTAL ================= */
   const subtotal = cart.reduce(
