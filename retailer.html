@@ -542,7 +542,8 @@ const API = "https://shopbacked-vmhs.onrender.com";    let selectedProduct = nul
 let cart = [];
 let cartDeliveryCharge = 0;
 let currentWholesalerId = null;
-// DOM elements
+window.addEventListener("load", ensureRetailerLocation);
+  // DOM elements
 const dImages = document.getElementById("dImages");
 const dDots   = document.getElementById("dDots");
 
@@ -573,7 +574,55 @@ const deliveryDot = document.getElementById("deliveryDot");
 const profileLocation = document.getElementById("profileLocation");
 // Utility
 function formatDT(d){ const dt=new Date(d); return dt.toLocaleDateString()+" "+dt.toLocaleTimeString(); }
+// ================= LOCATION NORMALIZER =================
+function normalizeLocation(loc) {
+  if (!loc) return null;
 
+  if (loc.lat && loc.lng) {
+    return { lat: Number(loc.lat), lng: Number(loc.lng) };
+  }
+
+  if (loc.latitude && loc.longitude) {
+    return { lat: Number(loc.latitude), lng: Number(loc.longitude) };
+  }
+
+  return null;
+}
+
+// ================= RETAILER LOCATION ENSURE =================
+async function ensureRetailerLocation() {
+  const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+
+  // ✅ localStorage me already hai
+  const loc = normalizeLocation(profile.location);
+  if (loc) {
+    localStorage.setItem("retailer_location", JSON.stringify(loc));
+    return loc;
+  }
+
+  // 🔥 backend se laao
+  const retailerId = localStorage.getItem("userId");
+  if (!retailerId) return null;
+
+  try {
+    const res = await fetch(`${API}/api/retailers/profile/${retailerId}`);
+    const data = await res.json();
+
+    const serverLoc = normalizeLocation(data?.profile?.location);
+    if (serverLoc) {
+      localStorage.setItem("retailer_location", JSON.stringify(serverLoc));
+      localStorage.setItem(
+        "retailerProfile",
+        JSON.stringify(data.profile)
+      );
+      return serverLoc;
+    }
+  } catch (e) {
+    console.error("❌ ensureRetailerLocation failed", e);
+  }
+
+  return null;
+  }
 // ------------------- PRODUCTS -------------------
 async function loadProducts() {
   const widInput = document.getElementById("wid");
