@@ -575,121 +575,135 @@ const profileLocation = document.getElementById("profileLocation");
 function formatDT(d){ const dt=new Date(d); return dt.toLocaleDateString()+" "+dt.toLocaleTimeString(); }
 
 // ------------------- PRODUCTS -------------------
-async function loadProducts(){
-const wid = document.getElementById("wid").value.trim();
-if(!wid) return alert("Enter Wholesaler ID");
-sessionStorage.setItem("lastWid", wid);
-if (currentWholesalerId && currentWholesalerId !== wid) {
-clearCartCompletely();
+async function loadProducts() {
+  const widInput = document.getElementById("wid");
+  const wid = widInput.value.trim();
+
+  if (!wid) {
+    alert("Enter Wholesaler ID");
+    return;
+  }
+
+  // Save last wholesaler
+  sessionStorage.setItem("lastWid", wid);
+
+  // Clear cart if wholesaler changed
+  if (currentWholesalerId && currentWholesalerId !== wid) {
+    clearCartCompletely();
+  }
+
+  currentWholesalerId = wid;
+
+  try {
+    const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
+    const data = await res.json();
+
+    const categoriesContainer = document.getElementById("categories");
+
+    if (!data.products || !data.products.length) {
+      categoriesContainer.innerHTML = "<p>No categories found</p>";
+      return;
+    }
+
+    // 🔥 Unique categories निकालो
+    const categoryMap = {};
+    data.products.forEach(p => {
+      const cat = p.category || "Other";
+      categoryMap[cat] = true;
+    });
+
+    // Render categories
+    categoriesContainer.innerHTML = Object.keys(categoryMap)
+      .map(cat => `
+        <div class="category-card"
+             onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
+          <div class="category-icon">
+            <i class="bi bi-box-seam"></i>
+          </div>
+          <div class="category-name">${cat}</div>
+        </div>
+      `)
+      .join("");
+
+    // Save categories for back navigation
+    sessionStorage.setItem(
+      "lastCategoriesHTML",
+      categoriesContainer.innerHTML
+    );
+
+  } catch (e) {
+    console.error(e);
+    alert("Failed to load categories");
+  }
 }
 
-currentWholesalerId = wid;
-try{
-const res = await fetch('${API}/api/products/wholesaler/${wid}');
-const data = await res.json();
-
-const categoriesContainer = document.getElementById("categories");    
-
-if(!data.products || !data.products.length){    
-  categoriesContainer.innerHTML = "<p>No categories found</p>";    
-  return;    
-}    
-
-// 🔥 product se unique categories nikalo    
-const map = {};    
-data.products.forEach(p=>{    
-  const cat = p.category || "Other";    
-  map[cat] = true;    
-});    
-
-categoriesContainer.innerHTML = Object.keys(map).map(cat=>`
-
-  <div class="category-card"    
-       onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">    <div class="category-icon">    
-  <i class="bi bi-box-seam"></i>    
-</div>    
-
-<div class="category-name">    
-  ${cat}    
-</div>
-
-  </div>    
-`).join("");    
-    sessionStorage.setItem(    
-  "lastCategoriesHTML",    
-  categoriesContainer.innerHTML    
-);    }catch(e){
-console.error(e);
-alert("Failed to load categories");
-}
-}
-function openCategory(categoryId, wid){
-// Query params ke saath redirect
-window.location.href = categoryProducts.html?wid=${wid}&category=${categoryId};
+/* ================= OPEN CATEGORY ================= */
+function openCategory(categoryId, wid) {
+  window.location.href =
+    `categoryProducts.html?wid=${wid}&category=${categoryId}`;
 }
 
+/* ================= GET RETAILER LOCATION ================= */
 function getRetailerLocation() {
+  const profileLocation = document.getElementById("profileLocation");
 
-if (!navigator.geolocation) {
-alert("❌ Geolocation supported नहीं है");
-return;
+  if (!navigator.geolocation) {
+    alert("❌ Geolocation supported नहीं है");
+    return;
+  }
+
+  profileLocation.value = "Fetching location...";
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const loc = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+
+      // Input में show
+      profileLocation.value =
+        loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);
+
+      // Save in localStorage
+      localStorage.setItem("retailer_location", JSON.stringify(loc));
+      localStorage.setItem("location_updated", "yes");
+
+      alert("✅ Location set successfully");
+    },
+    (err) => {
+      console.error(err);
+      alert("❌ Location access denied");
+      profileLocation.value = "";
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000
+    }
+  );
 }
 
-profileLocation.value = "Fetching location...";
-
-navigator.geolocation.getCurrentPosition(
-(pos) => {
-const loc = {
-lat: pos.coords.latitude,
-lng: pos.coords.longitude
-};
-
-// ✅ input में दिखाओ    
-  profileLocation.value =    
-    loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);    
-
-  // ✅ localStorage में save    
-  localStorage.setItem("retailer_location", JSON.stringify(loc));
-
-localStorage.setItem("location_updated", "yes");
-
-alert("✅ Location set successfully");    
-
-},    
-(err) => {    
-  console.error(err);    
-  alert("❌ Location access denied");    
-  profileLocation.value = "";    
-},    
-{    
-  enableHighAccuracy: true,    
-  timeout: 10000    
-}
-
-);
-}
-let categoriesLoaded = false;
-
+/* ================= PAGE BACK RESTORE ================= */
 window.addEventListener("pageshow", function () {
+  const wid = sessionStorage.getItem("lastWid");
+  const catHTML = sessionStorage.getItem("lastCategoriesHTML");
 
-const wid = sessionStorage.getItem("lastWid");
-const catHTML = sessionStorage.getItem("lastCategoriesHTML");
+  // Restore wid input
+  if (wid) {
+    document.getElementById("wid").value = wid;
+  }
 
-// 👉 input restore
-if (wid) {
-document.getElementById("wid").value = wid;
-}
-
-// 👉 categories restore (BACK CASE)
-if (catHTML) {
-document.getElementById("categories").innerHTML = catHTML;
-console.log("↩️ Categories restored from session");
-return;
-}
-
-// 👉 First time: kuch nahi (user search karega)
+  // Restore categories (Back button case)
+  if (catHTML) {
+    document.getElementById("categories").innerHTML = catHTML;
+    console.log("↩️ Categories restored from session");
+  }
 });
 
+/* ================= DUMMY CART CLEAR ================= */
+function clearCartCompletely() {
+  console.log("🗑️ Cart cleared (Wholesaler changed)");
+}
 function saveCurrentLocation() {
 
 if (!navigator.geolocation) {
