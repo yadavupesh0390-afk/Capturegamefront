@@ -1448,26 +1448,17 @@ async function removeFromCart(productId){
 
 async function payCart() {
 
-  const vehicle = cartVehicle.value;
-  if (!vehicle) {
-    alert("🚚 Select vehicle first");
-    return;
-  }
-
-  const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-  if (!profile.mobile) {
-    alert("👤 Save profile first");
-    return;
-  }
-
-  if (!cart || cart.length === 0) {
-    alert("🛒 Cart empty");
-    return;
-  }
-
-  // ✅ DELIVERY DATA MUST EXIST
   if (!window.__cartDelivery) {
-    alert("❌ Delivery calculation missing");
+    alert("🚚 Please select vehicle to calculate delivery");
+    return;
+  }
+
+  const retailerProfile = JSON.parse(
+    localStorage.getItem("retailerProfile") || "{}"
+  );
+
+  if (!retailerProfile.mobile) {
+    alert("👤 Please save profile first");
     return;
   }
 
@@ -1480,85 +1471,77 @@ async function payCart() {
     timeMinutes
   } = window.__cartDelivery;
 
-  try {
-    // ===============================
-    // ✅ CREATE ORDER + PAYMENT
-    // ===============================
-    const res = await fetch(`${API}/api/orders/pay-and-create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount: total,   // ✅ FINAL TOTAL
-        notes: {
-          type: "cart",
+  console.log("🟢 CART PAYMENT DATA:", {
+    subtotal,
+    retailerPays,
+    wholesalerPays,
+    total
+  });
 
-          retailerName: profile.name,
-          retailerMobile: profile.mobile,
+  // 🧠 SAFETY (NaN PROTECTION)
+  const safe = (v) => isNaN(Number(v)) ? 0 : Number(v);
 
-          vehicleType: vehicle,
+  const res = await fetch(`${API}/api/orders/pay-and-create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      amount: safe(total),
+      notes: {
+        type: "cart",
 
-          // ✅ DELIVERY BREAKUP
-          deliveryCharge: retailerPays + wholesalerPays,
-          retailerDeliveryPay: retailerPays,
-          wholesalerDeliveryPay: wholesalerPays,
-          distanceKm,
-          timeMinutes,
+        items: cart.map(i => ({
+          productId: i.productId,
+          productName: i.productName,
+          price: safe(i.price),
+          quantity: safe(i.quantity)
+        })),
 
-          products: JSON.stringify(
-            cart.map(p => ({
-              productId: p.productId || p._id,
-              productName: p.productName,
-              price: p.price,
-              quantity: p.quantity || 1,
+        retailerName: retailerProfile.name,
+        retailerMobile: retailerProfile.mobile,
+        retailerAddress: retailerProfile.address,
 
-              wholesalerId: p.wholesalerId,
-              wholesalerName: p.shopName,
-              wholesalerMobile: p.mobile
-            }))
-          )
-        }
-      })
-    });
+        vehicleType: document.getElementById("cartVehicle").value,
 
-    const data = await res.json();
-    if (!data.success) {
-      alert(data.message || "❌ Payment init failed");
-      return;
-    }
+        // ✅ VERY IMPORTANT (NaN FIX)
+        deliveryCharge: safe(retailerPays + wholesalerPays),
+        retailerDeliveryPay: safe(retailerPays),
+        wholesalerDeliveryPay: safe(wholesalerPays),
+        totalAmount: safe(total),
 
-    // ===============================
-    // ✅ RAZORPAY
-    // ===============================
-    const rzp = new Razorpay({
-      key: data.key,
-      amount: data.amount,
-      currency: "INR",
-      order_id: data.order.id,
-
-      handler: function () {
-        localStorage.removeItem("cart");
-        cart = [];
-        window.__cartDelivery = null;
-
-        alert("✅ Payment Successful 🎉");
-        closeAll();
-        setTimeout(openOrderStatus, 2000);
-      },
-
-      modal: {
-        ondismiss: function () {
-          alert("❌ Payment cancelled");
-        }
+        distanceKm: safe(distanceKm),
+        timeMinutes: safe(timeMinutes)
       }
-    });
+    })
+  });
 
-    rzp.open();
+  const data = await res.json();
 
-  } catch (err) {
-    console.error("CART PAYMENT ERROR:", err);
-    alert("❌ Payment error");
+  if (!data.success) {
+    alert("❌ Order create failed");
+    return;
   }
+
+  const rzp = new Razorpay({
+    key: data.key,
+    amount: data.amount,
+    currency: "INR",
+    order_id: data.order.id,
+
+    handler: function () {
+      alert("✅ Payment Successful 🎉");
+      closeAll();
+      setTimeout(openOrderStatus, 2000);
+    },
+
+    modal: {
+      ondismiss: function () {
+        alert("❌ Payment cancelled");
       }
+    }
+  });
+
+  rzp.open();
+}
   function clearCartCompletely(){
   cart = [];
   localStorage.removeItem("cart");
