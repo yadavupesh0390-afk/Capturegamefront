@@ -834,106 +834,140 @@ function openDetail(p) {
   console.log("🏪 Wholesaler Loc:", selectedProduct.wholesalerLocation);
 }
 function showChargeInfo(orderAmount = 0) {
-const slabs = [
-{min:100, max:500, percent:70},
-{min:501, max:3000, percent:50},
-{min:3001, max:5000, percent:30},
-{min:5001, max:Infinity, percent:0} // Free delivery
-];
+  const slabs = [
+    { min: 100,  max: 500,  percent: 70 },
+    { min: 501,  max: 3000, percent: 50 },
+    { min: 3001, max: 5000, percent: 30 },
+    { min: 5001, max: Infinity, percent: 0 } // Free delivery
+  ];
 
-const list = document.getElementById("chargeList");
-list.innerHTML = "";
+  const list = document.getElementById("chargeList");
+  list.innerHTML = "";
 
-slabs.forEach(slab => {
-const li = document.createElement("li");
+  slabs.forEach(slab => {
+    const li = document.createElement("li");
 
-if(slab.percent === 0){    
-  li.innerText = `₹${slab.min}+ का order → Free Delivery ✅`;    
-} else {    
-  li.innerText = `₹${slab.min} - ${slab.max} का order → ${slab.percent}% delivery charge`;    
-}    
+    if (slab.percent === 0) {
+      li.innerText = `₹${slab.min}+ का order → Free Delivery ✅`;
+    } else {
+      li.innerText =
+        `₹${slab.min} - ₹${slab.max} का order → ${slab.percent}% delivery charge`;
+    }
 
-// Highlight slab based on current order amount    
-if(orderAmount >= slab.min && orderAmount <= slab.max){    
-  li.classList.add("highlight");    
-}    
+    // Highlight current slab
+    if (orderAmount >= slab.min && orderAmount <= slab.max) {
+      li.classList.add("highlight");
+    }
 
-list.appendChild(li);
+    list.appendChild(li);
+  });
 
-});
-
-document.getElementById("chargeInfoModal").style.display = "flex";
+  document.getElementById("chargeInfoModal").style.display = "flex";
 }
 
 function closeChargeModal() {
-document.getElementById("chargeInfoModal").style.display = "none";
+  document.getElementById("chargeInfoModal").style.display = "none";
 }
 
-async function fetchDeliveryEstimate(orderAmount, vehicleType){
-const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-const wholesalerLoc = selectedProduct?.wholesalerLocation; // ✅ FIX
+/* ================= DELIVERY ESTIMATE (PRODUCT PAGE) ================= */
+async function fetchDeliveryEstimate(orderAmount, vehicleType) {
+  try {
+    const retailerLoc = JSON.parse(
+      localStorage.getItem("retailer_location")
+    );
 
-if(!retailerLoc || !wholesalerLoc){
-console.warn("Location missing", { retailerLoc, wholesalerLoc });
-return;
+    const wholesalerLoc = selectedProduct?.wholesalerLocation;
+
+    if (!retailerLoc || !wholesalerLoc) {
+      console.warn("⚠️ Location missing", {
+        retailerLoc,
+        wholesalerLoc
+      });
+      return null;
+    }
+
+    const res = await fetch(`${API}/api/delivery/calculate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        orderAmount,
+        vehicleType,
+        retailerLocation: retailerLoc,
+        wholesalerLocation: wholesalerLoc
+      })
+    });
+
+    return await res.json();
+
+  } catch (err) {
+    console.error("❌ Delivery estimate failed", err);
+    return null;
+  }
 }
 
-const res = await fetch(${API}/api/delivery/calculate,{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-orderAmount,
-vehicleType,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
-
-return await res.json();
+/* ================= IMAGE MODAL ================= */
+function openImage(src) {
+  document.getElementById("fullImg").src = src;
+  document.getElementById("imageModal").style.display = "flex";
 }
 
-function openImage(src){
-document.getElementById("fullImg").src = src;
-document.getElementById("imageModal").style.display = "flex";
+function closeImage() {
+  document.getElementById("imageModal").style.display = "none";
 }
 
-function closeImage(){
-document.getElementById("imageModal").style.display = "none";
+/* ================= DESCRIPTION TOGGLE ================= */
+function toggleDesc() {
+  const desc = document.getElementById("dDesc");
+  const toggle = document.getElementById("descToggle");
+
+  if (desc.classList.contains("short")) {
+    desc.classList.remove("short");
+    toggle.innerText = "Less ⬆";
+  } else {
+    desc.classList.add("short");
+    toggle.innerText = "More ⬇";
+  }
 }
 
-function toggleDesc(){
-const desc = document.getElementById("dDesc");
-const toggle = document.getElementById("descToggle");
-
-if(desc.classList.contains("short")){
-desc.classList.remove("short");
-toggle.innerText = "Less ⬆";
-}else{
-desc.classList.add("short");
-toggle.innerText = "More ⬇";
-}
-}
-
+/* ================= DELIVERY ESTIMATE (CART PAGE) ================= */
 async function getDeliveryFromServer({ orderAmount, vehicleType }) {
-const retailerLoc = JSON.parse(localStorage.getItem("retailer_location"));
-if (!retailerLoc) throw new Error("Retailer location missing");
+  try {
+    const retailerLoc = JSON.parse(
+      localStorage.getItem("retailer_location")
+    );
 
-// Cart me multiple products ho sakte hain, lekin first product se wholesalerLocation le lete hain
-const wholesalerLoc = cart?.[0]?.wholesalerLocation;
-if (!wholesalerLoc) throw new Error("Wholesaler location missing");
+    if (!retailerLoc) {
+      throw new Error("Retailer location missing");
+    }
 
-const res = await fetch(${API}/api/delivery/calculate, {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-orderAmount,
-vehicleType,
-retailerLocation: retailerLoc,
-wholesalerLocation: wholesalerLoc
-})
-});
+    // Cart ke first product se wholesaler location
+    const wholesalerLoc = cart?.[0]?.wholesalerLocation;
 
-return await res.json();
+    if (!wholesalerLoc) {
+      throw new Error("Wholesaler location missing");
+    }
+
+    const res = await fetch(`${API}/api/delivery/calculate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        orderAmount,
+        vehicleType,
+        retailerLocation: retailerLoc,
+        wholesalerLocation: wholesalerLoc
+      })
+    });
+
+    return await res.json();
+
+  } catch (err) {
+    console.error("❌ Cart delivery calculation failed", err);
+    return null;
+  }
 }
 async function directBuy(e) {
 e.preventDefault();
