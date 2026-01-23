@@ -1088,78 +1088,91 @@ dTotal.innerText = "";
 
 let cartTimer = null;
 
-async function calcCartDelivery(){
+async function calcCartDelivery() {
 
-const vehicle = document.getElementById("cartVehicle").value;
-const box = document.getElementById("cartDeliveryBox");
-const dText = document.getElementById("cartDeliveryText");
-const tText = document.getElementById("cartTotalText");
+  const vehicle = document.getElementById("cartVehicle")?.value;
+  const box = document.getElementById("cartDeliveryBox");
+  const dText = document.getElementById("cartDeliveryText");
+  const tText = document.getElementById("cartTotalText");
 
-if (!vehicle || cart.length === 0) {
-box.style.display = "none";
-dText.innerText = "";
-tText.innerText = "";
-window.__cartDelivery = null;
-return;
-}
+  // 🔒 Safety check (DOM missing)
+  if (!box || !dText || !tText) {
+    console.error("Cart delivery DOM missing");
+    return;
+  }
 
-/* ================= SUBTOTAL ================= */
-const subtotal = cart.reduce(
-(sum, item) => sum + (Number(item.price) * Number(item.quantity || 1)),
-0
-);
+  // 🔹 Reset if no vehicle or empty cart
+  if (!vehicle || !Array.isArray(cart) || cart.length === 0) {
+    box.style.display = "none";
+    dText.innerText = "";
+    tText.innerText = "";
+    window.__cartDelivery = null;
+    return;
+  }
 
-/* ================= RETAILER LOCATION ================= */
-let retailerLoc =
-JSON.parse(localStorage.getItem("retailer_location")) ||
-JSON.parse(localStorage.getItem("retailerProfile") || "{}").location ||
-null;
+  /* ================= SUBTOTAL ================= */
+  const subtotal = cart.reduce(
+    (sum, item) => sum + (Number(item.price) * Number(item.quantity || 1)),
+    0
+  );
 
-if (retailerLoc?.latitude && retailerLoc?.longitude) {
-retailerLoc = {
-lat: retailerLoc.latitude,
-lng: retailerLoc.longitude
-};
-}
+  /* ================= RETAILER LOCATION ================= */
+  let retailerLoc =
+    JSON.parse(localStorage.getItem("retailer_location")) ||
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}")?.location ||
+    null;
 
-/* ================= WHOLESALER LOCATION ================= */
-let wholesalerLoc = null;
+  if (retailerLoc?.latitude && retailerLoc?.longitude) {
+    retailerLoc = {
+      lat: retailerLoc.latitude,
+      lng: retailerLoc.longitude
+    };
+  }
 
-try {
-const wid = cart[0].wholesalerId;
+  /* ================= WHOLESALER LOCATION ================= */
+  let wholesalerLoc = null;
 
-const resWh = await fetch(`${API}/api/wholesalers/profile/${wid}`);  
-const whData = await resWh.json();  
+  try {
+    const wid = cart[0]?.wholesalerId;
+    if (!wid) throw new Error("Missing wholesalerId");
 
-wholesalerLoc =  
-  whData?.profile?.location ||  
-  whData?.wholesaler?.location ||  
-  whData?.location ||  
-  null;  
+    const resWh = await fetch(`${API}/api/wholesalers/profile/${wid}`);
+    const whData = await resWh.json();
 
-if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {  
-  wholesalerLoc = {  
-    lat: wholesalerLoc.latitude,  
-    lng: wholesalerLoc.longitude  
-  };  
-}
+    wholesalerLoc =
+      whData?.profile?.location ||
+      whData?.wholesaler?.location ||
+      whData?.location ||
+      null;
 
-} catch (e) {
-console.error("Wholesaler location fetch failed", e);
-}
+    if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {
+      wholesalerLoc = {
+        lat: wholesalerLoc.latitude,
+        lng: wholesalerLoc.longitude
+      };
+    }
 
-/* ================= LOCATION CHECK ================= */
-if (
-!retailerLoc?.lat ||
-!retailerLoc?.lng ||
-!wholesalerLoc?.lat ||
-!wholesalerLoc?.lng
-) {
-box.style.display = "block";
-dText.innerText = "📍 Location missing";
-tText.innerText = "";
-return;
-}
+  } catch (e) {
+    console.error("Wholesaler location fetch failed", e);
+  }
+
+  /* ================= LOCATION CHECK ================= */
+  if (
+    !retailerLoc?.lat ||
+    !retailerLoc?.lng ||
+    !wholesalerLoc?.lat ||
+    !wholesalerLoc?.lng
+  ) {
+    box.style.display = "block";
+    dText.innerText = "📍 Location missing";
+    tText.innerText = "";
+    window.__cartDelivery = null;
+    return;
+  }
+
+  /* ================= SAVE GLOBAL FOR PAYMENT ================= */
+  currentRetailerLoc = retailerLoc;
+  currentWholesalerLoc = wholesalerLoc;
 
 /* ================= DELIVERY CALC ================= */
 try {
