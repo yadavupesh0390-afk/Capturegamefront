@@ -550,7 +550,45 @@ const dPrice = document.getElementById("dPrice");
 const dDelivery = document.getElementById("dDelivery");
 const dTotal = document.getElementById("dTotal");
 const vehicleType = document.getElementById("vehicleType");
+/* ========== TOP ICON ACTIONS ========== */
+document.addEventListener("DOMContentLoaded",()=>{
 
+  const home = document.getElementById("homeIcon");
+  const cart = document.getElementById("cartIcon");
+  const profile = document.getElementById("profileIcon");
+  const orders = document.getElementById("orderIcon");
+
+  if(home){
+    home.onclick = ()=> {
+      window.location.href = "index.html";
+    };
+  }
+
+  if(cart){
+    cart.onclick = ()=> {
+      window.location.href = "cart.html";
+    };
+  }
+
+  if(profile){
+    profile.onclick = ()=> {
+      const prof = localStorage.getItem("retailerProfile");
+      if(!prof){
+        alert("Pehle profile complete karo");
+        window.location.href = "profile.html";
+      }else{
+        window.location.href = "profile.html";
+      }
+    };
+  }
+
+  if(orders){
+    orders.onclick = ()=> {
+      window.location.href = "orders.html";
+    };
+  }
+
+});
 /* ================== UTIL ================== */
 const safeNum = v => isNaN(Number(v)) ? 0 : Number(v);
 
