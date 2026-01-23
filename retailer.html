@@ -1833,104 +1833,127 @@ async function openOrderStatus() {
 // ------------------- PROFILE -------------------
 /* PROFILE */
 
+/* ================= OPEN RETAILER PROFILE ================= */
 async function openRetailerProfile() {
 
-profileModal.style.display = "flex";
+  profileModal.style.display = "flex";
 
-const retailerId = localStorage.getItem("userId");
-if (!retailerId) {
-alert("Login required");
-return;
+  const retailerId = localStorage.getItem("userId");
+  if (!retailerId) {
+    alert("🔐 Login required");
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/api/retailers/profile/${retailerId}`
+    );
+    const data = await res.json();
+
+    if (data.success && data.profile) {
+
+      // 🧑 Basic fields
+      profileName.value   = data.profile.name || "";
+      profileMobile.value = data.profile.mobile || "";
+
+      /* ================= LOCATION LOGIC ================= */
+
+      const locationUpdated =
+        localStorage.getItem("location_updated") === "yes";
+
+      // ✅ Case 1: user ne location update nahi ki → server wali lo
+      if (!locationUpdated && data.profile.location) {
+
+        const loc = data.profile.location;
+
+        if (loc.lat && loc.lng) {
+          profileLocation.value =
+            Number(loc.lat).toFixed(6) + ", " +
+            Number(loc.lng).toFixed(6);
+
+          // cache
+          localStorage.setItem(
+            "retailer_location",
+            JSON.stringify({
+              lat: Number(loc.lat),
+              lng: Number(loc.lng)
+            })
+          );
+        }
+
+      }
+      // ✅ Case 2: user ki updated location hai → usko chhedo mat
+      else if (locationUpdated) {
+
+        const loc =
+          JSON.parse(localStorage.getItem("retailer_location") || "{}");
+
+        if (loc.lat && loc.lng) {
+          profileLocation.value =
+            Number(loc.lat).toFixed(6) + ", " +
+            Number(loc.lng).toFixed(6);
+        } else {
+          profileLocation.value = "";
+        }
+
+      }
+      // ✅ Case 3: no location
+      else {
+        profileLocation.value = "";
+      }
+
+      // 🔄 Profile cache
+      localStorage.setItem(
+        "retailerProfile",
+        JSON.stringify(data.profile)
+      );
+
+    } else {
+      profileName.value = "";
+      profileMobile.value = "";
+      profileLocation.value = "";
+    }
+
+  } catch (err) {
+    console.error("Profile fetch error", err);
+    alert("❌ Server error");
+  }
 }
 
-try {
-const res = await fetch(${API}/api/retailers/profile/${retailerId});
-const data = await res.json();
 
-if (data.success && data.profile) {    
-
-  profileName.value    = data.profile.name || "";    
-  profileMobile.value  = data.profile.mobile || "";    
-      
-  // 🔥 CHECK: user ne abhi location update ki hai kya?    
-  const locationUpdated =    
-    localStorage.getItem("location_updated") === "yes";    
-
-  // ✅ LOCATION LOGIC (FIXED)    
-  if (!locationUpdated && data.profile.location) {    
-
-    // 👉 Sirf tab hi server wali location lagao    
-    profileLocation.value =    
-      data.profile.location.lat.toFixed(6) + ", " +    
-      data.profile.location.lng.toFixed(6);    
-
-    // cache    
-    localStorage.setItem(    
-      "retailer_location",    
-      JSON.stringify(data.profile.location)    
-    );    
-
-  } else if (locationUpdated) {    
-
-    // 👉 User ki nayi location ko chhedo mat    
-    const loc =    
-      JSON.parse(localStorage.getItem("retailer_location") || "{}");    
-
-    if (loc.lat && loc.lng) {    
-      profileLocation.value =    
-        Number(loc.lat).toFixed(6) + ", " +    
-        Number(loc.lng).toFixed(6);    
-    }    
-
-  } else {    
-    profileLocation.value = "";    
-  }    
-
-  // ✅ Profile cache    
-  localStorage.setItem(    
-    "retailerProfile",    
-    JSON.stringify(data.profile)    
-  );    
-
-} else {    
-  profileName.value = "";    
-  profileMobile.value = "";    
-  profileLocation.value = "";    
-}
-
-} catch (err) {
-alert("Server error");
-}
-}
-
+/* ================= SAVE PROFILE ================= */
 async function saveProfile() {
 
-if (!profileMobile.value.trim()) {
-alert("Mobile required");
-return;
+  if (!profileMobile.value.trim()) {
+    alert("📱 Mobile required");
+    return;
+  }
+
+  // 📍 CURRENT LOCATION (from localStorage)
+  let location = null;
+  const locLS = localStorage.getItem("retailer_location");
+
+  if (locLS) {
+    const loc = JSON.parse(locLS);
+    if (loc.lat && loc.lng) {
+      location = {
+        lat: Number(loc.lat),
+        lng: Number(loc.lng)
+      };
+    }
+  }
+
+  const payload = {
+    retailerId: localStorage.getItem("userId"),
+    name: profileName.value.trim(),
+    mobile: profileMobile.value.trim(),
+
+    // 🔥 MOST IMPORTANT
+    location
+  };
+
+  sendProfile(payload);
 }
-
-// ✅ CURRENT LOCATION READ
-let location = null;
-
-const locLS = localStorage.getItem("retailer_location");
-if(locLS){
-location = JSON.parse(locLS);
-}
-
-const payload = {
-retailerId: localStorage.getItem("userId"),
-name: profileName.value.trim(),
-mobile: profileMobile.value.trim(),
-
-// 🔥 सबसे जरूरी    
-location: location
-
-};
-
-sendProfile(payload);
-}
-
 // ✅ Helper function to send profile to server
 async function sendProfile(payload){
 try{
