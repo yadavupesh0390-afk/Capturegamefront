@@ -1662,112 +1662,172 @@ async function payCart() {
     alert("❌ Payment error");
   }
 }
-function clearCartCompletely(){
-cart = [];
-localStorage.removeItem("cart");
+/* ================= CLEAR CART COMPLETELY ================= */
+function clearCartCompletely() {
 
-// backend cart bhi clear
-const retailerId = localStorage.getItem("userId");
-if(retailerId){
-fetch(${API}/api/cart/clear,{
-method:"DELETE",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({ retailerId })
-});
+  // 🧹 Frontend cart clear
+  cart = [];
+  localStorage.removeItem("cart");
+
+  // 🧹 Backend cart clear
+  const retailerId = localStorage.getItem("userId");
+  if (retailerId) {
+    fetch(`${API}/api/cart/clear`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ retailerId })
+    }).catch(err =>
+      console.error("Backend cart clear failed", err)
+    );
+  }
+
+  // 🖥️ UI reset
+  const cartBox = document.getElementById("cartItems");
+  if (cartBox) {
+    cartBox.innerHTML =
+      "<p style='text-align:center'>🛒 Cart empty hai</p>";
+  }
+
+  const deliveryBox = document.getElementById("cartDeliveryBox");
+  if (deliveryBox) deliveryBox.style.display = "none";
+
+  window.__cartDelivery = null;
 }
 
-// UI reset
-const cartBox = document.getElementById("cartItems");
-if(cartBox) cartBox.innerHTML = "<p>🛒 Cart empty hai</p>";
 
-document.getElementById("cartDeliveryBox").style.display = "none";
-window.__cartDelivery = null;
+/* ================= DELIVERY DETAILS ================= */
+async function openDeliveryDetails() {
+
+  deliveryModal.style.display = "flex";
+
+  const profile =
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+
+  if (!profile.mobile) {
+    deliveryData.innerHTML = "⚠️ Profile not found";
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${API}/api/orders/retailer/${profile.mobile}`
+    );
+    const data = await res.json();
+
+    const visibleOrders = (data.orders || []).filter(o =>
+      o.status === "delivery_code_generated" ||
+      o.status === "delivered"
+    );
+
+    if (!visibleOrders.length) {
+      deliveryData.innerHTML =
+        "<p style='text-align:center;color:#666'>No delivery details yet</p>";
+      return;
+    }
+
+    deliveryData.innerHTML = visibleOrders.map(o => {
+
+      const lastStatusTime =
+        o.statusHistory?.length
+          ? o.statusHistory[o.statusHistory.length - 1].time
+          : o.createdAt;
+
+      const d = new Date(lastStatusTime);
+
+      return `
+        <div class="delivery-card">
+
+          <div class="delivery-row">
+            <span class="delivery-label">📦 Product</span>
+            <span class="delivery-value">${o.productName || "-"}</span>
+          </div>
+
+          <div class="delivery-row">
+            <span class="delivery-label">👤 Delivery Boy</span>
+            <span class="delivery-value">
+              ${o.deliveryBoyName || "Assigned"}
+            </span>
+          </div>
+
+          <div class="delivery-row">
+            <span class="delivery-label">🕒 Time</span>
+            <span class="delivery-value">
+              ${d.toLocaleDateString("en-IN")}
+              ${d.toLocaleTimeString("en-IN")}
+            </span>
+          </div>
+
+          <div class="delivery-code">
+            ${
+              o.deliveryCode
+                ? `🔐 Delivery Code : ${o.deliveryCode}`
+                : "⏳ Waiting for code..."
+            }
+          </div>
+
+        </div>
+      `;
+    }).join("");
+
+  } catch (err) {
+    console.error("Delivery details error", err);
+    deliveryData.innerHTML = "❌ Failed to load delivery details";
+  }
 }
 
-// ------------------- DELIVERY -------------------
-async function openDeliveryDetails(){
-deliveryModal.style.display="flex";
 
-const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!profile.mobile){
-deliveryData.innerHTML="Profile not found";
-return;
-}
+/* ================= ORDER STATUS ================= */
+async function openOrderStatus() {
 
-try{
-const res = await fetch(${API}/api/orders/retailer/${profile.mobile});
-const data = await res.json();
+  orderStatusModal.style.display = "flex";
 
-const visibleOrders = data.orders.filter(o =>    
-  o.status === "delivery_code_generated" || o.status === "delivered"    
-);    
+  const profile =
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-if(visibleOrders.length===0){    
-  deliveryData.innerHTML="<p style='text-align:center;color:#666'>No delivery details yet</p>";    
-  return;    
-}    
+  if (!profile.mobile) {
+    orderStatusData.innerHTML = "⚠️ Profile not found";
+    return;
+  }
 
-deliveryData.innerHTML = visibleOrders.map(o=>{    
-  const lastStatusTime =    
-    o.statusHistory && o.statusHistory.length    
-      ? o.statusHistory[o.statusHistory.length - 1].time    
-      : o.createdAt;    
+  try {
+    const res = await fetch(
+      `${API}/api/orders/retailer/${profile.mobile}`
+    );
+    const data = await res.json();
 
-  const d = new Date(lastStatusTime);    
+    if (!data.orders || !data.orders.length) {
+      orderStatusData.innerHTML =
+        "<p style='text-align:center;color:#666'>No orders found</p>";
+      return;
+    }
 
-  return `    
-  <div class="delivery-card">    
-    <div class="delivery-row">    
-      <span class="delivery-label">📦 Product</span>    
-      <span class="delivery-value">${o.productName || "-"}</span>    
-    </div>    
+    orderStatusData.innerHTML = data.orders.map(o => {
 
-    <div class="delivery-row">    
-      <span class="delivery-label">👤 Delivery Boy</span>    
-      <span class="delivery-value">${o.deliveryBoyName || "Assigned"}</span>    
-    </div>    
+      const d = new Date(o.updatedAt || o.createdAt);
 
-    <div class="delivery-row">    
-      <span class="delivery-label">🕒 Time</span>    
-      <span class="delivery-value">${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</span>    
-    </div>    
+      let cls = "status-pending";
+      if (o.status.includes("confirmed")) cls = "status-confirmed";
+      else if (o.status.includes("delivery")) cls = "status-delivery";
+      else if (o.status === "delivered") cls = "status-delivered";
 
-    ${o.deliveryCode    
-      ? `<div class="delivery-code">🔐 Delivery Code : ${o.deliveryCode}</div>`    
-      : `<div class="delivery-code">⏳ Waiting for code...</div>`    
-    }    
-  </div>`;    
-}).join("");
+      return `
+        <div class="status-card">
+          <div class="status-product">${o.productName || "-"}</div>
+          <div class="status-badge ${cls}">
+            ${o.status.replaceAll("_", " ").toUpperCase()}
+          </div>
+          <div class="status-time">
+            🕒 ${d.toLocaleDateString("en-IN")}
+            ${d.toLocaleTimeString("en-IN")}
+          </div>
+        </div>
+      `;
+    }).join("");
 
-}catch(e){
-deliveryData.innerHTML="Failed to load delivery details";
-}
-}
-
-// ------------------- ORDER STATUS -------------------
-async function openOrderStatus(){
-orderStatusModal.style.display="flex";
-const profile = JSON.parse(localStorage.getItem("retailerProfile")||"{}");
-if(!profile.mobile){
-orderStatusData.innerHTML="Profile not found";
-return;
-}
-try{
-const res = await fetch(${API}/api/orders/retailer/${profile.mobile});
-const data = await res.json();
-if(!data.orders || data.orders.length===0){
-orderStatusData.innerHTML="<p style='text-align:center;color:#666'>No orders found</p>";
-return;
-}
-orderStatusData.innerHTML = data.orders.map(o=>{
-const d = new Date(o.updatedAt || o.createdAt);
-let cls = "status-pending";
-if(o.status.includes("confirmed")) cls="status-confirmed";
-if(o.status.includes("delivery")) cls="status-delivery";
-if(o.status==="delivered") cls="status-delivered";
-return <div class="status-card">     <div class="status-product">${o.productName}</div>     <div class="status-badge ${cls}">${o.status.replaceAll("_"," ").toUpperCase()}</div>     <div class="status-time">🕒 ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</div>     </div>;
-}).join("");
-}catch(e){ orderStatusData.innerHTML="Failed to load orders"; }
+  } catch (err) {
+    console.error("Order status error", err);
+    orderStatusData.innerHTML = "❌ Failed to load orders";
+  }
 }
 
 // ------------------- PROFILE -------------------
