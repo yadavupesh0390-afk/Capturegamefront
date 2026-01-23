@@ -1,60 +1,60 @@
-<!DOCTYPE html>  <html lang="hi">  
-<head>  
-<meta charset="UTF-8">  
-<title>Retailer Dashboard</title>  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">  
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">  
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>  
-<style>  
-*{box-sizing:border-box;font-family:Poppins,sans-serif}  
-body{margin:0;background:#f3f6fb}  
-.main{padding:20px}  
-.icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:700px;margin:auto}  
-.icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;position:relative}  
-.notify-dot{position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:red;display:none}  
-.header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.08)}  
-.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}  
-.product-card{background:#fff;padding:8px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}  
-.product-card img{  
-  width:100%;  
-  height:110px;              /* thoda bada */  
-  object-fit:contain;        /* 🔥 FULL IMAGE dikhegi */  
-  background:#f8fafc;        /* white/soft bg */  
-  padding:6px;               /* breathing space */  
-  border-radius:10px;  
-}  
-.price{color:#16a34a;font-weight:600;font-size:13px}  
-.actions{display:flex;gap:5px;margin-top:6px}  
-.actions button{flex:1;border:none;border-radius:8px;padding:6px;font-size:12px;cursor:pointer}  
-.cart-btn{background:#e5fbe9}  
-.buy-btn{background:#fee2e2}  
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}  
-.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}  
-input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}  
-button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-radius:10px;cursor:pointer;width:100%}  
-.cart-item{border-bottom:1px solid #ddd;padding:8px 0}  
-.order-card{background:#fff;padding:12px;margin-bottom:10px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}  
-.badge{background:#e0f2fe;padding:4px 10px;border-radius:20px;font-size:12px}  
-.small{font-size:12px;color:#555}  
-.delivery-card{background:#f8fafc;border-left:5px solid #16a34a;padding:14px;border-radius:12px;margin-bottom:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)}  
-.delivery-row{display:flex;justify-content:space-between;font-size:14px;margin:4px 0;}  
-.delivery-label{color:#555;}  
-.delivery-value{font-weight:600;color:#111;}  
-.delivery-code{background:#dcfce7;color:#166534;padding:4px 10px;border-radius:20px;font-weight:600;display:inline-block;margin-top:6px;}  
-.status-card{background:#ffffff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 6px 14px rgba(0,0,0,.08);border-left:6px solid #2563eb;}  
-.status-product{font-size:16px;font-weight:600;color:#111;margin-bottom:6px;}  
-.status-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:8px;}  
-.status-pending{ background:#fef3c7;color:#92400e; }  
-.status-confirmed{ background:#dcfce7;color:#166534; }  
-.status-delivery{ background:#e0f2fe;color:#075985; }  
-.status-delivered{ background:#ede9fe;color:#5b21b6; }  
-.status-time{font-size:13px;color:#555;}  
-.slider{  
-  display:flex;  
-  overflow-x:auto;  
-  scroll-snap-type:x mandatory;  
-}  .slider img{
+<!DOCTYPE html>    <html lang="hi">    
+<head>    
+<meta charset="UTF-8">    
+<title>Retailer Dashboard</title>    
+<meta name="viewport" content="width=device-width, initial-scale=1.0">    
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">    
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">    
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>    
+<style>    
+*{box-sizing:border-box;font-family:Poppins,sans-serif}    
+body{margin:0;background:#f3f6fb}    
+.main{padding:20px}    
+.icon-bar{display:flex;gap:20px;justify-content:center;background:#064e3b;padding:12px;border-radius:14px;max-width:700px;margin:auto}    
+.icon-btn{background:#16a34a;color:#fff;border:none;width:55px;height:55px;border-radius:50%;font-size:22px;cursor:pointer;position:relative}    
+.notify-dot{position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:red;display:none}    
+.header{margin-top:15px;background:#fff;padding:15px;border-radius:12px;text-align:center;box-shadow:0 5px 15px rgba(0,0,0,.08)}    
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}    
+.product-card{background:#fff;padding:8px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}    
+.product-card img{    
+  width:100%;    
+  height:110px;              /* thoda bada */    
+  object-fit:contain;        /* 🔥 FULL IMAGE dikhegi */    
+  background:#f8fafc;        /* white/soft bg */    
+  padding:6px;               /* breathing space */    
+  border-radius:10px;    
+}    
+.price{color:#16a34a;font-weight:600;font-size:13px}    
+.actions{display:flex;gap:5px;margin-top:6px}    
+.actions button{flex:1;border:none;border-radius:8px;padding:6px;font-size:12px;cursor:pointer}    
+.cart-btn{background:#e5fbe9}    
+.buy-btn{background:#fee2e2}    
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}    
+.modal-content{background:#fff;padding:20px;width:90%;max-width:500px;border-radius:15px;max-height:85vh;overflow:auto}    
+input,select,textarea{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}    
+button.primary{background:#16a34a;color:#fff;border:none;padding:10px;border-radius:10px;cursor:pointer;width:100%}    
+.cart-item{border-bottom:1px solid #ddd;padding:8px 0}    
+.order-card{background:#fff;padding:12px;margin-bottom:10px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.08)}    
+.badge{background:#e0f2fe;padding:4px 10px;border-radius:20px;font-size:12px}    
+.small{font-size:12px;color:#555}    
+.delivery-card{background:#f8fafc;border-left:5px solid #16a34a;padding:14px;border-radius:12px;margin-bottom:12px;box-shadow:0 4px 10px rgba(0,0,0,.08)}    
+.delivery-row{display:flex;justify-content:space-between;font-size:14px;margin:4px 0;}    
+.delivery-label{color:#555;}    
+.delivery-value{font-weight:600;color:#111;}    
+.delivery-code{background:#dcfce7;color:#166534;padding:4px 10px;border-radius:20px;font-weight:600;display:inline-block;margin-top:6px;}    
+.status-card{background:#ffffff;border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 6px 14px rgba(0,0,0,.08);border-left:6px solid #2563eb;}    
+.status-product{font-size:16px;font-weight:600;color:#111;margin-bottom:6px;}    
+.status-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:8px;}    
+.status-pending{ background:#fef3c7;color:#92400e; }    
+.status-confirmed{ background:#dcfce7;color:#166534; }    
+.status-delivery{ background:#e0f2fe;color:#075985; }    
+.status-delivered{ background:#ede9fe;color:#5b21b6; }    
+.status-time{font-size:13px;color:#555;}    
+.slider{    
+  display:flex;    
+  overflow-x:auto;    
+  scroll-snap-type:x mandatory;    
+}    .slider img{
 min-width:100%;
 height:200px;
 object-fit:cover;
@@ -393,155 +393,153 @@ border-radius: 4px;
 }
 </style>
 
-</head>  
-<body>  <div class="main">  
-  <div class="icon-bar">  
-    <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>  
-    <button class="icon-btn" onclick="openOrderStatus()"><i class="bi bi-bag-check"></i></button>  
-    <button class="icon-btn" onclick="openCart()"><i class="bi bi-cart"></i></button>  
-    <button class="icon-btn" onclick="openDeliveryDetails()">  
-      <i class="bi bi-truck"></i><span id="deliveryDot" class="notify-dot"></span>  
-    </button>  
-  </div>    <!-- 🔹 DELIVERY CHARGE INFO PATTi -->    <div   
-    onclick="showChargeInfo(0)"   
-    style="  
-      background:#16a34a;   
-      color:#fff;   
-      text-align:center;   
-      padding:8px 12px;   
-      border-radius:8px;   
-      font-weight:600;   
-      cursor:pointer;  
-      margin-bottom:10px;  
-      max-width:400px;  
-      margin-left:auto;  
-      margin-right:auto;  
-      box-shadow:0 4px 8px rgba(0,0,0,0.1);  
-      font-size:14px;  
-    ">  
-    डिलीवरी चार्ज की जानकारी  
-  </div>    <!-- 🔹 HEADER / DASHBOARD TITLE -->    <div class="header">  
-    <h3>🛒 Retailer Dashboard</h3>  
-  </div>    <!-- 🔹 CATEGORY / PRODUCTS GRID -->    <div class="header">  
-    <input id="wid" placeholder="Enter Wholesaler ID">  
-    <button class="primary" onclick="loadProducts()">Search</button>  
-  </div>  
-  <div class="products-grid" id="categories"></div>  
-</div>  <!-- PRODUCT DETAIL -->  <div class="modal" id="detailModal">  
-  <div class="modal-content">  
-    <h3 id="dName"></h3>  
-    <div class="slider" id="dImages"></div>  
-<div class="dots" id="dDots"></div>  
-    <p id="dDesc" class="desc short"></p>  
-<span id="descToggle" class="desc-toggle" onclick="toggleDesc()">More ⬇</span>  
-    <div class="price-box">  
-  <div class="price-row">  
-  <span id="dPrice" class="price-value">0</span>  
-</div>  
-</div>  
-    <!-- VEHICLE DROPDOWN -->  
-<select id="vehicleType" onchange="updateDelivery()">    
-  <option value="">Select Vehicle</option>    
+</head>    
+<body>    <div class="main">    
+  <div class="icon-bar">    
+    <button class="icon-btn" onclick="openRetailerProfile()"><i class="bi bi-person-circle"></i></button>    
+    <button class="icon-btn" onclick="openOrderStatus()"><i class="bi bi-bag-check"></i></button>    
+    <button class="icon-btn" onclick="openCart()"><i class="bi bi-cart"></i></button>    
+    <button class="icon-btn" onclick="openDeliveryDetails()">    
+      <i class="bi bi-truck"></i><span id="deliveryDot" class="notify-dot"></span>    
+    </button>    
+  </div>      <!-- 🔹 DELIVERY CHARGE INFO PATTi -->      <div     
+    onclick="showChargeInfo(0)"     
+    style="    
+      background:#16a34a;     
+      color:#fff;     
+      text-align:center;     
+      padding:8px 12px;     
+      border-radius:8px;     
+      font-weight:600;     
+      cursor:pointer;    
+      margin-bottom:10px;    
+      max-width:400px;    
+      margin-left:auto;    
+      margin-right:auto;    
+      box-shadow:0 4px 8px rgba(0,0,0,0.1);    
+      font-size:14px;    
+    ">    
+    डिलीवरी चार्ज की जानकारी    
+  </div>      <!-- 🔹 HEADER / DASHBOARD TITLE -->      <div class="header">    
+    <h3>🛒 Retailer Dashboard</h3>    
+  </div>      <!-- 🔹 CATEGORY / PRODUCTS GRID -->      <div class="header">    
+    <input id="wid" placeholder="Enter Wholesaler ID">    
+    <button class="primary" onclick="loadProducts()">Search</button>    
+  </div>    
+  <div class="products-grid" id="categories"></div>    
+</div>    <!-- PRODUCT DETAIL -->    <div class="modal" id="detailModal">    
+  <div class="modal-content">    
+    <h3 id="dName"></h3>    
+    <div class="slider" id="dImages"></div>    
+<div class="dots" id="dDots"></div>    
+    <p id="dDesc" class="desc short"></p>    
+<span id="descToggle" class="desc-toggle" onclick="toggleDesc()">More ⬇</span>    
+    <div class="price-box">    
+  <div class="price-row">    
+  <span id="dPrice" class="price-value">0</span>    
+</div>    
+</div>    
+    <!-- VEHICLE DROPDOWN -->    
+<select id="vehicleType" onchange="updateDelivery()">      
+  <option value="">Select Vehicle</option>      
+  <option value="two_wheeler">Two Wheeler</option>      
+  <option value="three_wheeler">Three Wheeler</option>      
+  <option value="four_wheeler">Four Wheeler</option>      
+</select>    <p id="dDelivery"></p>    
+<p id="dTotal"></p>    
+    <button class="buy-btn" onclick="directBuy(event)">    
+  <i class="bi bi-lightning-fill"></i>    
+  Buy Now    
+</button>    
+<button type="button" onclick="closeAll()">Close</button>    
+  </div>    
+</div>    <!-- CART -->    <div class="modal" id="cartModal">    
+  <div class="modal-content">    
+    <h3 style="text-align:center">🧺 My Cart</h3>    
+    <div id="cartItems" style="margin-top:10px"></div>    
+    <!-- 🚚 CART VEHICLE SELECT -->    
+<select id="cartVehicle" onchange="updateCartDelivery()">    
+  <option value="">🚚 Select Vehicle</option>    
   <option value="two_wheeler">Two Wheeler</option>    
   <option value="three_wheeler">Three Wheeler</option>    
   <option value="four_wheeler">Four Wheeler</option>    
-</select>  <p id="dDelivery"></p>  
-<p id="dTotal"></p>  
-    <button class="buy-btn" onclick="directBuy(event)">  
-  <i class="bi bi-lightning-fill"></i>  
-  Buy Now  
-</button>  
-<button type="button" onclick="closeAll()">Close</button>  
-  </div>  
-</div>  <!-- CART -->  <div class="modal" id="cartModal">  
-  <div class="modal-content">  
-    <h3 style="text-align:center">🧺 My Cart</h3>  
-    <div id="cartItems" style="margin-top:10px"></div>  
-    <!-- 🚚 CART VEHICLE SELECT -->  
-<select id="cartVehicle" onchange="updateCartDelivery()">  
-  <option value="">🚚 Select Vehicle</option>  
-  <option value="two_wheeler">Two Wheeler</option>  
-  <option value="three_wheeler">Three Wheeler</option>  
-  <option value="four_wheeler">Four Wheeler</option>  
-</select>  <div  
-  id="cartDeliveryBox"  
-  style="  
-    display:none;  
-    background:#f0fdf4;  
-    border-left:4px solid #16a34a;  
-    padding:12px;  
-    border-radius:10px;  
-    margin-top:12px;  
-    box-shadow:0 4px 10px rgba(0,0,0,0.08)  
-  "  
->  
-  <div id="cartDeliveryText"></div>  
-  <hr>  
-  <b id="cartTotalText"></b>  
-</div>  
-    <button class="primary" style="margin-top:12px" onclick="payCart()">💳 Pay & Order</button>  
-    <button onclick="closeAll()">Close</button>  
-  </div>  
-</div>  <!-- PROFILE -->  <div class="modal" id="profileModal">  
-  <div class="modal-content">  
-    <h3>Retailer Profile</h3>  <input id="profileName" placeholder="Shop Name (Short address)">  
-<input id="profileMobile" placeholder="Mobile">  
-  
+</select>    <div    
+  id="cartDeliveryBox"    
+  style="    
+    display:none;    
+    background:#f0fdf4;    
+    border-left:4px solid #16a34a;    
+    padding:12px;    
+    border-radius:10px;    
+    margin-top:12px;    
+    box-shadow:0 4px 10px rgba(0,0,0,0.08)    
+  "    
+>    
+  <div id="cartDeliveryText"></div>    
+  <hr>    
+  <b id="cartTotalText"></b>    
+</div>    
+    <button class="primary" style="margin-top:12px" onclick="payCart()">💳 Pay & Order</button>    
+    <button onclick="closeAll()">Close</button>    
+  </div>    
+</div>    <!-- PROFILE -->    <div class="modal" id="profileModal">    
+  <div class="modal-content">    
+    <h3>Retailer Profile</h3>    <input id="profileName" placeholder="Shop Name (Short address)">    
+<input id="profileMobile" placeholder="Mobile">    
+    
 
 <!-- ✅ Current Location (Modified) -->
 
-<div class="location-group">  
-  <label>📍 Current Location (lat, lng)</label>  
-  <input id="profileLocation" placeholder="Fetching location..." readonly>  
-  <button onclick="getRetailerLocation()">📌 Set Current Location</button>  
-</div>  
-    <button class="primary" onclick="saveProfile()">Save</button>  
-    <button onclick="closeAll()">Close</button>  
-  </div>  
-</div>  <!-- ORDER STATUS -->  <div class="modal" id="orderStatusModal">  
-  <div class="modal-content">  
-    <h3 style="text-align:center;margin-bottom:16px">📦 Order Status</h3>  
-    <div id="orderStatusData"></div>  
-    <button class="primary" onclick="closeAll()">Close</button>  
-  </div>  
-</div>  <!-- DELIVERY DETAILS -->  <div class="modal" id="deliveryModal">  
-  <div class="modal-content">  
-    <h3 style="text-align:center;margin-bottom:15px">🚚 Delivery Details</h3>  
-    <div id="deliveryData"></div>  
-    <button class="primary" onclick="closeAll()">Close</button>  
-  </div>  
-</div>  
-<!-- FULL IMAGE VIEW -->  
-<div class="modal" id="imageModal">  
-  <div class="modal-content" style="padding:10px;background:#000">  
-    <img id="fullImg" style="width:100%;height:auto;border-radius:10px">  
-    <button onclick="closeImage()"  
-      style="margin-top:10px;background:#fff;border:none;padding:8px 14px;border-radius:8px">  
-      ❌ Close  
-    </button>  
-  </div>  
-</div>  
- <div class="modal" id="chargeInfoModal">  
-  <div class="modal-content" style="max-width:400px; padding:20px; border-radius:12px; background:#000; color:#fff;">  
-    <h3 style="margin-top:0; text-align:center;">Delivery Charge Info</h3>  
-    <ul id="chargeList" style="list-style:none; padding:0; margin:10px 0;"></ul>  
-    <button onclick="closeChargeModal()" style="  
-      display:block;  
-      margin:10px auto 0 auto;  
-      padding:8px 16px;  
-      border:none;  
-      border-radius:8px;  
-      background:#fff;  
-      color:#000;  
-      cursor:pointer;  
-    ">Close</button>  
-  </div>  
- </div>   
-<script>  
-const API = "https://shopbacked-vmhs.onrender.com";  let selectedProduct = null;
-let currentRetailerLoc = null;
-let currentWholesalerLoc = null;
-  let cart = [];
+<div class="location-group">    
+  <label>📍 Current Location (lat, lng)</label>    
+  <input id="profileLocation" placeholder="Fetching location..." readonly>    
+  <button onclick="getRetailerLocation()">📌 Set Current Location</button>    
+</div>    
+    <button class="primary" onclick="saveProfile()">Save</button>    
+    <button onclick="closeAll()">Close</button>    
+  </div>    
+</div>    <!-- ORDER STATUS -->    <div class="modal" id="orderStatusModal">    
+  <div class="modal-content">    
+    <h3 style="text-align:center;margin-bottom:16px">📦 Order Status</h3>    
+    <div id="orderStatusData"></div>    
+    <button class="primary" onclick="closeAll()">Close</button>    
+  </div>    
+</div>    <!-- DELIVERY DETAILS -->    <div class="modal" id="deliveryModal">    
+  <div class="modal-content">    
+    <h3 style="text-align:center;margin-bottom:15px">🚚 Delivery Details</h3>    
+    <div id="deliveryData"></div>    
+    <button class="primary" onclick="closeAll()">Close</button>    
+  </div>    
+</div>    
+<!-- FULL IMAGE VIEW -->    
+<div class="modal" id="imageModal">    
+  <div class="modal-content" style="padding:10px;background:#000">    
+    <img id="fullImg" style="width:100%;height:auto;border-radius:10px">    
+    <button onclick="closeImage()"    
+      style="margin-top:10px;background:#fff;border:none;padding:8px 14px;border-radius:8px">    
+      ❌ Close    
+    </button>    
+  </div>    
+</div>    
+ <div class="modal" id="chargeInfoModal">    
+  <div class="modal-content" style="max-width:400px; padding:20px; border-radius:12px; background:#000; color:#fff;">    
+    <h3 style="margin-top:0; text-align:center;">Delivery Charge Info</h3>    
+    <ul id="chargeList" style="list-style:none; padding:0; margin:10px 0;"></ul>    
+    <button onclick="closeChargeModal()" style="    
+      display:block;    
+      margin:10px auto 0 auto;    
+      padding:8px 16px;    
+      border:none;    
+      border-radius:8px;    
+      background:#fff;    
+      color:#000;    
+      cursor:pointer;    
+    ">Close</button>    
+  </div>    
+ </div>     
+<script>    
+const API = "https://shopbacked-vmhs.onrender.com";    let selectedProduct = null;
+let cart = [];
 let cartDeliveryCharge = 0;
 let currentWholesalerId = null;
 // DOM elements
@@ -590,37 +588,37 @@ try{
 const res = await fetch(${API}/api/products/wholesaler/${wid});
 const data = await res.json();
 
-const categoriesContainer = document.getElementById("categories");  
+const categoriesContainer = document.getElementById("categories");    
 
-if(!data.products || !data.products.length){  
-  categoriesContainer.innerHTML = "<p>No categories found</p>";  
-  return;  
-}  
+if(!data.products || !data.products.length){    
+  categoriesContainer.innerHTML = "<p>No categories found</p>";    
+  return;    
+}    
 
-// 🔥 product se unique categories nikalo  
-const map = {};  
-data.products.forEach(p=>{  
-  const cat = p.category || "Other";  
-  map[cat] = true;  
-});  
+// 🔥 product se unique categories nikalo    
+const map = {};    
+data.products.forEach(p=>{    
+  const cat = p.category || "Other";    
+  map[cat] = true;    
+});    
 
 categoriesContainer.innerHTML = Object.keys(map).map(cat=>`
 
-  <div class="category-card"  
-       onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">  <div class="category-icon">  
-  <i class="bi bi-box-seam"></i>  
-</div>  
+  <div class="category-card"    
+       onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">    <div class="category-icon">    
+  <i class="bi bi-box-seam"></i>    
+</div>    
 
-<div class="category-name">  
-  ${cat}  
+<div class="category-name">    
+  ${cat}    
 </div>
 
-  </div>  
-`).join("");  
-    sessionStorage.setItem(  
-  "lastCategoriesHTML",  
-  categoriesContainer.innerHTML  
-);  }catch(e){
+  </div>    
+`).join("");    
+    sessionStorage.setItem(    
+  "lastCategoriesHTML",    
+  categoriesContainer.innerHTML    
+);    }catch(e){
 console.error(e);
 alert("Failed to load categories");
 }
@@ -646,26 +644,26 @@ lat: pos.coords.latitude,
 lng: pos.coords.longitude
 };
 
-// ✅ input में दिखाओ  
-  profileLocation.value =  
-    loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);  
+// ✅ input में दिखाओ    
+  profileLocation.value =    
+    loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);    
 
-  // ✅ localStorage में save  
+  // ✅ localStorage में save    
   localStorage.setItem("retailer_location", JSON.stringify(loc));
 
 localStorage.setItem("location_updated", "yes");
 
-alert("✅ Location set successfully");  
+alert("✅ Location set successfully");    
 
-},  
-(err) => {  
-  console.error(err);  
-  alert("❌ Location access denied");  
-  profileLocation.value = "";  
-},  
-{  
-  enableHighAccuracy: true,  
-  timeout: 10000  
+},    
+(err) => {    
+  console.error(err);    
+  alert("❌ Location access denied");    
+  profileLocation.value = "";    
+},    
+{    
+  enableHighAccuracy: true,    
+  timeout: 10000    
 }
 
 );
@@ -702,39 +700,39 @@ return;
 navigator.geolocation.getCurrentPosition(
 async (pos) => {
 
-const location = {  
-    lat: pos.coords.latitude,  
-    lng: pos.coords.longitude  
-  };  
+const location = {    
+    lat: pos.coords.latitude,    
+    lng: pos.coords.longitude    
+  };    
 
-  // ✅ LocalStorage save  
-  localStorage.setItem(  
-    "retailer_location",  
-    JSON.stringify(location)  
-  );  
+  // ✅ LocalStorage save    
+  localStorage.setItem(    
+    "retailer_location",    
+    JSON.stringify(location)    
+  );    
 
-  // ✅ Server save (ONLY location)  
-  await fetch(`${API}/api/retailers/location`, {  
-    method: "PUT",  
-    headers: {  
-      "Content-Type": "application/json",  
-      "Authorization": "Bearer " + TOKEN  
-    },  
-    body: JSON.stringify({  
-      retailerId: localStorage.getItem("userId"),  
-      location  
-    })  
-  });  
+  // ✅ Server save (ONLY location)    
+  await fetch(`${API}/api/retailers/location`, {    
+    method: "PUT",    
+    headers: {    
+      "Content-Type": "application/json",    
+      "Authorization": "Bearer " + TOKEN    
+    },    
+    body: JSON.stringify({    
+      retailerId: localStorage.getItem("userId"),    
+      location    
+    })    
+  });    
 
-  // ✅ UI update  
-  if (document.getElementById("profileLocation")) {  
-    document.getElementById("profileLocation").value =  
-      location.lat.toFixed(6) + ", " +  
-      location.lng.toFixed(6);  
-  }  
+  // ✅ UI update    
+  if (document.getElementById("profileLocation")) {    
+    document.getElementById("profileLocation").value =    
+      location.lat.toFixed(6) + ", " +    
+      location.lng.toFixed(6);    
+  }    
 
-  alert("📍 Location successfully save ho gayi");  
-},  
+  alert("📍 Location successfully save ho gayi");    
+},    
 () => alert("Location fetch nahi ho pa rahi")
 
 );
@@ -780,10 +778,10 @@ const images = (selectedProduct.images && selectedProduct.images.length)
 : (selectedProduct.image ? [selectedProduct.image] : []);
 
 images.forEach((img, i) => {
-dImages.innerHTML +=   <img    src="${img}"    onclick="openImage('${img}')"   style="min-width:100%;object-fit:contain;cursor:zoom-in"   >  ;
+dImages.innerHTML +=     <img      src="${img}"      onclick="openImage('${img}')"     style="min-width:100%;object-fit:contain;cursor:zoom-in"     >    ;
 
-dDots.innerHTML += `  
-  <div class="dot ${i === 0 ? "active" : ""}"></div>  
+dDots.innerHTML += `    
+  <div class="dot ${i === 0 ? "active" : ""}"></div>    
 `;
 
 });
@@ -794,8 +792,8 @@ const index = Math.round(
 dImages.scrollLeft / dImages.clientWidth
 );
 
-[...dDots.children].forEach((dot, i) => {  
-  dot.classList.toggle("active", i === index);  
+[...dDots.children].forEach((dot, i) => {    
+  dot.classList.toggle("active", i === index);    
 });
 
 };
@@ -819,16 +817,16 @@ list.innerHTML = "";
 slabs.forEach(slab => {
 const li = document.createElement("li");
 
-if(slab.percent === 0){  
-  li.innerText = `₹${slab.min}+ का order → Free Delivery ✅`;  
-} else {  
-  li.innerText = `₹${slab.min} - ${slab.max} का order → ${slab.percent}% delivery charge`;  
-}  
+if(slab.percent === 0){    
+  li.innerText = `₹${slab.min}+ का order → Free Delivery ✅`;    
+} else {    
+  li.innerText = `₹${slab.min} - ${slab.max} का order → ${slab.percent}% delivery charge`;    
+}    
 
-// Highlight slab based on current order amount  
-if(orderAmount >= slab.min && orderAmount <= slab.max){  
-  li.classList.add("highlight");  
-}  
+// Highlight slab based on current order amount    
+if(orderAmount >= slab.min && orderAmount <= slab.max){    
+  li.classList.add("highlight");    
+}    
 
 list.appendChild(li);
 
@@ -957,7 +955,7 @@ return;
 
 // 🧾 UI update
 dDelivery.innerText =
-Delivery ₹${deliveryData.retailerPays}   (${deliveryData.retailerPercent}% retailer);
+Delivery ₹${deliveryData.retailerPays}     (${deliveryData.retailerPercent}% retailer);
 
 const totalAmount =
 selectedProduct.price + deliveryData.retailerPays;
@@ -975,27 +973,27 @@ amount: totalAmount,
 notes: {
 type: "direct", // 🔥 IMPORTANT
 
-productId: selectedProduct._id,  
-    productName: selectedProduct.productName,  
-    price: selectedProduct.price,  
+productId: selectedProduct._id,    
+    productName: selectedProduct.productName,    
+    price: selectedProduct.price,    
 
-    wholesalerId: selectedProduct.wholesalerId,  
-    wholesalerName: selectedProduct.shopName,  
-    wholesalerMobile: selectedProduct.mobile,  
-    wholesalerAddress: selectedProduct.address,  
+    wholesalerId: selectedProduct.wholesalerId,    
+    wholesalerName: selectedProduct.shopName,    
+    wholesalerMobile: selectedProduct.mobile,    
+    wholesalerAddress: selectedProduct.address,    
 
-    retailerName: retailerProfile.name,  
-    retailerMobile: retailerProfile.mobile,  
-    retailerAddress: retailerProfile.address,  
+    retailerName: retailerProfile.name,    
+    retailerMobile: retailerProfile.mobile,    
+    retailerAddress: retailerProfile.address,    
 
-    vehicleType: vehicleType.value,  
+    vehicleType: vehicleType.value,    
 
-    // ✅ DELIVERY BREAKUP (VERY IMPORTANT)  
-    deliveryCharge: deliveryData.totalDelivery,  
-    retailerDeliveryPay: deliveryData.retailerPays,  
-    wholesalerDeliveryPay: deliveryData.wholesalerPays,  
-    distanceKm: deliveryRes.distanceKm  
-  }  
+    // ✅ DELIVERY BREAKUP (VERY IMPORTANT)    
+    deliveryCharge: deliveryData.totalDelivery,    
+    retailerDeliveryPay: deliveryData.retailerPays,    
+    wholesalerDeliveryPay: deliveryData.wholesalerPays,    
+    distanceKm: deliveryRes.distanceKm    
+  }    
 })
 
 });
@@ -1016,18 +1014,18 @@ amount: data.amount,
 currency: "INR",
 order_id: data.order.id,
 
-handler: function () {  
-  alert("✅ Payment Successful 🎉");  
-  alert("📦 Order processing ho raha hai");  
+handler: function () {    
+  alert("✅ Payment Successful 🎉");    
+  alert("📦 Order processing ho raha hai");    
 
-  closeAll();  
-  setTimeout(openOrderStatus, 3000);  
-},  
+  closeAll();    
+  setTimeout(openOrderStatus, 3000);    
+},    
 
-modal: {  
-  ondismiss: function () {  
-    alert("❌ Payment cancelled");  
-  }  
+modal: {    
+  ondismiss: function () {    
+    alert("❌ Payment cancelled");    
+  }    
 }
 
 });
@@ -1068,17 +1066,17 @@ wholesalerLocation: wholesalerLoc
 })
 });
 
-const data = await res.json();  
+const data = await res.json();    
 
-if (!data.success) {  
-  dDelivery.innerText = "⚠️ Delivery calculation failed";  
-  dTotal.innerText = "";  
-  return;  
-}  
+if (!data.success) {    
+  dDelivery.innerText = "⚠️ Delivery calculation failed";    
+  dTotal.innerText = "";    
+  return;    
+}    
 
-// ✅ Update UI  
-dDelivery.innerText = `Delivery ₹${data.retailerPays} (${data.retailerPercent}% retailer)`;  
-const total = selectedProduct.price + data.retailerPays;  
+// ✅ Update UI    
+dDelivery.innerText = `Delivery ₹${data.retailerPays} (${data.retailerPercent}% retailer)`;    
+const total = selectedProduct.price + data.retailerPays;    
 dTotal.innerText = `Total ₹${total}`;
 
 } catch (err) {
@@ -1090,91 +1088,78 @@ dTotal.innerText = "";
 
 let cartTimer = null;
 
-async function calcCartDelivery() {
+async function calcCartDelivery(){
 
-  const vehicle = document.getElementById("cartVehicle")?.value;
-  const box = document.getElementById("cartDeliveryBox");
-  const dText = document.getElementById("cartDeliveryText");
-  const tText = document.getElementById("cartTotalText");
+const vehicle = document.getElementById("cartVehicle").value;
+const box = document.getElementById("cartDeliveryBox");
+const dText = document.getElementById("cartDeliveryText");
+const tText = document.getElementById("cartTotalText");
 
-  // 🔒 Safety check (DOM missing)
-  if (!box || !dText || !tText) {
-    console.error("Cart delivery DOM missing");
-    return;
-  }
+if (!vehicle || cart.length === 0) {
+box.style.display = "none";
+dText.innerText = "";
+tText.innerText = "";
+window.__cartDelivery = null;
+return;
+}
 
-  // 🔹 Reset if no vehicle or empty cart
-  if (!vehicle || !Array.isArray(cart) || cart.length === 0) {
-    box.style.display = "none";
-    dText.innerText = "";
-    tText.innerText = "";
-    window.__cartDelivery = null;
-    return;
-  }
+/* ================= SUBTOTAL ================= */
+const subtotal = cart.reduce(
+(sum, item) => sum + (Number(item.price) * Number(item.quantity || 1)),
+0
+);
 
-  /* ================= SUBTOTAL ================= */
-  const subtotal = cart.reduce(
-    (sum, item) => sum + (Number(item.price) * Number(item.quantity || 1)),
-    0
-  );
+/* ================= RETAILER LOCATION ================= */
+let retailerLoc =
+JSON.parse(localStorage.getItem("retailer_location")) ||
+JSON.parse(localStorage.getItem("retailerProfile") || "{}").location ||
+null;
 
-  /* ================= RETAILER LOCATION ================= */
-  let retailerLoc =
-    JSON.parse(localStorage.getItem("retailer_location")) ||
-    JSON.parse(localStorage.getItem("retailerProfile") || "{}")?.location ||
-    null;
+if (retailerLoc?.latitude && retailerLoc?.longitude) {
+retailerLoc = {
+lat: retailerLoc.latitude,
+lng: retailerLoc.longitude
+};
+}
 
-  if (retailerLoc?.latitude && retailerLoc?.longitude) {
-    retailerLoc = {
-      lat: retailerLoc.latitude,
-      lng: retailerLoc.longitude
-    };
-  }
+/* ================= WHOLESALER LOCATION ================= */
+let wholesalerLoc = null;
 
-  /* ================= WHOLESALER LOCATION ================= */
-  let wholesalerLoc = null;
+try {
+const wid = cart[0].wholesalerId;
 
-  try {
-    const wid = cart[0]?.wholesalerId;
-    if (!wid) throw new Error("Missing wholesalerId");
+const resWh = await fetch(`${API}/api/wholesalers/profile/${wid}`);    
+const whData = await resWh.json();    
 
-    const resWh = await fetch(`${API}/api/wholesalers/profile/${wid}`);
-    const whData = await resWh.json();
+wholesalerLoc =    
+  whData?.profile?.location ||    
+  whData?.wholesaler?.location ||    
+  whData?.location ||    
+  null;    
 
-    wholesalerLoc =
-      whData?.profile?.location ||
-      whData?.wholesaler?.location ||
-      whData?.location ||
-      null;
+if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {    
+  wholesalerLoc = {    
+    lat: wholesalerLoc.latitude,    
+    lng: wholesalerLoc.longitude    
+  };    
+}
 
-    if (wholesalerLoc?.latitude && wholesalerLoc?.longitude) {
-      wholesalerLoc = {
-        lat: wholesalerLoc.latitude,
-        lng: wholesalerLoc.longitude
-      };
-    }
+} catch (e) {
+console.error("Wholesaler location fetch failed", e);
+}
 
-  } catch (e) {
-    console.error("Wholesaler location fetch failed", e);
-  }
-
-  /* ================= LOCATION CHECK ================= */
-  if (
-    !retailerLoc?.lat ||
-    !retailerLoc?.lng ||
-    !wholesalerLoc?.lat ||
-    !wholesalerLoc?.lng
-  ) {
-    box.style.display = "block";
-    dText.innerText = "📍 Location missing";
-    tText.innerText = "";
-    window.__cartDelivery = null;
-    return;
-  }
-
-  /* ================= SAVE GLOBAL FOR PAYMENT ================= */
-  currentRetailerLoc = retailerLoc;
-  currentWholesalerLoc = wholesalerLoc;
+/* ================= LOCATION CHECK ================= */
+if (
+!retailerLoc?.lat ||
+!retailerLoc?.lng ||
+!wholesalerLoc?.lat ||
+!wholesalerLoc?.lng
+) {
+box.style.display = "block";
+dText.innerText = "📍 Location missing";
+tText.innerText = "";
+return;
+}
 
 /* ================= DELIVERY CALC ================= */
 try {
@@ -1189,37 +1174,37 @@ wholesalerLocation: wholesalerLoc
 })
 });
 
-const data = await res.json();  
+const data = await res.json();    
 
-if (!data.success) {  
-  box.style.display = "block";  
-  dText.innerText = "❌ Delivery calculation failed";  
-  tText.innerText = "";  
-  return;  
-}  
+if (!data.success) {    
+  box.style.display = "block";    
+  dText.innerText = "❌ Delivery calculation failed";    
+  tText.innerText = "";    
+  return;    
+}    
 
-/* 🔁 DOUBLE distance & time */  
-const doubleDistance = (Number(data.distanceKm) * 2).toFixed(2);  
-const doubleTime = Math.round(Number(data.timeMinutes) * 2);  
-const total = subtotal + Number(data.retailerPays);  
+/* 🔁 DOUBLE distance & time */    
+const doubleDistance = (Number(data.distanceKm) * 2).toFixed(2);    
+const doubleTime = Math.round(Number(data.timeMinutes) * 2);    
+const total = subtotal + Number(data.retailerPays);    
 
-/* ================= UI UPDATE ================= */  
-box.style.display = "block";  
+/* ================= UI UPDATE ================= */    
+box.style.display = "block";    
 
 dText.innerText =
 
-🚚 Delivery ₹${data.totalDelivery}   (Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)   ⏱️ ${doubleTime} min   📍 टोटल आने जाने का = ${doubleDistance} km;
+🚚 Delivery ₹${data.totalDelivery}     (Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)     ⏱️ ${doubleTime} min     📍 टोटल आने जाने का = ${doubleDistance} km;
 
-tText.innerText = `💰 Total ₹${total}`;  
+tText.innerText = `💰 Total ₹${total}`;    
 
-/* ================= STORE FOR PAYMENT ================= */  
-window.__cartDelivery = {  
-  subtotal,  
-  retailerPays: Number(data.retailerPays),  
-  wholesalerPays: Number(data.wholesalerPays || 0),  
-  total,  
-  distanceKm: doubleDistance,  
-  timeMinutes: doubleTime  
+/* ================= STORE FOR PAYMENT ================= */    
+window.__cartDelivery = {    
+  subtotal,    
+  retailerPays: Number(data.retailerPays),    
+  wholesalerPays: Number(data.wholesalerPays || 0),    
+  total,    
+  distanceKm: doubleDistance,    
+  timeMinutes: doubleTime    
 };
 
 } catch (err) {
@@ -1256,37 +1241,37 @@ address: p.address
 })
 });
 
-const data = await res.json();  
+const data = await res.json();    
 
-// ❌ DIFFERENT WHOLESALER FOUND  
-if (!data.success && data.message && data.message.includes("Only one wholesaler")) {  
-  // 🔹 Backend cart clear  
-  await fetch(`${API}/api/cart/clear/${retailerId}`, { method: "DELETE" });  
+// ❌ DIFFERENT WHOLESALER FOUND    
+if (!data.success && data.message && data.message.includes("Only one wholesaler")) {    
+  // 🔹 Backend cart clear    
+  await fetch(`${API}/api/cart/clear/${retailerId}`, { method: "DELETE" });    
 
-  // 🔹 Frontend cart clear  
-  cart = [];  
-  localStorage.removeItem("cart");  
-  currentWholesalerId = null;  
+  // 🔹 Frontend cart clear    
+  cart = [];    
+  localStorage.removeItem("cart");    
+  currentWholesalerId = null;    
 
-  alert("🧹 पुराना cart clear कर दिया गया। अब नया product add हो रहा है।");  
+  alert("🧹 पुराना cart clear कर दिया गया। अब नया product add हो रहा है।");    
 
-  // 🔹 नया product फिर से add करो  
-  addToCart(p);  
-  return;  
-}  
+  // 🔹 नया product फिर से add करो    
+  addToCart(p);    
+  return;    
+}    
 
-if(data.success){  
-  cart.push(p);  
-  currentWholesalerId = p.wholesalerId;  
-  localStorage.setItem("cart", JSON.stringify(cart));  
+if(data.success){    
+  cart.push(p);    
+  currentWholesalerId = p.wholesalerId;    
+  localStorage.setItem("cart", JSON.stringify(cart));    
 
-  alert(  
-    "🛒 Added to cart successfully ✅\n\n" +  
-    "Product: " + p.productName +  
-    "\nPrice: ₹" + p.price  
-  );  
-}else{  
-  alert("❌ Failed to add item");  
+  alert(    
+    "🛒 Added to cart successfully ✅\n\n" +    
+    "Product: " + p.productName +    
+    "\nPrice: ₹" + p.price    
+  );    
+}else{    
+  alert("❌ Failed to add item");    
 }
 
 }catch(err){
@@ -1307,70 +1292,70 @@ return;
 
 try{
 
-const res = await fetch(`${API}/api/cart/${retailerId}`);  
-const data = await res.json();  
+const res = await fetch(`${API}/api/cart/${retailerId}`);    
+const data = await res.json();    
 
-if(!data.items || !data.items.length){  
-  cartDiv.innerHTML = "<p style='text-align:center'>🛒 Cart is empty</p>";  
-  cart = [];  
-  return;  
-}  
+if(!data.items || !data.items.length){    
+  cartDiv.innerHTML = "<p style='text-align:center'>🛒 Cart is empty</p>";    
+  cart = [];    
+  return;    
+}    
 
-/* 🔥 CURRENT WHOLESALER FILTER */  
-const currentWholesalerId =  
-  new URLSearchParams(location.search).get("wid") ||  
-  localStorage.getItem("currentWholesalerId");  
+/* 🔥 CURRENT WHOLESALER FILTER */    
+const currentWholesalerId =    
+  new URLSearchParams(location.search).get("wid") ||    
+  localStorage.getItem("currentWholesalerId");    
 
-const filteredItems = currentWholesalerId  
-  ? data.items.filter(  
-      i => i.wholesalerId === currentWholesalerId  
-    )  
-  : data.items;  
+const filteredItems = currentWholesalerId    
+  ? data.items.filter(    
+      i => i.wholesalerId === currentWholesalerId    
+    )    
+  : data.items;    
 
-if(!filteredItems.length){  
-  cartDiv.innerHTML =  
-    "<p style='text-align:center'>🛒 Is wholesaler ka cart empty hai</p>";  
-  cart = [];  
-  return;  
-}  
+if(!filteredItems.length){    
+  cartDiv.innerHTML =    
+    "<p style='text-align:center'>🛒 Is wholesaler ka cart empty hai</p>";    
+  cart = [];    
+  return;    
+}    
 
-/* 🧺 RENDER CART */  
-cartDiv.innerHTML = filteredItems.map(i => `  
-  <div class="cart-card" style="display:flex;gap:10px;align-items:center;padding:8px;border-bottom:1px solid #eee">  
+/* 🧺 RENDER CART */    
+cartDiv.innerHTML = filteredItems.map(i => `    
+  <div class="cart-card" style="display:flex;gap:10px;align-items:center;padding:8px;border-bottom:1px solid #eee">    
 
-    <img src="${i.image || ''}"  
-         class="cart-img"  
-         style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:#f8fafc">  
+    <img src="${i.image || ''}"    
+         class="cart-img"    
+         style="width:60px;height:60px;object-fit:contain;border-radius:8px;background:#f8fafc">    
 
-    <div class="cart-info" style="flex:1">  
-      <div class="cart-name" style="font-weight:600">  
-        ${i.productName}  
-      </div>  
+    <div class="cart-info" style="flex:1">    
+      <div class="cart-name" style="font-weight:600">    
+        ${i.productName}    
+      </div>    
 
-      <div class="cart-price" style="font-size:14px;color:#334155">  
-        ₹${i.price} × ${i.quantity || 1} =  
-        <b>₹${Number(i.price) * Number(i.quantity || 1)}</b>  
-      </div>  
-    </div>  
+      <div class="cart-price" style="font-size:14px;color:#334155">    
+        ₹${i.price} × ${i.quantity || 1} =    
+        <b>₹${Number(i.price) * Number(i.quantity || 1)}</b>    
+      </div>    
+    </div>    
 
-    <div class="cart-actions">  
-      <button onclick="removeFromCart('${i.productId}')"  
-        style="border:none;background:#fee2e2;color:#991b1b;border-radius:6px;padding:4px 8px;cursor:pointer">  
-        ❌  
-      </button>  
-    </div>  
+    <div class="cart-actions">    
+      <button onclick="removeFromCart('${i.productId}')"    
+        style="border:none;background:#fee2e2;color:#991b1b;border-radius:6px;padding:4px 8px;cursor:pointer">    
+        ❌    
+      </button>    
+    </div>    
 
-  </div>  
-`).join("");  
+  </div>    
+`).join("");    
 
-/* 🔄 LOCAL CART SYNC (IMPORTANT) */  
-cart = filteredItems.map(i => ({  
-  ...i,  
-  quantity: Number(i.quantity || 1),  
-  price: Number(i.price)  
-}));  
+/* 🔄 LOCAL CART SYNC (IMPORTANT) */    
+cart = filteredItems.map(i => ({    
+  ...i,    
+  quantity: Number(i.quantity || 1),    
+  price: Number(i.price)    
+}));    
 
-/* 🚚 DELIVERY RECALC */  
+/* 🚚 DELIVERY RECALC */    
 calcCartDelivery();
 
 }catch(err){
@@ -1415,39 +1400,28 @@ alert("❌ Failed to remove item");
 }
 }
 
-async function payCart(e){
-// Prevent default only if event is passed
-if(e?.preventDefault) e.preventDefault();
+async function payCart() {
 
-// 1️⃣ Cart check
-if(!cart || cart.length === 0){
-alert("🛒 Cart is empty");
-return;
-}
-
-// 2️⃣ Location check
-if(!currentRetailerLoc || !currentWholesalerLoc){
-alert("📍 Location missing. Please calculate delivery first");
-return;
-}
-
-// 3️⃣ Vehicle check
-const vehicle = document.getElementById("cartVehicle")?.value;
-if(!vehicle){
+const vehicle = cartVehicle.value;
+if (!vehicle) {
 alert("🚚 Select vehicle first");
 return;
 }
 
-// 4️⃣ Retailer profile check
-const retailerProfile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-if(!retailerProfile.mobile){
-alert("👤 Please save retailer profile first");
+const profile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+if (!profile.mobile) {
+alert("👤 Save profile first");
 return;
 }
 
-// 5️⃣ Delivery calculation check
-if(!window.__cartDelivery){
-alert("🚚 Please calculate delivery first");
+if (!cart || cart.length === 0) {
+alert("🛒 Cart empty");
+return;
+}
+
+// ✅ DELIVERY DATA MUST EXIST
+if (!window.__cartDelivery) {
+alert("❌ Delivery calculation missing");
 return;
 }
 
@@ -1460,71 +1434,83 @@ distanceKm,
 timeMinutes
 } = window.__cartDelivery;
 
-// 🛡️ Helper to ensure numbers are safe
-const safe = (v) => isNaN(Number(v)) ? 0 : Number(v);
-
-try{
-// 6️⃣ API call to create order
+try {
+// ===============================
+// ✅ CREATE ORDER + PAYMENT
+// ===============================
 const res = await fetch(${API}/api/orders/pay-and-create, {
 method: "POST",
 headers: { "Content-Type": "application/json" },
 body: JSON.stringify({
-amount: safe(total),
+amount: total,   // ✅ FINAL TOTAL
 notes: {
 type: "cart",
-items: cart.map(item => ({
-productId: item.productId,
-productName: item.productName,
-price: safe(item.price),
-quantity: safe(item.quantity)
-})),
-wholesalerId: cart[0].wholesalerId,
-wholesalerName: cart[0].shopName,
-wholesalerMobile: cart[0].mobile,
-wholesalerLocation: currentWholesalerLoc,
-retailerName: retailerProfile.name,
-retailerMobile: retailerProfile.mobile,
-retailerLocation: currentRetailerLoc,
-vehicleType: vehicle,
-totalDelivery: safe(retailerPays + wholesalerPays),
-retailerPays: safe(retailerPays),
-wholesalerPays: safe(wholesalerPays),
-totalAmount: safe(total),
-distanceKm: safe(distanceKm),
-timeMinutes: safe(timeMinutes)
-}
-})
-});
 
-const data = await res.json();  
+retailerName: profile.name,    
+      retailerMobile: profile.mobile,    
 
-if(!data.success){  
-  alert("❌ Order creation failed");  
-  return;  
-}  
+      vehicleType: vehicle,    
 
-// 7️⃣ Razorpay payment  
-const rzp = new Razorpay({  
-  key: data.key,  
-  amount: data.amount,  
-  currency: "INR",  
-  order_id: data.order.id,  
-  handler(){  
-    alert("✅ Payment Successful 🎉");  
-    closeAll();  
-  },  
-  modal: {  
-    ondismiss(){  
-      alert("❌ Payment cancelled");  
-    }  
-  }  
-});  
+      // ✅ DELIVERY BREAKUP    
+      deliveryCharge: retailerPays + wholesalerPays,    
+      retailerDeliveryPay: retailerPays,    
+      wholesalerDeliveryPay: wholesalerPays,    
+      distanceKm,    
+      timeMinutes,    
+
+      products: JSON.stringify(    
+        cart.map(p => ({    
+          productId: p.productId || p._id,    
+          productName: p.productName,    
+          price: p.price,    
+          quantity: p.quantity || 1,    
+
+          wholesalerId: p.wholesalerId,    
+          wholesalerName: p.shopName,    
+          wholesalerMobile: p.mobile    
+        }))    
+      )    
+    }    
+  })    
+});    
+
+const data = await res.json();    
+if (!data.success) {    
+  alert(data.message || "❌ Payment init failed");    
+  return;    
+}    
+
+// ===============================    
+// ✅ RAZORPAY    
+// ===============================    
+const rzp = new Razorpay({    
+  key: data.key,    
+  amount: data.amount,    
+  currency: "INR",    
+  order_id: data.order.id,    
+
+  handler: function () {    
+    localStorage.removeItem("cart");    
+    cart = [];    
+    window.__cartDelivery = null;    
+
+    alert("✅ Payment Successful 🎉");    
+    closeAll();    
+    setTimeout(openOrderStatus, 2000);    
+  },    
+
+  modal: {    
+    ondismiss: function () {    
+      alert("❌ Payment cancelled");    
+    }    
+  }    
+});    
 
 rzp.open();
 
-} catch(err) {
-console.error("❌ Cart payment error:", err);
-alert("Something went wrong");
+} catch (err) {
+console.error("CART PAYMENT ERROR:", err);
+alert("❌ Payment error");
 }
 }
 function clearCartCompletely(){
@@ -1563,45 +1549,45 @@ try{
 const res = await fetch(${API}/api/orders/retailer/${profile.mobile});
 const data = await res.json();
 
-const visibleOrders = data.orders.filter(o =>  
-  o.status === "delivery_code_generated" || o.status === "delivered"  
-);  
+const visibleOrders = data.orders.filter(o =>    
+  o.status === "delivery_code_generated" || o.status === "delivered"    
+);    
 
-if(visibleOrders.length===0){  
-  deliveryData.innerHTML="<p style='text-align:center;color:#666'>No delivery details yet</p>";  
-  return;  
-}  
+if(visibleOrders.length===0){    
+  deliveryData.innerHTML="<p style='text-align:center;color:#666'>No delivery details yet</p>";    
+  return;    
+}    
 
-deliveryData.innerHTML = visibleOrders.map(o=>{  
-  const lastStatusTime =  
-    o.statusHistory && o.statusHistory.length  
-      ? o.statusHistory[o.statusHistory.length - 1].time  
-      : o.createdAt;  
+deliveryData.innerHTML = visibleOrders.map(o=>{    
+  const lastStatusTime =    
+    o.statusHistory && o.statusHistory.length    
+      ? o.statusHistory[o.statusHistory.length - 1].time    
+      : o.createdAt;    
 
-  const d = new Date(lastStatusTime);  
+  const d = new Date(lastStatusTime);    
 
-  return `  
-  <div class="delivery-card">  
-    <div class="delivery-row">  
-      <span class="delivery-label">📦 Product</span>  
-      <span class="delivery-value">${o.productName || "-"}</span>  
-    </div>  
+  return `    
+  <div class="delivery-card">    
+    <div class="delivery-row">    
+      <span class="delivery-label">📦 Product</span>    
+      <span class="delivery-value">${o.productName || "-"}</span>    
+    </div>    
 
-    <div class="delivery-row">  
-      <span class="delivery-label">👤 Delivery Boy</span>  
-      <span class="delivery-value">${o.deliveryBoyName || "Assigned"}</span>  
-    </div>  
+    <div class="delivery-row">    
+      <span class="delivery-label">👤 Delivery Boy</span>    
+      <span class="delivery-value">${o.deliveryBoyName || "Assigned"}</span>    
+    </div>    
 
-    <div class="delivery-row">  
-      <span class="delivery-label">🕒 Time</span>  
-      <span class="delivery-value">${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</span>  
-    </div>  
+    <div class="delivery-row">    
+      <span class="delivery-label">🕒 Time</span>    
+      <span class="delivery-value">${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</span>    
+    </div>    
 
-    ${o.deliveryCode  
-      ? `<div class="delivery-code">🔐 Delivery Code : ${o.deliveryCode}</div>`  
-      : `<div class="delivery-code">⏳ Waiting for code...</div>`  
-    }  
-  </div>`;  
+    ${o.deliveryCode    
+      ? `<div class="delivery-code">🔐 Delivery Code : ${o.deliveryCode}</div>`    
+      : `<div class="delivery-code">⏳ Waiting for code...</div>`    
+    }    
+  </div>`;    
 }).join("");
 
 }catch(e){
@@ -1630,7 +1616,7 @@ let cls = "status-pending";
 if(o.status.includes("confirmed")) cls="status-confirmed";
 if(o.status.includes("delivery")) cls="status-delivery";
 if(o.status==="delivered") cls="status-delivered";
-return <div class="status-card">   <div class="status-product">${o.productName}</div>   <div class="status-badge ${cls}">${o.status.replaceAll("_"," ").toUpperCase()}</div>   <div class="status-time">🕒 ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</div>   </div>;
+return <div class="status-card">     <div class="status-product">${o.productName}</div>     <div class="status-badge ${cls}">${o.status.replaceAll("_"," ").toUpperCase()}</div>     <div class="status-time">🕒 ${d.toLocaleDateString("en-IN")} ${d.toLocaleTimeString("en-IN")}</div>     </div>;
 }).join("");
 }catch(e){ orderStatusData.innerHTML="Failed to load orders"; }
 }
@@ -1652,55 +1638,55 @@ try {
 const res = await fetch(${API}/api/retailers/profile/${retailerId});
 const data = await res.json();
 
-if (data.success && data.profile) {  
+if (data.success && data.profile) {    
 
-  profileName.value    = data.profile.name || "";  
-  profileMobile.value  = data.profile.mobile || "";  
-    
-  // 🔥 CHECK: user ne abhi location update ki hai kya?  
-  const locationUpdated =  
-    localStorage.getItem("location_updated") === "yes";  
+  profileName.value    = data.profile.name || "";    
+  profileMobile.value  = data.profile.mobile || "";    
+      
+  // 🔥 CHECK: user ne abhi location update ki hai kya?    
+  const locationUpdated =    
+    localStorage.getItem("location_updated") === "yes";    
 
-  // ✅ LOCATION LOGIC (FIXED)  
-  if (!locationUpdated && data.profile.location) {  
+  // ✅ LOCATION LOGIC (FIXED)    
+  if (!locationUpdated && data.profile.location) {    
 
-    // 👉 Sirf tab hi server wali location lagao  
-    profileLocation.value =  
-      data.profile.location.lat.toFixed(6) + ", " +  
-      data.profile.location.lng.toFixed(6);  
+    // 👉 Sirf tab hi server wali location lagao    
+    profileLocation.value =    
+      data.profile.location.lat.toFixed(6) + ", " +    
+      data.profile.location.lng.toFixed(6);    
 
-    // cache  
-    localStorage.setItem(  
-      "retailer_location",  
-      JSON.stringify(data.profile.location)  
-    );  
+    // cache    
+    localStorage.setItem(    
+      "retailer_location",    
+      JSON.stringify(data.profile.location)    
+    );    
 
-  } else if (locationUpdated) {  
+  } else if (locationUpdated) {    
 
-    // 👉 User ki nayi location ko chhedo mat  
-    const loc =  
-      JSON.parse(localStorage.getItem("retailer_location") || "{}");  
+    // 👉 User ki nayi location ko chhedo mat    
+    const loc =    
+      JSON.parse(localStorage.getItem("retailer_location") || "{}");    
 
-    if (loc.lat && loc.lng) {  
-      profileLocation.value =  
-        Number(loc.lat).toFixed(6) + ", " +  
-        Number(loc.lng).toFixed(6);  
-    }  
+    if (loc.lat && loc.lng) {    
+      profileLocation.value =    
+        Number(loc.lat).toFixed(6) + ", " +    
+        Number(loc.lng).toFixed(6);    
+    }    
 
-  } else {  
-    profileLocation.value = "";  
-  }  
+  } else {    
+    profileLocation.value = "";    
+  }    
 
-  // ✅ Profile cache  
-  localStorage.setItem(  
-    "retailerProfile",  
-    JSON.stringify(data.profile)  
-  );  
+  // ✅ Profile cache    
+  localStorage.setItem(    
+    "retailerProfile",    
+    JSON.stringify(data.profile)    
+  );    
 
-} else {  
-  profileName.value = "";  
-  profileMobile.value = "";  
-  profileLocation.value = "";  
+} else {    
+  profileName.value = "";    
+  profileMobile.value = "";    
+  profileLocation.value = "";    
 }
 
 } catch (err) {
@@ -1728,7 +1714,7 @@ retailerId: localStorage.getItem("userId"),
 name: profileName.value.trim(),
 mobile: profileMobile.value.trim(),
 
-// 🔥 सबसे जरूरी  
+// 🔥 सबसे जरूरी    
 location: location
 
 };
@@ -1745,43 +1731,43 @@ headers:{ "Content-Type":"application/json" },
 body: JSON.stringify(payload)
 });
 
-const data = await res.json();  
+const data = await res.json();    
 
-if(data.success){  
+if(data.success){    
 
-  // ✅ Profile हमेशा update करो  
-  localStorage.setItem(  
-    "retailerProfile",  
-    JSON.stringify(data.profile)  
-  );  
+  // ✅ Profile हमेशा update करो    
+  localStorage.setItem(    
+    "retailerProfile",    
+    JSON.stringify(data.profile)    
+  );    
 
-  // 🔥 सबसे जरूरी FIX  
-  const locationUpdated = localStorage.getItem("location_updated");  
+  // 🔥 सबसे जरूरी FIX    
+  const locationUpdated = localStorage.getItem("location_updated");    
 
-  if(locationUpdated === "yes"){  
-    // 👉 user ने नई location set की है  
-    // ❌ backend की location से कुछ मत करो  
-    console.log("📍 New location preserved (local)");  
-  } else {  
-    // 👉 user ने नई location set नहीं की  
-    if(data.profile.location){  
-      localStorage.setItem(  
-        "retailer_location",  
-        JSON.stringify(data.profile.location)  
-      );  
-    } else {  
-      localStorage.removeItem("retailer_location");  
-    }  
-  }  
+  if(locationUpdated === "yes"){    
+    // 👉 user ने नई location set की है    
+    // ❌ backend की location से कुछ मत करो    
+    console.log("📍 New location preserved (local)");    
+  } else {    
+    // 👉 user ने नई location set नहीं की    
+    if(data.profile.location){    
+      localStorage.setItem(    
+        "retailer_location",    
+        JSON.stringify(data.profile.location)    
+      );    
+    } else {    
+      localStorage.removeItem("retailer_location");    
+    }    
+  }    
 
-  // ✅ flag clear  
-  localStorage.removeItem("location_updated");  
+  // ✅ flag clear    
+  localStorage.removeItem("location_updated");    
 
-  alert("✅ Profile save ho gaya");  
-  closeAll();  
+  alert("✅ Profile save ho gaya");    
+  closeAll();    
 
-} else {  
-  alert("❌ Save failed");  
+} else {    
+  alert("❌ Save failed");    
 }
 
 }catch(err){
@@ -1806,5 +1792,5 @@ document.querySelectorAll(".modal").forEach(m=>m.style.display="none");
 }
 </script>
 
-</body>  
-</html>  
+</body>    
+</html>
