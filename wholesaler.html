@@ -260,7 +260,14 @@ socket.on("orderAssigned", ({ orderId, deliveryBoyId }) => {
 });
 function openProduct(){productModal.style.display="flex";}
 function openOrders(){orderModal.style.display="flex";loadOrders();}
-
+function formatDateTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString("en-IN") + " " +
+         d.toLocaleTimeString("en-IN", {
+           hour: "2-digit",
+           minute: "2-digit"
+         });
+}
   async function ensureWholesalerLocation() {
   const key = "wholesalerProfile_" + WID;
   let profile = JSON.parse(localStorage.getItem(key) || "{}");
