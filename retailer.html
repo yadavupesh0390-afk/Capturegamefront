@@ -498,11 +498,19 @@ border-radius: 4px;
     <button class="primary" onclick="saveProfile()">Save</button>    
     <button onclick="closeAll()">Close</button>    
   </div>    
-</div>    <!-- ORDER STATUS -->    <div class="modal" id="orderStatusModal">    
-  <div class="modal-content">    
-    <h3 style="text-align:center;margin-bottom:16px">📦 Order Status</h3>    
-    <div id="orderStatusData"></div>    
-    <button class="primary" onclick="closeAll()">Close</button>    
+</div>    <!-- ORDER STATUS -->        
+  <div class="modal" id="orderStatusModal">    
+  <div class="modal-content order-status-box">    
+
+    <!-- 🔒 FIXED HEADER -->
+    <div class="order-status-header">
+      <h3>📦 Order Status</h3>
+      <span class="order-close" onclick="closeAll()">✖</span>
+    </div>
+
+    <!-- 🔁 SCROLLABLE CONTENT -->
+    <div id="orderStatusData" class="order-status-scroll"></div>
+
   </div>    
 </div>    <!-- DELIVERY DETAILS -->    <div class="modal" id="deliveryModal">    
   <div class="modal-content">    
