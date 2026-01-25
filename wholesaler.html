@@ -829,8 +829,11 @@ async function loadOrders(){
       🚚 Vehicle: ${o.vehicleType || "Not assigned"}<br>
 
       <div class="status">
-        Status: <b>${o.status}</b>
-      </div>
+  Status: <b>${o.status}</b><br>
+  🕒 ${formatDateTime(
+        o.statusHistory?.[0]?.time || o.createdAt
+      )}
+</div>
 
       ${
         o.status === "pending"
