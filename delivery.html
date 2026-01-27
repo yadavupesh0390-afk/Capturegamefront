@@ -4,21 +4,24 @@
 <title>Delivery Partner Dashboard</title>  
 <meta name="viewport" content="width=device-width, initial-scale=1.0">  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">  
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">  <style>  
-/* ===================== BASE ===================== */
-* {
-  box-sizing: border-box;
-  font-family: Poppins, sans-serif;
-  margin: 0;
-  padding: 0;
+
+  
+  *{
+  box-sizing:border-box;
+  font-family:Poppins,sans-serif;
+  margin:0;
+  padding:0;
 }
+
+body{
+  background:#eef2f7;
+}
+
+/* ===================== MAIN ===================== */
 .main{
-  max-width: 900px;
-  margin: 16px auto;     /* 🔥 top space mil jayega */
-  padding: 12px;
-}
-body {
-  background: #f3f6fb;   /* soft background */
-  color: #1f2937;         /* main text color */
+  max-width:900px;
+  margin:auto;
+  padding:14px;   /* 🔥 top issue fix */
 }
 
 /* ===================== TOP BAR ===================== */
@@ -28,201 +31,159 @@ body {
   display:flex;
   justify-content:space-between;
   align-items:center;
-
-  padding:16px 20px;    /* thoda comfortable */
-  border-radius:16px;
-
-  margin-bottom:14px;  /* 🔥 neeche gap */
+  padding:12px 14px;
+  border-radius:14px;
+  margin-bottom:12px; /* 🔥 spacing fix */
 }
 
-.top h3 {
-  font-size: 18px;
-  font-weight: 600;
+.icon-btn{
+  background:#2563eb;
+  border:none;
+  color:#fff;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  font-size:20px;
+  cursor:pointer;
 }
 
-.icon-btn {
-  background: #2563eb;
-  border: none;
-  color: #fff;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  font-size: 20px;
-  cursor: pointer;
-  transition: 0.2s;
+/* ===================== CARD ===================== */
+.card{
+  background:#fff;
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
 }
 
-.icon-btn:hover {
-  background: #1d4ed8;
+/* ===================== ORDER CARD ===================== */
+.card.order{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
 }
 
-/* ===================== CARD BASE ===================== */
-.card {
-  background: #fff;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.card.order {
-  display: flex;
-  flex-direction: column;
-  gapqp: 10px;
-}
-
-/* ===================== ORDER IMAGE ===================== */
-.order img {
-  width: 90px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb; /* subtle border for neatness */
-}
-
-/* ===================== STATUS BOX ===================== */
-/* ===== ULTRA COMPACT STATUS CHIP ===== */
+/* ===================== STATUS (SMALL) ===================== */
 .status-box{
   display:inline-flex;
   align-items:center;
-
-  padding:2px 6px;        /* 🔥 aur kam */
-  border-radius:999px;
-
-  font-size:10.5px;       /* 🔥 smaller text */
+  gap:6px;
+  padding:3px 8px;
+  font-size:11px;
   font-weight:600;
-
-  line-height:1;          /* height control */
+  border-radius:999px;
   white-space:nowrap;
-
-  width:auto;
-  max-width:max-content;  /* 🔥 sirf text jitna */
+  width:fit-content;
 }
 
-.status-pending {
-  background: #fff4e5;
-  color: #b45309;
-  border: 1px solid #fcd34d;
+/* STATUS COLORS */
+.status-pending{
+  background:#fff4e5;
+  color:#b45309;
+  border:1px solid #fcd34d;
 }
 
-.status-assigned {
-  background: #e0f2fe;
-  color: #0369a1;
-  border: 1px solid #60a5fa;
+.status-assigned{
+  background:#e0f2fe;
+  color:#0369a1;
+  border:1px solid #60a5fa;
 }
 
-.status-delivered {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #4ade80;
+.status-delivered{
+  background:#dcfce7;
+  color:#166534;
+  border:1px solid #4ade80;
 }
 
-.status-default {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+.status-default{
+  background:#f3f4f6;
+  color:#374151;
+  border:1px solid #d1d5db;
 }
 
-/* ===================== PRODUCTS LIST ===================== */
-.card.order ul {
-  list-style-type: disc;
-  margin: 6px 0 6px 20px;
-  padding: 0;
+/* ===================== PRODUCTS ===================== */
+.card.order ul{
+  margin-left:18px;
 }
 
-.card.order ul li {
-  font-size: 14px;
-  line-height: 1.6;
-  color: #111827;
+.card.order li{
+  font-size:13.5px;
+  line-height:1.5;
 }
 
 /* ===================== BUTTONS ===================== */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  margin-top: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  transition: 0.2s;
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 12px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:12.5px;
+  font-weight:500;
 }
 
-.btn:hover {
-  opacity: 0.9;
+.btn.accept{background:#16a34a;color:#fff;}
+.btn.pickup{background:#f59e0b;color:#fff;}
+.btn.done{background:#2563eb;color:#fff;}
+
+/* ===================== MODAL ===================== */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
 }
 
-.btn.accept {
-  background: #16a34a;
-  color: #fff;
+/* 🔥 COMPACT POPUP */
+.modal-box{
+  background:#fff;
+  width:90%;
+  max-width:320px;
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 6px 20px rgba(0,0,0,.2);
 }
 
-.btn.pickup {
-  background: #f59e0b;
-  color: #fff;
-}
-
-.btn.done {
-  background: #2563eb;
-  color: #fff;
-}
-
-/* ===================== LIVE LOCATION ===================== */
-.location-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.location-group label {
-  font-size: 13px;
-  color: #0f172a;
-  font-weight: 600;
-}
-
-.location-group input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #2563eb;
-  background: #f8fafc;
-  font-size: 13px;
-  color: #1f2937;
-}
-
-/* ===================== MODALS ===================== */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 20;
-}
-
-.modal-box {
-  background: #fff;
-  width: 92%;
-  max-width: 420px;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+.modal-box h3{
+  font-size:16px;
+  margin-bottom:10px;
 }
 
 .modal-box input,
-.modal-box select {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  }
+.modal-box select{
+  width:100%;
+  padding:8px 10px;
+  margin:6px 0;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+  font-size:13px;
+}
 
+/* ===================== LOCATION ===================== */
+.location-group{
+  margin:8px 0;
+}
+
+.location-group label{
+  font-size:12px;
+  font-weight:600;
+}
+
+.location-group input{
+  background:#f8fafc;
+  border:1px solid #2563eb;
+}
+
+/* ===================== UTIL ===================== */
+hr{
+  border:none;
+  border-top:1px solid #e5e7eb;
+}
 
 </style>  </head>  <body>  <div class="main">    <div class="top">  
     <h3>🚚 Delivery Partner</h3>  
