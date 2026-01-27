@@ -4,7 +4,6 @@
 <title>Delivery Partner Dashboard</title>  
 <meta name="viewport" content="width=device-width, initial-scale=1.0">  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">  
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">  <style>  
-
 /* ===================== BASE ===================== */
 * {
   box-sizing: border-box;
@@ -14,7 +13,8 @@
 }
 
 body {
-  background: #eef2f7;
+  background: #f3f6fb;   /* soft background */
+  color: #1f2937;         /* main text color */
 }
 
 /* ===================== TOP BAR ===================== */
@@ -24,8 +24,14 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px;
+  padding: 14px 20px;
   border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.top h3 {
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .icon-btn {
@@ -37,13 +43,18 @@ body {
   border-radius: 50%;
   font-size: 20px;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.icon-btn:hover {
+  background: #1d4ed8;
 }
 
 /* ===================== CARD BASE ===================== */
 .card {
   background: #fff;
-  margin-top: 14px;
-  padding: 14px;
+  margin-top: 16px;
+  padding: 16px;
   border-radius: 14px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
@@ -51,84 +62,67 @@ body {
 .card.order {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
+/* ===================== ORDER IMAGE ===================== */
 .order img {
   width: 90px;
   height: 80px;
   object-fit: cover;
   border-radius: 10px;
+  border: 1px solid #e5e7eb; /* subtle border for neatness */
 }
 
 /* ===================== STATUS BOX ===================== */
 .status-box {
-  display: inline-block;       /* shrink to content */
-  padding: 4px 10px;           /* compact padding */
-  border-radius: 12px;
-  font-size: 12px;             /* slightly smaller font */
-  font-weight: 500;
-  margin-bottom: 8px;
-  white-space: nowrap;         /* prevent wrapping */
-  text-overflow: ellipsis;     /* ... if too long */
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   overflow: hidden;
   vertical-align: middle;
 }
 
-/* STATUS COLORS */
 .status-pending {
-  background: #fef3c7;  /* light yellow/orange */
+  background: #fff4e5;
   color: #b45309;
+  border: 1px solid #fcd34d;
 }
 
 .status-assigned {
-  background: #bfdbfe;  /* light blue */
-  color: #1e40af;
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #60a5fa;
 }
 
 .status-delivered {
-  background: #dcfce7;  /* light green */
+  background: #dcfce7;
   color: #166534;
+  border: 1px solid #4ade80;
 }
 
 .status-default {
-  background: #e5e7eb;  /* light gray */
+  background: #f3f4f6;
   color: #374151;
-}
-
-/* ===================== BADGES ===================== */
-.badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  display: inline-block;
-}
-
-.badge.cart {
-  background: #ede9fe;  /* light purple for cart orders */
-  color: #5b21b6;
-}
-
-.badge.green {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.badge.blue {
-  background: #e0f2fe;
-  color: #075985;
+  border: 1px solid #d1d5db;
 }
 
 /* ===================== PRODUCTS LIST ===================== */
 .card.order ul {
   list-style-type: disc;
-  margin: 6px 0 6px 18px;
+  margin: 6px 0 6px 20px;
   padding: 0;
 }
 
 .card.order ul li {
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
+  color: #111827;
 }
 
 /* ===================== BUTTONS ===================== */
@@ -138,24 +132,30 @@ body {
   gap: 6px;
   padding: 8px 14px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 13px;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
 }
 
 .btn.accept {
-  background: #16a34a;  /* green */
+  background: #16a34a;
   color: #fff;
 }
 
 .btn.pickup {
-  background: #f59e0b;  /* amber/orange */
+  background: #f59e0b;
   color: #fff;
 }
 
 .btn.done {
-  background: #2563eb;  /* blue */
+  background: #2563eb;
   color: #fff;
 }
 
@@ -180,6 +180,7 @@ body {
   border: 1px solid #2563eb;
   background: #f8fafc;
   font-size: 13px;
+  color: #1f2937;
 }
 
 /* ===================== MODALS ===================== */
@@ -199,6 +200,7 @@ body {
   max-width: 420px;
   border-radius: 16px;
   padding: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
 .modal-box input,
@@ -208,7 +210,7 @@ body {
   margin: 8px 0;
   border-radius: 10px;
   border: 1px solid #ccc;
-}
+  }
 
 
 </style>  </head>  <body>  <div class="main">    <div class="top">  
