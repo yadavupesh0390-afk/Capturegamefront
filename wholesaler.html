@@ -846,49 +846,82 @@ async function loadOrders(){
     return;
   }
 
-  orders.innerHTML = d.orders.map(o => `
-    <div class="card">
-      <b>${o.productName}</b> ₹${o.price}<br>
+  orders.innerHTML = d.orders.map(o => {
 
-      🏬 Retailer Shop: ${o.retailerName}<br>
-      📞 ${o.retailerMobile}<br>
+    /* ===== STATUS TEXT + COLOR LOGIC ===== */
+    let statusText = o.status;
+    let statusClass = "paid";
 
-      🚚 Vehicle: ${o.vehicleType || "Not assigned"}<br>
+    if (o.isCartOrder) {
+      statusText = "🛒 Cart Order (Multiple Items)";
+      statusClass = "cart";
+    }
+    else if (o.status === "pending") {
+      statusText = "Pending";
+      statusClass = "pending";
+    }
+    else if (o.status === "paid") {
+      statusText = "Paid";
+      statusClass = "paid";
+    }
+    else if (o.status === "assigned") {
+      statusText = "Delivery Assigned";
+      statusClass = "assigned";
+    }
+    else if (o.status === "delivered") {
+      statusText = "Delivered";
+      statusClass = "delivered";
+    }
 
-      <div class="status">
-  Status: <b>${o.status}</b><br>
-  🕒 ${formatDateTime(
-        o.statusHistory?.[0]?.time || o.createdAt
-      )}
-</div>
+    return `
+      <div class="card">
+        <b>${o.productName}</b> ₹${o.price}<br>
 
-      ${
-        o.status === "pending"
-        ? `
-          <button class="success"
-            onclick="confirmOrder('${o._id}')"
-            style="display:flex;align-items:center;gap:6px">
-            <i class="bi bi-check-circle-fill"></i>
-            Confirm Order
-          </button>
-        `
-        : o.status === "assigned"
-        ? `
-          <div style="margin-top:6px;color:#16a34a;font-size:13px">
-            ✅ Assigned to Delivery Boy<br>
-            👤 Delivery ID: ${o.deliveryBoyId || "N/A"}
-          </div>
-        `
-        : `
-          <div style="margin-top:6px;color:#2563eb;font-size:13px">
-            📦 ${o.status}
-          </div>
-        `
-      }
-    </div>
-  `).join("");
-}    loadCategories();
-     loadCategoriesSelect();
+        🏬 Retailer Shop: ${o.retailerName}<br>
+        📞 ${o.retailerMobile}<br>
+
+        🚚 Vehicle: ${o.vehicleType || "Not assigned"}<br>
+
+        <div class="status" style="margin-top:6px">
+          Status:
+          <span class="badge ${statusClass}">
+            ${statusText}
+          </span><br>
+          🕒 ${formatDateTime(
+            o.statusHistory?.[0]?.time || o.createdAt
+          )}
+        </div>
+
+        ${
+          o.status === "pending"
+          ? `
+            <button class="success"
+              onclick="confirmOrder('${o._id}')"
+              style="display:flex;align-items:center;gap:6px;margin-top:8px">
+              <i class="bi bi-check-circle-fill"></i>
+              Confirm Order
+            </button>
+          `
+          : o.status === "assigned"
+          ? `
+            <div style="margin-top:8px;color:#16a34a;font-size:13px">
+              ✅ Assigned to Delivery Boy<br>
+              👤 Delivery ID: ${o.deliveryBoyId || "N/A"}
+            </div>
+          `
+          : `
+            <div style="margin-top:8px;color:#2563eb;font-size:13px">
+              📦 ${statusText}
+            </div>
+          `
+        }
+      </div>
+    `;
+  }).join("");
+}
+
+loadCategories();
+loadCategoriesSelect();
 </script> 
 <script type="module">
 
