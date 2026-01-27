@@ -335,125 +335,87 @@ function renderOrders(list){
     return;
   }
 
-  orders.innerHTML = list.map(o => {
+  const grouped = groupOrdersByCart(list);
 
-    let statusText = o.status;
-    let badgeClass = "blue";
-
-    if(o.isCart){
-      statusText = "🛒 Cart Order (Multiple Items)";
-      badgeClass = "cart";
-    }
-    else if(o.status === "paid"){
-      statusText = "Paid";
-    }
-    else if(o.status === "delivery_accepted"){
-      statusText = "Accepted";
-      badgeClass = "green";
-    }
-    else if(o.status === "picked_up"){
-      statusText = "Picked Up";
-      badgeClass = "green";
-    }
-    else if(o.status === "delivery_code_generated"){
-      statusText = "Out for Delivery";
-      badgeClass = "green";
-    }
-    else if(o.status === "delivered"){
-      statusText = "Delivered";
-      badgeClass = "green";
-    }
+  orders.innerHTML = grouped.map(o => {
+    // STATUS SAME JAISE WHolesaler
+    const statusClass = getStatusClass(o.status);
+    const statusText = getStatusText(o.status);
 
     return `
     <div class="card order">
 
-      <img src="${o.productImg || o.products?.[0]?.productImg || ''}">
-
-      <div style="flex:1">
-
-        <b>
-          ${o.isCart
-            ? "Multiple Products"
-            : o.productName}
-        </b><br>
-
-        ${
-          o.isCart
-            ? `<ul style="margin:6px 0 0 18px;font-size:13px">
-                ${o.products.map(p=>`
-                  <li>${p.productName} — ₹${p.price}</li>
-                `).join("")}
-               </ul>`
-            : ""
-        }
-
-        <span class="badge ${badgeClass}">
-          ${statusText}
-        </span><br>
-
-        <small>
-          ${o.statusHistory?.[o.statusHistory.length-1]?.time
-            ? new Date(o.statusHistory[o.statusHistory.length-1].time).toLocaleString()
-            : ""}
-        </small>
-        <br><br>
-
-        🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>
-        📞 ${o.wholesalerMobile || "N/A"}<br><br>
-
-        🏬 <b>Retailer:</b> ${o.retailerName}<br>
-        📞 ${o.retailerMobile || "N/A"}<br><br>
-
-        🚗 <b>Vehicle:</b>
-        ${
-          o.vehicleType==="two_wheeler"?"Two Wheeler":
-          o.vehicleType==="three_wheeler"?"Three Wheeler":
-          o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"
-        }
-        <br><br>
-
-        ${
-          o.status==="paid"
-            ? `<button class="btn accept"
-                onclick="acceptOrder('${o.isCart ? o.cartGroupId : o._id}')">
-                Accept
-              </button>`
-            : ""
-        }
-
-        ${
-          o.status==="delivery_accepted"
-            ? `<button class="btn pickup"
-                onclick="pickupOrder('${o.isCart ? o.cartGroupId : o._id}')">
-                Pickup
-              </button>`
-            : ""
-        }
-
-        ${
-          o.status==="picked_up"
-            ? `<button class="btn pickup"
-                onclick="deliverFlow('${o.isCart ? o.cartGroupId : o._id}')">
-                Generate Code
-              </button>`
-            : ""
-        }
-
-        ${
-          o.status==="delivery_code_generated"
-            ? `<button class="btn done"
-                onclick="deliverFlow('${o.isCart ? o.cartGroupId : o._id}')">
-                Delivered
-              </button>`
-            : ""
-        }
-
+      <div class="status-box ${statusClass}">
+        Status: <b>${statusText}</b><br>
+        🕒 ${o.time ? new Date(o.time).toLocaleString() : ""}
       </div>
+
+      <hr>
+
+      <b>📦 Products:</b>
+      <ul>
+        ${o.products.map(p=>`<li>${p.productName}</li>`).join("")}
+      </ul>
+
+      <hr>
+
+      🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>
+      📞 ${o.wholesalerMobile || "N/A"}<br><br>
+
+      🏬 <b>Retailer:</b> ${o.retailerName}<br>
+      📞 ${o.retailerMobile || "N/A"}<br><br>
+
+      🚗 <b>Vehicle:</b>
+      ${
+        o.vehicleType==="two_wheeler"?"Two Wheeler":
+        o.vehicleType==="three_wheeler"?"Three Wheeler":
+        o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"
+      }
+      <br><br>
+
+      ${
+        o.status==="paid"
+          ? `<button class="btn accept" onclick="acceptOrder('${o.key}')">Accept</button>`
+          : ""
+      }
+
+      ${
+        o.status==="delivery_accepted"
+          ? `<button class="btn pickup" onclick="pickupOrder('${o.key}')">Pickup</button>`
+          : ""
+      }
+
+      ${
+        o.status==="picked_up"
+          ? `<button class="btn pickup" onclick="deliverFlow('${o.key}')">Generate Code</button>`
+          : ""
+      }
+
+      ${
+        o.status==="delivery_code_generated"
+          ? `<button class="btn done" onclick="deliverFlow('${o.key}')">Delivered</button>`
+          : ""
+      }
+
     </div>
     `;
   }).join("");
 }
-  
+  function getStatusClass(status){
+  if(status==="paid" || status==="pending") return "status-pending";
+  if(status==="delivery_accepted" || status==="assigned") return "status-assigned";
+  if(status==="picked_up" || status==="delivery_code_generated" || status==="delivered") return "status-delivered";
+  return "status-default";
+}
+
+function getStatusText(status){
+  if(status==="paid") return "Pending";
+  if(status==="delivery_accepted") return "Assigned";
+  if(status==="picked_up") return "Picked Up";
+  if(status==="delivery_code_generated") return "Out for Delivery";
+  if(status==="delivered") return "Delivered";
+  return status;
+}
 /* ACTIONS */  
 async function acceptOrder(id){  
  const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");  
