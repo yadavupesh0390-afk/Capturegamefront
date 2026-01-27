@@ -313,12 +313,21 @@ async function loadOrders(){
   const map = {};
 
   orders.forEach(o=>{
+    // Agar cartOrder hai to cartGroupId ke under group karo, warna _id
     const key = o.cartGroupId || o._id;
 
     if(!map[key]){
       map[key] = {
-        ...o,
-        isCart: !!o.cartGroupId,
+        key,
+        isCartOrder: !!o.cartGroupId,
+        status: o.status,
+        time: o.statusHistory?.[0]?.time || o.createdAt,
+        retailerName: o.retailerName,
+        retailerMobile: o.retailerMobile,
+        wholesalerName: o.wholesalerName,
+        wholesalerMobile: o.wholesalerMobile,
+        vehicleType: o.vehicleType,
+        deliveryBoyId: o.deliveryBoyId,
         products: []
       };
     }
@@ -327,7 +336,7 @@ async function loadOrders(){
   });
 
   return Object.values(map);
- } 
+}
 /* RENDER ORDERS */  
 function renderOrders(list){
   if(!list.length){
