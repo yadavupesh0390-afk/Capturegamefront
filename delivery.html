@@ -81,17 +81,22 @@ body {
 }
 
 /* ===================== STATUS BOX ===================== */
-.status-box {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 14px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 10px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  vertical-align: middle;
+/* ===== COMPACT STATUS BOX ===== */
+.status-box{
+  display:inline-flex;          /* pill jaisa */
+  align-items:center;
+  gap:6px;
+
+  padding:3px 8px;              /* 🔥 chhota size */
+  border-radius:999px;          /* fully rounded pill */
+
+  font-size:11px;               /* compact text */
+  font-weight:600;
+
+  line-height:1;                /* extra height remove */
+  white-space:nowrap;
+
+  max-width:100%;
 }
 
 .status-pending {
