@@ -145,6 +145,31 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
   background:#f0fdf4;
   color:#15803d;
 }
+ /* ===== ORDER TYPE COLORS ===== */
+
+/* Direct Buy (default) */
+.card.direct-order{
+  background:#ffffff; /* ⚪ white */
+  border-left:4px solid #e5e7eb;
+}
+
+/* Cart Order */
+.card.cart-order{
+  background:#fff7ed; /* 🟠 light orange */
+  border-left:4px solid #fb923c;
+}
+
+/* Status: Assigned */
+.card.assigned{
+  background:#eff6ff; /* 🔵 light blue */
+  border-left:4px solid #3b82f6;
+}
+
+/* Status: Delivered */
+.card.delivered{
+  background:#ecfdf5; /* 🟢 light green */
+  border-left:4px solid #22c55e;
+}
 </style>  </head>  <body>    
 <div class="main">    <div class="icon-bar">    
     <button class="icon-btn" onclick="openProfile()"><i class="bi bi-shop"></i></button>    
@@ -874,59 +899,62 @@ async function loadOrders(){
   const r = await fetch(API + "/api/orders/wholesaler/" + WID);
   const d = await r.json();
 
-  if(!d.orders || !d.orders.length){
+  if (!d.orders || !d.orders.length) {
     orders.innerHTML = "No orders";
     return;
   }
 
-  const grouped = groupOrdersByCart(d.orders);
+  orders.innerHTML = d.orders.map(o => {
 
-  orders.innerHTML = grouped.map(g=>`
-    <div class="card">
+    // 🔥 ORDER TYPE
+    let orderTypeClass = o.cartGroupId ? "cart-order" : "direct-order";
 
-      <b>
-        ${g.isCart ? "🛒 Cart Order" : "📦 Order"}
-      </b><br>
+    // 🔥 STATUS CLASS
+    let statusClass = "";
+    if(o.status === "assigned") statusClass = "assigned";
+    if(o.status === "delivered") statusClass = "delivered";
 
-      <div class="status">
-        Status: <b>${getStatusHTML(g.status)}</b><br>
-        🕒 ${new Date(g.time).toLocaleString()}
+    return `
+      <div class="card ${orderTypeClass} ${statusClass}">
+        <b>${o.productName}</b> ₹${o.price}<br>
+
+        🏬 Retailer: ${o.retailerName}<br>
+        📞 ${o.retailerMobile}<br>
+
+        🚚 Vehicle: ${o.vehicleType || "Not assigned"}<br>
+
+        <div class="status">
+          Status: <b>${o.status}</b><br>
+          🕒 ${formatDateTime(
+            o.statusHistory?.[0]?.time || o.createdAt
+          )}
+        </div>
+
+        ${
+          o.status === "pending"
+          ? `
+            <button class="success"
+              onclick="confirmOrder('${o._id}')">
+              <i class="bi bi-check-circle-fill"></i>
+              Confirm Order
+            </button>
+          `
+          : o.status === "assigned"
+          ? `
+            <div style="margin-top:6px;color:#2563eb;font-size:13px">
+              🚚 Assigned to Delivery Boy<br>
+              👤 ID: ${o.deliveryBoyId || "N/A"}
+            </div>
+          `
+          : `
+            <div style="margin-top:6px;color:#16a34a;font-size:13px">
+              📦 ${o.status}
+            </div>
+          `
+        }
       </div>
-
-      <hr>
-
-      <b>📦 Products:</b>
-      <ul>
-        ${g.products.map(p=>`
-          <li>${p.productName} — ₹${p.price}</li>
-        `).join("")}
-      </ul>
-
-      <hr>
-
-      🏬 <b>Retailer:</b> ${g.retailerName}<br>
-      📞 ${g.retailerMobile}<br><br>
-
-      🚚 <b>Vehicle:</b> ${g.vehicleType || "Not assigned"}<br>
-
-      ${
-        g.status==="pending"
-        ? `<button class="success"
-             onclick="confirmOrder('${g.key}')">
-             Confirm Order
-           </button>`
-        : g.status==="assigned"
-        ? `<div style="color:#16a34a;font-size:13px">
-            ✅ Assigned to Delivery Boy<br>
-            👤 Delivery ID: ${g.deliveryBoyId || "N/A"}
-           </div>`
-        : `<div style="color:#2563eb;font-size:13px">
-            📦 ${g.status}
-           </div>`
-      }
-
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
 loadCategories();
