@@ -4,102 +4,67 @@
 <title>Delivery Partner Dashboard</title>  
 <meta name="viewport" content="width=device-width, initial-scale=1.0">  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">  
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">  <style>  
-*{box-sizing:border-box;font-family:Poppins,sans-serif}  
-body{margin:0;background:#eef2f7}  
-.main{max-width:900px;margin:auto;padding:16px}  
-  
-.top{  
- background:#0f172a;color:#fff;  
- display:flex;justify-content:space-between;align-items:center;  
- padding:14px;border-radius:16px  
-}  
-.icon-btn{  
- background:#2563eb;border:none;color:#fff;  
- width:44px;height:44px;border-radius:50%;  
- font-size:20px;cursor:pointer  
-}  
-  
-.card{  
- background:#fff;margin-top:14px;padding:14px;  
- border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.08)  
-}  
-  
-.order{  
- display:flex;gap:12px;margin-top:12px  
-}  
-.order img{  
- width:90px;height:80px;object-fit:cover;border-radius:10px  
-}  
-  
-.badge{  
- padding:4px 10px;border-radius:20px;  
- font-size:12px;display:inline-block  
-}  
-.green{background:#dcfce7;color:#166534}  
-.blue{background:#e0f2fe;color:#075985}  
-  
-.btn{  
- display:inline-flex;align-items:center;gap:6px;  
- padding:8px 14px;border:none;border-radius:10px;  
- cursor:pointer;margin-top:8px;font-size:13px  
-}  
-.accept{background:#16a34a;color:#fff}  
-.pickup{background:#f59e0b;color:#fff}  
-.done{background:#2563eb;color:#fff}  
-  
-/* MODALS */  
-.modal{  
- position:fixed;inset:0;background:rgba(0,0,0,.5);  
- display:none;align-items:center;justify-content:center;z-index:20  
-}  
-.modal-box{  
- background:#fff;width:92%;max-width:420px;  
- border-radius:16px;padding:20px  
-}  
-.modal-box input,select{  
- width:100%;padding:10px;margin:8px 0;  
- border-radius:10px;border:1px solid #ccc  
-}  
-  /* ===== LIVE LOCATION ===== */
-.location-group{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin:12px 0;
+
+/* ===================== BASE ===================== */
+* {
+  box-sizing: border-box;
+  font-family: Poppins, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
-.location-group label{
-  font-size:13px;
-  color:#0f172a;
-  font-weight:600;
+body {
+  background: #eef2f7;
 }
 
-.location-group input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #2563eb;
-  background:#f8fafc;
-  font-size:13px;
-}
-  .badge.cart{
-  background:#ede9fe;
-  color:#5b21b6;
-  }
-  /* CARD BASE */
-.card.order{
-  background:#fff;
-  margin-top:14px;
-  padding:14px;
-  border-radius:14px;
-  box-shadow:0 6px 18px rgba(0,0,0,.08);
+/* ===================== TOP BAR ===================== */
+.top {
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  border-radius: 16px;
 }
 
-/* STATUS BOX */
-/* STATUS BOX FIXED */
+.icon-btn {
+  background: #2563eb;
+  border: none;
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* ===================== CARD BASE ===================== */
+.card {
+  background: #fff;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.card.order {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order img {
+  width: 90px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* ===================== STATUS BOX ===================== */
 .status-box {
-  display: inline-block;       /* inline to shrink to content */
-  padding: 4px 10px;           /* less padding to make compact */
+  display: inline-block;       /* shrink to content */
+  padding: 4px 10px;           /* compact padding */
   border-radius: 12px;
   font-size: 12px;             /* slightly smaller font */
   font-weight: 500;
@@ -110,99 +75,142 @@ body{margin:0;background:#eef2f7}
   vertical-align: middle;
 }
 
-/* COLORS */
-.status-pending{
-  background:#fef3c7;
-  color:#b45309;
-}
-
-.status-assigned{
-  background:#bfdbfe;
-  color:#1e40af;
-}
-
-.status-delivered{
-  background:#dcfce7;
-  color:#166534;
-}
-
-.status-default{
-  background:#e5e7eb;
-  color:#374151;
-}
-
 /* STATUS COLORS */
-.status-pending{
-  background:#fef3c7;  /* light yellow/orange */
-  color:#b45309;
+.status-pending {
+  background: #fef3c7;  /* light yellow/orange */
+  color: #b45309;
 }
 
-.status-assigned{
-  background:#bfdbfe;  /* light blue */
-  color:#1e40af;
+.status-assigned {
+  background: #bfdbfe;  /* light blue */
+  color: #1e40af;
 }
 
-.status-delivered{
-  background:#dcfce7;  /* light green */
-  color:#166534;
+.status-delivered {
+  background: #dcfce7;  /* light green */
+  color: #166534;
 }
 
-.status-default{
-  background:#e5e7eb;  /* light gray */
-  color:#374151;
+.status-default {
+  background: #e5e7eb;  /* light gray */
+  color: #374151;
 }
 
-/* PRODUCTS LIST */
-.card.order ul{
+/* ===================== BADGES ===================== */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.badge.cart {
+  background: #ede9fe;  /* light purple for cart orders */
+  color: #5b21b6;
+}
+
+.badge.green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge.blue {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+/* ===================== PRODUCTS LIST ===================== */
+.card.order ul {
   list-style-type: disc;
-  margin:6px 0 6px 18px;
-  padding:0;
+  margin: 6px 0 6px 18px;
+  padding: 0;
 }
 
-.card.order ul li{
-  font-size:14px;
-  line-height:1.5;
+.card.order ul li {
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-/* BUTTONS */
-.btn{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:8px 14px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  margin-top:6px;
-  font-size:13px;
+/* ===================== BUTTONS ===================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 6px;
+  font-size: 13px;
 }
 
-.btn.accept{background:#16a34a;color:#fff;}  /* green */
-.btn.pickup{background:#f59e0b;color:#fff;}  /* amber/orange */
-.btn.done{background:#2563eb;color:#fff;}    /* blue */
-
-/* BADGES */
-.badge{
-  padding:4px 10px;
-  border-radius:20px;
-  font-size:12px;
-  display:inline-block;
+.btn.accept {
+  background: #16a34a;  /* green */
+  color: #fff;
 }
 
-.badge.cart{
-  background:#ede9fe;  /* light purple for cart orders */
-  color:#5b21b6;
+.btn.pickup {
+  background: #f59e0b;  /* amber/orange */
+  color: #fff;
 }
 
-.badge.green{
-  background:#dcfce7;
-  color:#166534;
+.btn.done {
+  background: #2563eb;  /* blue */
+  color: #fff;
 }
 
-.badge.blue{
-  background:#e0f2fe;
-  color:#075985;
+/* ===================== LIVE LOCATION ===================== */
+.location-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
 }
+
+.location-group label {
+  font-size: 13px;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.location-group input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #2563eb;
+  background: #f8fafc;
+  font-size: 13px;
+}
+
+/* ===================== MODALS ===================== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.modal-box {
+  background: #fff;
+  width: 92%;
+  max-width: 420px;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.modal-box input,
+.modal-box select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+
 </style>  </head>  <body>  <div class="main">    <div class="top">  
     <h3>🚚 Delivery Partner</h3>  
     <button class="icon-btn" onclick="openProfile()">  
