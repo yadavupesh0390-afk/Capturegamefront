@@ -309,7 +309,25 @@ async function loadOrders(){
   orders.innerHTML="<p style='text-align:center;color:red'>Failed to load orders</p>";  
  }  
 }  
-  
+ function groupOrdersByCart(orders){
+  const map = {};
+
+  orders.forEach(o=>{
+    const key = o.cartGroupId || o._id;
+
+    if(!map[key]){
+      map[key] = {
+        ...o,
+        isCart: !!o.cartGroupId,
+        products: []
+      };
+    }
+
+    map[key].products.push(o);
+  });
+
+  return Object.values(map);
+ } 
 /* RENDER ORDERS */  
 function renderOrders(list){
   if(!list.length){
@@ -319,17 +337,15 @@ function renderOrders(list){
 
   orders.innerHTML = list.map(o => {
 
-    /* ===== STATUS TEXT + BADGE ===== */
     let statusText = o.status;
     let badgeClass = "blue";
 
-    if(o.isCartOrder){
+    if(o.isCart){
       statusText = "🛒 Cart Order (Multiple Items)";
       badgeClass = "cart";
     }
     else if(o.status === "paid"){
       statusText = "Paid";
-      badgeClass = "blue";
     }
     else if(o.status === "delivery_accepted"){
       statusText = "Accepted";
@@ -350,10 +366,26 @@ function renderOrders(list){
 
     return `
     <div class="card order">
-      <img src="${o.productImg}">
+
+      <img src="${o.productImg || o.products?.[0]?.productImg || ''}">
+
       <div style="flex:1">
 
-        <b>${o.productName}</b><br>
+        <b>
+          ${o.isCart
+            ? "Multiple Products"
+            : o.productName}
+        </b><br>
+
+        ${
+          o.isCart
+            ? `<ul style="margin:6px 0 0 18px;font-size:13px">
+                ${o.products.map(p=>`
+                  <li>${p.productName} — ₹${p.price}</li>
+                `).join("")}
+               </ul>`
+            : ""
+        }
 
         <span class="badge ${badgeClass}">
           ${statusText}
@@ -382,25 +414,37 @@ function renderOrders(list){
 
         ${
           o.status==="paid"
-            ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`
+            ? `<button class="btn accept"
+                onclick="acceptOrder('${o.isCart ? o.cartGroupId : o._id}')">
+                Accept
+              </button>`
             : ""
         }
 
         ${
           o.status==="delivery_accepted"
-            ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`
+            ? `<button class="btn pickup"
+                onclick="pickupOrder('${o.isCart ? o.cartGroupId : o._id}')">
+                Pickup
+              </button>`
             : ""
         }
 
         ${
           o.status==="picked_up"
-            ? `<button class="btn pickup" onclick="deliverFlow('${o._id}')">Generate Code</button>`
+            ? `<button class="btn pickup"
+                onclick="deliverFlow('${o.isCart ? o.cartGroupId : o._id}')">
+                Generate Code
+              </button>`
             : ""
         }
 
         ${
           o.status==="delivery_code_generated"
-            ? `<button class="btn done" onclick="deliverFlow('${o._id}')">Delivered</button>`
+            ? `<button class="btn done"
+                onclick="deliverFlow('${o.isCart ? o.cartGroupId : o._id}')">
+                Delivered
+              </button>`
             : ""
         }
 
