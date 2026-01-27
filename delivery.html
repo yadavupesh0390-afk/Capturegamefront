@@ -307,50 +307,104 @@ async function loadOrders(){
 }  
   
 /* RENDER ORDERS */  
-function renderOrders(list){  
- if(!list.length){  
-  orders.innerHTML="<p style='text-align:center'>No Orders</p>";  
-  return;  
- }  
-  
- orders.innerHTML = list.map(o=>`  
- <div class="card order">  
-  <img src="${o.productImg}">  
-  <div style="flex:1">  
-   <b>${o.productName}</b><br>  
-   <span class="badge blue">${o.status}</span><br>  
-   <small>${o.statusHistory[o.statusHistory.length-1]?.time ? new Date(o.statusHistory[o.statusHistory.length-1].time).toLocaleString() : ""}</small><br><br>  
-   🏪 <b>Wholesaler Shop:</b> ${o.wholesalerName}<br>  
-   🧭 <b>Wholesaler Location:</b>
-${o.wholesalerLocation
- ? `${o.wholesalerLocation.lat}, ${o.wholesalerLocation.lng}`
- : "N/A"}
-<br>  
-   📞 ${o.wholesalerMobile || "N/A"}<br><br>  
-   🏬 <b>Retailer Shop:</b> ${o.retailerName}<br>  
-   🧭 <b>Retailer Location:</b>
-${o.retailerLocation
- ? `${o.retailerLocation.lat}, ${o.retailerLocation.lng}`
- : "N/A"}
-<br>  
-   📞 ${o.retailerMobile || "N/A"}<br><br>  
-   🚗 <b>Vehicle:</b> ${o.vehicleType==="two_wheeler"?"Two Wheeler":o.vehicleType==="three_wheeler"?"Three Wheeler":o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"}<br><br>  
-  
-        ${o.status==="paid"
-  ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`:""}
+function renderOrders(list){
+  if(!list.length){
+    orders.innerHTML="<p style='text-align:center'>No Orders</p>";
+    return;
+  }
 
-${o.status==="delivery_accepted"
-  ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`:""}
+  orders.innerHTML = list.map(o => {
 
-${o.status==="picked_up"
-  ? `<button class="btn pickup" onclick="deliverFlow('${o._id}')">Generate Code</button>`:""}
+    /* ===== STATUS TEXT + BADGE ===== */
+    let statusText = o.status;
+    let badgeClass = "blue";
 
-${o.status==="delivery_code_generated"
-  ? `<button class="btn done" onclick="deliverFlow('${o._id}')">Delivered</button>`:""}
+    if(o.isCartOrder){
+      statusText = "🛒 Cart Order (Multiple Items)";
+      badgeClass = "cart";
+    }
+    else if(o.status === "paid"){
+      statusText = "Paid";
+      badgeClass = "blue";
+    }
+    else if(o.status === "delivery_accepted"){
+      statusText = "Accepted";
+      badgeClass = "green";
+    }
+    else if(o.status === "picked_up"){
+      statusText = "Picked Up";
+      badgeClass = "green";
+    }
+    else if(o.status === "delivery_code_generated"){
+      statusText = "Out for Delivery";
+      badgeClass = "green";
+    }
+    else if(o.status === "delivered"){
+      statusText = "Delivered";
+      badgeClass = "green";
+    }
+
+    return `
+    <div class="card order">
+      <img src="${o.productImg}">
+      <div style="flex:1">
+
+        <b>${o.productName}</b><br>
+
+        <span class="badge ${badgeClass}">
+          ${statusText}
+        </span><br>
+
+        <small>
+          ${o.statusHistory?.[o.statusHistory.length-1]?.time
+            ? new Date(o.statusHistory[o.statusHistory.length-1].time).toLocaleString()
+            : ""}
+        </small>
+        <br><br>
+
+        🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>
+        📞 ${o.wholesalerMobile || "N/A"}<br><br>
+
+        🏬 <b>Retailer:</b> ${o.retailerName}<br>
+        📞 ${o.retailerMobile || "N/A"}<br><br>
+
+        🚗 <b>Vehicle:</b>
+        ${
+          o.vehicleType==="two_wheeler"?"Two Wheeler":
+          o.vehicleType==="three_wheeler"?"Three Wheeler":
+          o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"
+        }
+        <br><br>
+
+        ${
+          o.status==="paid"
+            ? `<button class="btn accept" onclick="acceptOrder('${o._id}')">Accept</button>`
+            : ""
+        }
+
+        ${
+          o.status==="delivery_accepted"
+            ? `<button class="btn pickup" onclick="pickupOrder('${o._id}')">Pickup</button>`
+            : ""
+        }
+
+        ${
+          o.status==="picked_up"
+            ? `<button class="btn pickup" onclick="deliverFlow('${o._id}')">Generate Code</button>`
+            : ""
+        }
+
+        ${
+          o.status==="delivery_code_generated"
+            ? `<button class="btn done" onclick="deliverFlow('${o._id}')">Delivered</button>`
+            : ""
+        }
+
       </div>
     </div>
-  `).join("");
-}  
+    `;
+  }).join("");
+}
   
 /* ACTIONS */  
 async function acceptOrder(id){  
