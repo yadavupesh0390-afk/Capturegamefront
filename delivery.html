@@ -86,6 +86,96 @@ body{margin:0;background:#eef2f7}
   background:#ede9fe;
   color:#5b21b6;
   }
+  /* CARD BASE */
+.card.order{
+  background:#fff;
+  margin-top:14px;
+  padding:14px;
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.08);
+}
+
+/* STATUS BOX */
+.status-box{
+  padding:6px 12px;
+  border-radius:12px;
+  display:inline-block;
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+/* STATUS COLORS */
+.status-pending{
+  background:#fef3c7;  /* light yellow/orange */
+  color:#b45309;
+}
+
+.status-assigned{
+  background:#bfdbfe;  /* light blue */
+  color:#1e40af;
+}
+
+.status-delivered{
+  background:#dcfce7;  /* light green */
+  color:#166534;
+}
+
+.status-default{
+  background:#e5e7eb;  /* light gray */
+  color:#374151;
+}
+
+/* PRODUCTS LIST */
+.card.order ul{
+  list-style-type: disc;
+  margin:6px 0 6px 18px;
+  padding:0;
+}
+
+.card.order ul li{
+  font-size:14px;
+  line-height:1.5;
+}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 14px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:6px;
+  font-size:13px;
+}
+
+.btn.accept{background:#16a34a;color:#fff;}  /* green */
+.btn.pickup{background:#f59e0b;color:#fff;}  /* amber/orange */
+.btn.done{background:#2563eb;color:#fff;}    /* blue */
+
+/* BADGES */
+.badge{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  display:inline-block;
+}
+
+.badge.cart{
+  background:#ede9fe;  /* light purple for cart orders */
+  color:#5b21b6;
+}
+
+.badge.green{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.badge.blue{
+  background:#e0f2fe;
+  color:#075985;
+}
 </style>  </head>  <body>  <div class="main">    <div class="top">  
     <h3>🚚 Delivery Partner</h3>  
     <button class="icon-btn" onclick="openProfile()">  
