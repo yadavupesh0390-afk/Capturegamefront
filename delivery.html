@@ -314,16 +314,20 @@ async function openProfile(){
 }
   
   function getStatusHTML(status, time){
-  const cls = getStatusClass(status);
-  const text = getStatusText(status);
+  const statusClass = getStatusClass(status);
+  const statusText  = getStatusText(status);
 
   return `
     <div class="status-line">
-      <span class="status-box ${cls}">${text}</span>
-      ${time ? `<span class="time">🕒 ${new Date(time).toLocaleString()}</span>` : ""}
+      <span class="status-box ${statusClass}">
+        ${statusText}
+      </span>
+      <span class="status-time">
+        🕒 ${time ? new Date(time).toLocaleString() : ""}
+      </span>
     </div>
   `;
-  }
+}
   
 async function saveProfile(){    
 
