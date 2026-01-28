@@ -475,7 +475,7 @@ async function openProfile(){
     </div>
   `;
 }
-let map, routingControl;
+let map, routingControl, liveMarker, watchId;
 
 function openMapModalSimple(type, destLat, destLng){
   if(!liveLat || !liveLng){
@@ -502,7 +502,8 @@ function openMapModalSimple(type, destLat, destLng){
 
   // 🔹 Agar map pehle se exist karta hai, remove kar do
   if(map) map.remove();
-  
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+
   // 🔹 Leaflet Map init
   map = L.map('mapFrame', {
     center: [liveLat, liveLng],
@@ -520,19 +521,50 @@ function openMapModalSimple(type, destLat, destLng){
       L.latLng(liveLat, liveLng),
       L.latLng(destLat, destLng)
     ],
-    lineOptions: {
-      styles: [{color: '#2563eb', weight: 5}]
-    },
-    show: false, // hide itinerary panel
+    lineOptions: { styles: [{color: '#2563eb', weight: 5}] },
+    show: false,
     addWaypoints: false,
     draggableWaypoints: false,
     fitSelectedRoutes: true
   }).addTo(map);
+
+  // 🔹 Live marker
+  liveMarker = L.marker([liveLat, liveLng]).addTo(map);
+
+  // 🔹 Watch position for real-time updates
+  watchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      liveLat = pos.coords.latitude;
+      liveLng = pos.coords.longitude;
+
+      // move marker
+      liveMarker.setLatLng([liveLat, liveLng]);
+
+      // optional: pan map
+      map.panTo([liveLat, liveLng]);
+
+      // update routing dynamically
+      if(routingControl){
+        routingControl.setWaypoints([
+          L.latLng(liveLat, liveLng),
+          L.latLng(destLat, destLng)
+        ]);
+      }
+    },
+    (err) => console.log("Live location error:", err.message),
+    { enableHighAccuracy:true, maximumAge:0, timeout:10000 }
+  );
 }
 
 function closeMapModal(){
   document.getElementById("mapModal").style.display = "none";
   if(map) map.remove();
+  map = null;
+  liveMarker = null;
+
+  // stop watching live location
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+  watchId = null;
 }
 
   
