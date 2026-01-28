@@ -78,75 +78,60 @@ body{
 
 
 /* ===================== ORDER CARD ===================== */
+/* ===================== ORDER CARD ===================== */
 .card.order{
   display:flex;
   flex-direction:column;
-  gap:16px;
+  gap:14px;
 }
 
-/* ===================== STATUS (SMALL) ===================== */
+/* ===================== STATUS WRAPPER ===================== */
+.status-wrap{
+  display:flex;
+  gap:8px;                 /* 🔥 status cards ke beech gap */
+  flex-wrap:wrap;
+}
+
+/* ===================== STATUS (ULTRA COMPACT) ===================== */
 .status-box{
   display:inline-flex;
   align-items:center;
-  gap:2px;
+  gap:4px;
 
-  padding:4px 10px;          /* thoda balanced padding */
-  font-size:12px;            /* readable but compact */
+  padding:3px 8px;         /* 🔥 aur chhota */
+  font-size:11px;          /* compact text */
   font-weight:600;
 
-  border-radius:14px;        /* pill look but tight */
+  border-radius:999px;     /* perfect pill */
   white-space:nowrap;
+  line-height:1;
 
-  width:auto;                /* fit to content */
-  max-width:100%;
-  line-height:1;             /* extra height remove */
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
 }
 
-/* STATUS COLORS */
+/* ===================== STATUS COLORS (SOFT + CLEAR) ===================== */
 .status-pending{
-  background:#fff7ed;        /* softer orange */
+  background:#fff1e6;      /* soft orange */
   color:#9a3412;
-  border:1px solid #fed7aa;
+  border:1px solid #fdba74;
 }
 
 .status-assigned{
-  background:#eff6ff;        /* soft blue */
+  background:#e8f2ff;      /* clean blue */
   color:#1e40af;
-  border:1px solid #bfdbfe;
+  border:1px solid #93c5fd;
 }
 
 .status-delivered{
-  background:#ecfdf5;        /* soft green */
+  background:#e7f9ef;      /* fresh green */
   color:#166534;
-  border:1px solid #6ee7b7;
+  border:1px solid #86efac;
 }
 
 .status-default{
-  background:#f9fafb;
+  background:#f3f4f6;      /* neutral */
   color:#374151;
-  border:1px solid #e5e7eb;
-}
-/* ===================== PRODUCTS ===================== */
-.card.order ul{
-  margin-left:18px;
-}
-
-.card.order li{
-  font-size:13.5px;
-  line-height:1.5;
-}
-
-/* ===================== BUTTONS ===================== */
-.btn{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:7px 12px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  font-size:12.5px;
-  font-weight:500;
+  border:1px solid #d1d5db;
 }
 
 .btn.accept{background:#16a34a;color:#fff;}
