@@ -83,7 +83,8 @@ body{
   gap:14px;
   margin-bottom:16px;
   padding:14px;
-
+   position: relative;
+  z-index: 300;
   background:#1e293b;   /* dark blue */
   color:#e5e7eb;        /* 🔥 ALL TEXT WHITE */
 
@@ -278,7 +279,10 @@ hr{
   font-size:12px;
   cursor:pointer;
   }
-
+.btn{
+  cursor: pointer;
+  pointer-events: auto;
+}
 </style>  </head>  <body>  <div class="main">    <div class="top">  
     <h3>🚚 Delivery Partner</h3>  
     <button class="icon-btn" onclick="openProfile()">  
