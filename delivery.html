@@ -328,20 +328,14 @@ hr{
  </div> 
 </div> 
   <!-- 🌍 MAP FULLSCREEN MODAL (BODY LEVEL) -->
-<!-- 🌍 MAP FULLSCREEN MODAL (BODY LEVEL) -->
-<div id="mapModal">
-  <div class="map-box">
-    <div class="map-header">
+<!-- map modal -->
+<div id="mapModal" style="position:fixed; inset:0; display:none; z-index:999;">
+  <div style="height:100%; display:flex; flex-direction:column;">
+    <div style="background:#0f172a; color:#fff; padding:12px; display:flex; justify-content:space-between; align-items:center;">
       <b id="mapTitle">Live Location</b>
-      <button class="icon-btn" onclick="closeMapModal()">✖</button>
+      <button onclick="closeMapModal()" style="color:white">✖</button>
     </div>
-
-    <iframe
-      id="mapFrame"
-      src=""
-      allowfullscreen
-      loading="lazy">
-    </iframe>
+    <div id="map" style="flex:1;"></div>
   </div>
 </div>
   <script>  
