@@ -435,23 +435,26 @@ async function openProfile(){
   `;
 }
   function openMapModalSimple(type, destLat, destLng){
-
+  // agar live location null hai, turant fetch karo
   if(!liveLat || !liveLng){
-    alert("❌ Live location not available");
-    return;
+    navigator.geolocation.getCurrentPosition(
+      (pos)=>{
+        liveLat = pos.coords.latitude;
+        liveLng = pos.coords.longitude;
+
+        // phir map open karo
+        openMapModalSimple(type, destLat, destLng);
+      },
+      (err)=>{
+        alert("❌ Live location not available: " + err.message);
+      },
+      { enableHighAccuracy:true, timeout:10000 }
+    );
+    return; // wait karo
   }
 
-  if(!destLat || !destLng){
-    alert("❌ Destination location missing");
-    return;
-  }
-
-  // 🔥 GOOGLE MAPS ROAD NAVIGATION
-  const mapURL =
-    `https://www.google.com/maps/dir/?api=1` +
-    `&origin=${liveLat},${liveLng}` +
-    `&destination=${destLat},${destLng}` +
-    `&travelmode=driving`;
+  // ✅ LIVE LOCATION available → normal route
+  const mapURL = `https://www.google.com/maps/dir/?api=1&origin=${liveLat},${liveLng}&destination=${destLat},${destLng}&travelmode=driving`;
 
   document.getElementById("mapTitle").innerText =
     type === "wholesaler"
