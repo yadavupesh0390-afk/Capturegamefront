@@ -441,6 +441,9 @@ async function openProfile(){
     return;
   }
 
+  const mapURL = `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+
+  document.getElementById("mapFrame").src = mapURL;
   document.getElementById("mapModal").style.display = "block";
 }
 function closeMapModal(){
