@@ -411,7 +411,7 @@ async function openProfile(){
     <div class="status-wrap">
 
       ${
-        wholesalerLoc && wholesalerLoc.lat
+        wholesalerLoc?.lat
         ? `<button class="btn pickup"
             onclick="openMapModalSimple('wholesaler', ${wholesalerLoc.lat}, ${wholesalerLoc.lng})">
             📍 Wholesaler Location
@@ -420,7 +420,7 @@ async function openProfile(){
       }
 
       ${
-        retailerLoc && retailerLoc.lat
+        retailerLoc?.lat
         ? `<button class="btn pickup"
             onclick="openMapModalSimple('retailer', ${retailerLoc.lat}, ${retailerLoc.lng})">
             📍 Retailer Location
@@ -448,25 +448,6 @@ async function openProfile(){
   document.getElementById("mapFrame").src =
     `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
 
-  document.getElementById("mapModal").style.display = "block";
-  }
-  
-  function openMapModal(type, location){
-  if(!location || !location.lat || !location.lng){
-    alert("Location not available");
-    return;
-  }
-
-  const title = type === "wholesaler"
-    ? "🏪 Wholesaler Live Location"
-    : "🏬 Retailer Live Location";
-
-  document.getElementById("mapTitle").innerText = title;
-
-  const mapURL =
-    `https://www.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`;
-
-  document.getElementById("mapFrame").src = mapURL;
   document.getElementById("mapModal").style.display = "block";
 }
 
