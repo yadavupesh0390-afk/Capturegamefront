@@ -260,76 +260,613 @@ hr{
   <button class="btn" onclick="closeCodeModal()">Cancel</button>  
  </div>  
 </div>  <script>  
+const API = "https://shopbacked-vmhs.onrender.com";  
+const DBID = localStorage.getItem("userId");  
+const TOKEN = localStorage.getItem("token");  
+  
+let lastOrders = [];  
+let currentOrderId = null;  
+  
+dbId.innerText = DBID ? DBID.slice(0,8).toUpperCase() : "N/A";  
+  
+/* PROFILE */  
+  
+async function openProfile(){  
+  profileModal.style.display = "flex";  
+  
+  try{  
+    const res = await fetch(
+      `${API}/api/delivery/profile/${DBID}`,
+      {
+        headers:{ "Authorization":"Bearer "+TOKEN }
+      }
+    );  
+  
+    const data = await res.json();  
+    if(!data.success || !data.profile) return;  
+  
+    const p = data.profile;  
 
+    // BASIC DETAILS
+    pName.value      = p.name || "";  
+    pMobile.value    = p.mobile || "";  
+    pVehicle.value   = p.vehicle || "";  
+    pVehicleNo.value = p.vehicleNo || "";  
+    pCity.value      = p.city || "";  
 
-// ================= CONFIG =================
-const API="https://shopbacked-vmhs.onrender.com",DBID=localStorage.getItem("userId"),TOKEN=localStorage.getItem("token");
-let lastOrders=[],currentOrderId=null,liveLat=null,liveLng=null;
-dbId.innerText=DBID?DBID.slice(0,8).toUpperCase():"N/A";
+    // ✅ LIVE LOCATION LOAD
+    if(p.location && p.location.lat && p.location.lng){
+      liveLat = p.location.lat;
+      liveLng = p.location.lng;
 
-// ================= HELPERS =================
-const statusMap={paid:"Pending",pending:"Pending",delivery_accepted:"Assigned",assigned:"Assigned",picked_up:"Picked Up",delivery_code_generated:"Out for Delivery",delivered:"Delivered"};
-const statusClass={paid:"status-pending",pending:"status-pending",delivery_accepted:"status-assigned",assigned:"status-assigned",picked_up:"status-delivered",delivery_code_generated:"status-delivered",delivered:"status-delivered"};
-function getStatusHTML(s,t){return `<div class="status-line"><span class="status-box ${statusClass[s]||'status-default'}">${statusMap[s]||s.replace(/_/g,' ')}</span><span class="status-time">🕒 ${t?new Date(t).toLocaleString():""}</span></div>`;}
+      document.getElementById("pLocation").value =
+        liveLat.toFixed(6) + ", " + liveLng.toFixed(6);
+    }else{
+      document.getElementById("pLocation").value = "";
+      liveLat = null;
+      liveLng = null;
+    }
+   setLiveLocation();
+  }catch(err){  
+    console.error("Open profile error:", err);  
+    alert("❌ Profile load failed");
+  }  
+}
+  
+  function getStatusHTML(status, time){
+  const statusClass = getStatusClass(status);
+  const statusText  = getStatusText(status);
 
-// ================= PROFILE =================
-async function openProfile(){profileModal.style.display="flex";try{const res=await fetch(`${API}/api/delivery/profile/${DBID}`,{headers:{"Authorization":"Bearer "+TOKEN}});const data=await res.json();if(!data.success||!data.profile)return;const p=data.profile;pName.value=p.name||"";pMobile.value=p.mobile||"";pVehicle.value=p.vehicle||"";pVehicleNo.value=p.vehicleNo||"";pCity.value=p.city||"";if(p.location){liveLat=p.location.lat;liveLng=p.location.lng;pLocation.value=`${liveLat.toFixed(6)}, ${liveLng.toFixed(6)}`;}}catch(e){console.error(e);alert("❌ Profile load failed");}}
-function closeProfile(){profileModal.style.display="none";}
-async function saveProfile(){if(!pMobile.value.trim()){alert("Mobile number required");return;}const payload={deliveryBoyId:DBID,name:pName.value.trim(),mobile:pMobile.value.trim(),vehicle:pVehicle.value,vehicleNo:pVehicleNo.value.trim(),city:pCity.value.trim(),location:liveLat&&liveLng?{lat:liveLat,lng:liveLng}:null};try{const res=await fetch(`${API}/api/delivery/profile/save`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify(payload)});const data=await res.json();if(data.success){localStorage.setItem("deliveryProfile_"+DBID,JSON.stringify(payload));alert("✅ Profile + Live location saved");closeProfile();}else alert("❌ Profile save failed");}catch(e){alert("❌ Server error");}
-function getLiveLocation(){if(!navigator.geolocation){alert("Geolocation not supported");return;}navigator.geolocation.getCurrentPosition(pos=>{liveLat=pos.coords.latitude;liveLng=pos.coords.longitude;pLocation.value=`${liveLat.toFixed(6)}, ${liveLng.toFixed(6)}`;fetch(`${API}/api/delivery/profile/save`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify({deliveryBoyId:DBID,location:{lat:liveLat,lng:liveLng}})});},err=>console.log("Location error:",err.message),{enableHighAccuracy:true,timeout:10000});}
+  return `
+    <div class="status-line">
+      <span class="status-box ${statusClass}">
+        ${statusText}
+      </span>
+      <span class="status-time">
+        🕒 ${time ? new Date(time).toLocaleString() : ""}
+      </span>
+    </div>
+  `;
+}
+  
+async function saveProfile(){    
 
-// ================= ORDERS =================
-async function loadOrders(){try{const res=await fetch(`${API}/api/orders/delivery/${DBID}`,{headers:{Authorization:"Bearer "+TOKEN}});const data=await res.json();lastOrders=(data.orders||[]).filter(o=>!o.deliveryBoyId||o.deliveryBoyId===DBID);renderOrders(lastOrders);}catch(e){orders.innerHTML="<p style='text-align:center;color:red'>Failed to load orders</p>";}}
-function groupOrdersByCart(list){const map={};list.forEach(o=>{const key=o.cartGroupId||o._id;if(!map[key])map[key]={...o,key,products:[]};map[key].products.push(o);});return Object.values(map);}
-function renderOrders(list){if(!list.length){orders.innerHTML="<p style='text-align:center'>No Orders</p>";return;}orders.innerHTML=groupOrdersByCart(list).map(o=>`<div class="card order">${getStatusHTML(o.status,o.time)}<hr><b>📦 Products:</b><ul>${o.products.map(p=>`<li>${p.productName}</li>`).join("")}</ul><hr>🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>📞 ${o.wholesalerMobile||"N/A"}<br><br>🏬 <b>Retailer:</b> ${o.retailerName}<br>📞 ${o.retailerMobile||"N/A"}<br><br>🚗 <b>Vehicle:</b> ${o.vehicleType==="two_wheeler"?"Two Wheeler":o.vehicleType==="three_wheeler"?"Three Wheeler":o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"}<br><br>${o.status==="paid"?`<button class="btn accept" onclick="acceptOrder('${o.key}')">Accept</button>`:""}${o.status==="delivery_accepted"?`<button class="btn pickup" onclick="pickupOrder('${o.key}')">Pickup</button>`:""}${o.status==="picked_up"?`<button class="btn pickup" onclick="deliverFlow('${o.key}')">Generate Code</button>`:""}${o.status==="delivery_code_generated"?`<button class="btn done" onclick="deliverFlow('${o.key}')">Delivered</button>`:""}</div>`).join("");}
+  if(!pMobile.value.trim()){    
+    alert("Mobile number required");    
+    return;    
+  }    
 
-// ================= ACTIONS =================
-async function acceptOrder(id){const p=JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");await fetch(`${API}/api/orders/${id}/delivery-accept`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify({deliveryBoyId:DBID,deliveryBoyName:p.name||"Delivery Partner",deliveryBoyMobile:p.mobile||""})});loadOrders();}
-async function pickupOrder(id){const p=JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");const res=await fetch(`${API}/api/orders/${id}/pickup`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify({deliveryBoyId:DBID,deliveryBoyName:p.name||"Delivery Partner",deliveryBoyMobile:p.mobile||""})});const data=await res.json();alert(data.success?"✅ Order picked up":(data.message||"Pickup failed ❌"));loadOrders();}
-async function deliverFlow(id){const order=lastOrders.find(o=>o._id===id);if(!order){alert("Order not found");return;}if(order.status==="picked_up"){const res=await fetch(`${API}/api/orders/generate-delivery-code/${id}`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify({deliveryBoyId:DBID})});const data=await res.json();alert(data.success?"🔐 Code generated & sent to retailer":(data.message||"Code generation failed"));loadOrders();return;}if(order.status==="delivery_code_generated"){currentOrderId=id;deliveryCodeInput.value="";codeModal.style.display="flex";return;}alert("❌ Order not ready for delivery");}
-async function submitDeliveryCode(){const code=deliveryCodeInput.value.trim();if(!code)return alert("Enter delivery code");const res=await fetch(`${API}/api/orders/verify-delivery-code/${currentOrderId}`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+TOKEN},body:JSON.stringify({code,deliveryBoyId:DBID})});const data=await res.json();if(data.success){alert("✅ Order delivered");closeCodeModal();loadOrders();return;}if(data.message?.includes("expired")){alert(data.message);closeCodeModal();loadOrders();return;}alert("❌ Wrong code");}
-function closeCodeModal(){codeModal.style.display="none";}
+  const payload = {    
+    deliveryBoyId: DBID,  
+    name: pName.value.trim(),    
+    mobile: pMobile.value.trim(),    
+    vehicle: pVehicle.value,    
+    vehicleNo: pVehicleNo.value.trim(),    
+    city: pCity.value.trim(),
+    location: liveLat && liveLng ? {
+      lat: liveLat,
+      lng: liveLng
+    } : null
+  };    
 
-// ================= FCM PUSH =================
+  try{    
+    const res = await fetch(`${API}/api/delivery/profile/save`,{    
+      method:"POST",    
+      headers:{    
+        "Content-Type":"application/json",    
+        "Authorization":"Bearer "+TOKEN    
+      },    
+      body: JSON.stringify(payload)    
+    });    
+
+    const data = await res.json();    
+
+    if(data.success){
+
+      localStorage.setItem(
+        "deliveryProfile_"+DBID,
+        JSON.stringify(payload)
+      );
+
+      alert("✅ Profile + Live location saved");
+      closeProfile();
+
+    }else{
+      alert("❌ Profile save failed");
+    }    
+
+  }catch(err){    
+    alert("❌ Server error");    
+  }    
+}
+        
+  
+window.closeProfile = function(){  
+  const modal = document.getElementById("profileModal");  
+  if(modal){  
+    modal.style.display = "none";  
+  }  
+}  
+function getLiveLocation(){
+  setLiveLocation();   // manual click par bhi wahi chale
+}
+  let liveLat = null;
+let liveLng = null;
+
+async function setLiveLocation(){
+  if(!navigator.geolocation){
+    console.log("Geolocation not supported");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos)=>{
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+
+      // 📍 BOX ME SHOW
+      const locInput = document.getElementById("pLocation");
+      if(locInput){
+        locInput.value = lat.toFixed(6) + ", " + lng.toFixed(6);
+      }
+
+      // 🌍 SERVER PE SAVE
+      try{
+        await fetch(`${API}/api/delivery/profile/save`,{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer "+TOKEN
+          },
+          body: JSON.stringify({
+            deliveryBoyId: DBID,
+            location:{ lat, lng }
+          })
+        });
+      }catch(err){
+        console.log("Location save error");
+      }
+    },
+    (err)=>{
+      console.log("Location error:", err.message);
+    },
+    {
+      enableHighAccuracy:true,
+      maximumAge:0,
+      timeout:10000
+    }
+  );
+}
+   
+/* LOAD ORDERS */  
+async function loadOrders(){  
+ try{  
+  const res = await fetch(`${API}/api/orders/delivery/${DBID}`,{  
+    headers:{ Authorization:"Bearer "+TOKEN }  
+  });  
+  const data = await res.json();  
+  // ✅ Only show unassigned orders or assigned to current delivery boy  
+  lastOrders = (data.orders || []).filter(o => !o.deliveryBoyId || o.deliveryBoyId === DBID);  
+  renderOrders(lastOrders);  
+ }catch(err){  
+  orders.innerHTML="<p style='text-align:center;color:red'>Failed to load orders</p>";  
+ }  
+}  
+ function groupOrdersByCart(orders){
+  const map = {};
+
+  orders.forEach(o=>{
+    // Agar cartOrder hai to cartGroupId ke under group karo, warna _id
+    const key = o.cartGroupId || o._id;
+
+    if(!map[key]){
+      map[key] = {
+        key,
+        isCartOrder: !!o.cartGroupId,
+        status: o.status,
+        time: o.statusHistory?.[0]?.time || o.createdAt,
+        retailerName: o.retailerName,
+        retailerMobile: o.retailerMobile,
+        wholesalerName: o.wholesalerName,
+        wholesalerMobile: o.wholesalerMobile,
+        vehicleType: o.vehicleType,
+        deliveryBoyId: o.deliveryBoyId,
+        products: []
+      };
+    }
+
+    map[key].products.push(o);
+  });
+
+  return Object.values(map);
+}
+/* RENDER ORDERS */  
+function renderOrders(list){
+  if(!list.length){
+    orders.innerHTML="<p style='text-align:center'>No Orders</p>";
+    return;
+  }
+
+  const grouped = groupOrdersByCart(list);
+
+  orders.innerHTML = grouped.map(o => {
+
+    return `
+    <div class="card order">
+
+      <!-- 🔥 COMPACT STATUS (WHOLESALER STYLE) -->
+      ${getStatusHTML(o.status, o.time)}
+
+      <hr>
+
+      <b>📦 Products:</b>
+      <ul>
+        ${o.products.map(p=>`<li>${p.productName}</li>`).join("")}
+      </ul>
+
+      <hr>
+
+      🏪 <b>Wholesaler:</b> ${o.wholesalerName}<br>
+      📞 ${o.wholesalerMobile || "N/A"}<br><br>
+
+      🏬 <b>Retailer:</b> ${o.retailerName}<br>
+      📞 ${o.retailerMobile || "N/A"}<br><br>
+
+      🚗 <b>Vehicle:</b>
+      ${
+        o.vehicleType==="two_wheeler"?"Two Wheeler":
+        o.vehicleType==="three_wheeler"?"Three Wheeler":
+        o.vehicleType==="four_wheeler"?"Four Wheeler":"N/A"
+      }
+      <br><br>
+
+      ${
+        o.status==="paid"
+          ? `<button class="btn accept" onclick="acceptOrder('${o.key}')">Accept</button>`
+          : ""
+      }
+
+      ${
+        o.status==="delivery_accepted"
+          ? `<button class="btn pickup" onclick="pickupOrder('${o.key}')">Pickup</button>`
+          : ""
+      }
+
+      ${
+        o.status==="picked_up"
+          ? `<button class="btn pickup" onclick="deliverFlow('${o.key}')">Generate Code</button>`
+          : ""
+      }
+
+      ${
+        o.status==="delivery_code_generated"
+          ? `<button class="btn done" onclick="deliverFlow('${o.key}')">Delivered</button>`
+          : ""
+      }
+
+    </div>
+    `;
+  }).join("");
+}
+  function getStatusClass(status){
+  if(status==="paid" || status==="pending"){
+    return "status-pending";
+  }
+
+  if(status==="delivery_accepted" || status==="assigned"){
+    return "status-assigned";
+  }
+
+  if(
+    status==="picked_up" ||
+    status==="delivery_code_generated" ||
+    status==="delivered"
+  ){
+    return "status-delivered";
+  }
+
+  return "status-default";
+}
+
+function getStatusText(status){
+  if(status==="paid" || status==="pending"){
+    return "Pending";
+  }
+
+  if(status==="delivery_accepted" || status==="assigned"){
+    return "Assigned";
+  }
+
+  if(status==="picked_up"){
+    return "Picked Up";
+  }
+
+  if(status==="delivery_code_generated"){
+    return "Out for Delivery";
+  }
+
+  if(status==="delivered"){
+    return "Delivered";
+  }
+
+  return status.replace(/_/g," ");
+}
+/* ACTIONS */  
+async function acceptOrder(id){  
+ const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");  
+ await fetch(`${API}/api/orders/${id}/delivery-accept`,{  
+  method:"POST",  
+  headers:{ "Content-Type":"application/json","Authorization":"Bearer "+TOKEN },  
+  body:JSON.stringify({ deliveryBoyId:DBID,deliveryBoyName:p.name||"Delivery Partner",deliveryBoyMobile:p.mobile||"" })  
+ });  
+ loadOrders();  
+}  
+// pickupOrder
+async function pickupOrder(orderId){
+  const p = JSON.parse(localStorage.getItem("deliveryProfile_"+DBID)||"{}");
+
+  const res = await fetch(`${API}/api/orders/${orderId}/pickup`,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+TOKEN
+    },
+    body: JSON.stringify({
+      deliveryBoyId: DBID,
+      deliveryBoyName: p.name || "Delivery Partner",
+      deliveryBoyMobile: p.mobile || ""
+    })
+  });
+
+  const data = await res.json();
+  if(data.success){
+    alert("Order picked up ✅");
+    loadOrders();
+  }else{
+    alert(data.message || "Pickup failed ❌");
+  }
+}
+  
+/* DELIVERY FLOW */  
+async function deliverFlow(orderId){
+  const order = lastOrders.find(o => o._id === orderId);
+  if(!order){
+    alert("Order not found");
+    return;
+  }
+
+  // 🔹 STEP 1: GENERATE DELIVERY CODE
+  if(order.status === "picked_up"){
+    try{
+      const res = await fetch(
+        `${API}/api/orders/generate-delivery-code/${orderId}`,
+        {
+          method: "POST",
+          headers:{
+            "Content-Type":"application/json",
+            "Authorization":"Bearer " + TOKEN
+          },
+          body: JSON.stringify({
+            deliveryBoyId: DBID   // ✅ MUST
+          })
+        }
+      );
+
+      const data = await res.json();
+
+      if(data.success){
+        alert("🔐 Delivery code generated & sent to retailer");
+        loadOrders(); // refresh
+        return;
+      }else{
+        alert(data.message || "❌ Code generation failed");
+        return;
+      }
+
+    }catch(err){
+      console.error(err);
+      alert("❌ Server error while generating code");
+      return;
+    }
+  }
+
+  // 🔹 STEP 2: VERIFY DELIVERY CODE
+  if(order.status === "delivery_code_generated"){
+    currentOrderId = orderId;
+    deliveryCodeInput.value = "";
+    codeModal.style.display = "flex";
+    return;
+  }
+
+  alert("❌ Order not ready for delivery");
+}
+  
+async function submitDeliveryCode(){  
+  const code = deliveryCodeInput.value.trim();  
+  if(!code) return alert("Enter delivery code");  
+
+  const res = await fetch(`${API}/api/orders/verify-delivery-code/${currentOrderId}`,{
+    method:"POST",
+    headers:{ 
+      "Content-Type":"application/json",
+      "Authorization":"Bearer "+TOKEN 
+    },
+    body: JSON.stringify({
+  code,
+  deliveryBoyId: DBID
+})
+  });  
+
+  const data = await res.json();  
+
+  // ✅ SUCCESS → DELIVERED
+  if(data.success){
+    alert("✅ Order delivered successfully");
+    closeCodeModal();
+    loadOrders();
+    return;
+  }
+
+  // ⏱️ CODE EXPIRED → AUTO SHOW GENERATE BUTTON
+  if(data.message && data.message.includes("expired")){
+    alert(data.message);              // "Delivery code expired..."
+    closeCodeModal();
+    loadOrders();                     // 🔥 status → picked_up
+    return;
+  }
+
+  // ❌ WRONG CODE
+  alert("❌ Wrong delivery code");
+}
+  
+function closeCodeModal(){ codeModal.style.display="none"; }  
+  
+/* INIT */  
+loadOrders();
+setInterval(loadOrders,8000);
+setInterval(setLiveLocation, 15000); 
+</script> <!-- 🔥 FIREBASE SDK & MESSAGING -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBioiLSE3HyZh49yJv93MwnQFrmAm6wJ5g",
+    authDomain: "shop-ab586.firebaseapp.com",
+    projectId: "shop-ab586",
+    storageBucket: "shop-ab586.firebasestorage.app",
+    messagingSenderId: "603669325846",
+    appId: "1:603669325846:web:00f3ccff7fa977bf542d37"
+  };
+
+  // 🔹 INIT FIREBASE
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+
+  // 🔹 REGISTER SERVICE WORKER
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      .then(registration => {
+        console.log("✅ Service Worker registered:", registration);
+
+        // 🔹 GET FCM TOKEN
+        Notification.requestPermission().then(permission => {
+          if(permission === "granted"){
+            getToken(messaging, {
+              vapidKey: "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s",
+              serviceWorkerRegistration: registration
+            }).then(token => {
+              if(token){
+                console.log("🔔 FCM Token:", token);
+
+                // ✅ Send token to backend
+                fetch(`${API}/api/notifications/saveToken`,{
+                  method:"POST",
+                  headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":"Bearer "+TOKEN
+                  },
+                  body: JSON.stringify({
+                    userId: DBID,
+                    role: "delivery",
+                    fcmToken: token
+                  })
+                });
+              }else{
+                console.warn("⚠️ FCM Token not generated. Check HTTPS & permissions.");
+              }
+            }).catch(err=>{
+              console.error("⚠️ getToken error:", err);
+            });
+          } else {
+            console.warn("⚠️ Notification permission not granted");
+          }
+        });
+
+      }).catch(err => {
+        console.error("❌ Service Worker registration failed:", err);
+      });
+  } else {
+    console.warn("⚠️ Service Worker not supported");
+  }
+
+  // 🔹 FOREGROUND NOTIFICATIONS
+  onMessage(messaging, payload => {
+    alert("📩 New Order: " + payload.notification?.title);
+    loadOrders(); // refresh orders
+  });
+</script>
+
+  <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
-const firebaseConfig={apiKey:"AIzaSyBioiLSE3HyZh49yJv93MwnQFrmAm6wJ5g",authDomain:"shop-ab586.firebaseapp.com",projectId:"shop-ab586",messagingSenderId:"603669325846",appId:"1:603669325846:web:00f3ccff7fa977bf542d37"};
+/* 🔥 Firebase Config */
+const firebaseConfig = {
+  apiKey: "AIzaSyBioiLSE3HyZh49yJv93MwnQFrmAm6wJ5g",
+  authDomain: "shop-ab586.firebaseapp.com",
+  projectId: "shop-ab586",
+  messagingSenderId: "603669325846",
+  appId: "1:603669325846:web:00f3ccff7fa977bf542d37"
+};
+
+/* 🚀 Init Firebase */
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-// Service Worker registration
-if("serviceWorker" in navigator){
+/* 🧠 Register Service Worker */
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/firebase-messaging-sw.js")
-    .then(()=>console.log("✅ Service Worker Registered"))
-    .catch(err=>console.error("❌ SW Registration Error",err));
+    .then(() => console.log("✅ Service Worker Registered"))
+    .catch(err => console.error("❌ SW Registration Error", err));
 }
 
-// Init FCM for delivery dashboard
-async function initFCM(){
-  if(!DBID || localStorage.getItem("role")!=="delivery") return;
+/* 🔔 Init FCM for DELIVERY */
+async function initFCM() {
+
+  const userId = localStorage.getItem("userId");
+  const role = localStorage.getItem("role");
+
+  // ❌ only for delivery dashboard
+  if (!userId || role !== "delivery") {
+    console.log("⛔ Not a delivery user");
+    return;
+  }
+
   const permission = await Notification.requestPermission();
-  if(permission!=="granted"){console.log("❌ Notification permission denied"); return;}
-  const fcmToken = await getToken(messaging,{vapidKey:"BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s"});
-  if(!fcmToken){console.log("❌ FCM Token not generated"); return;}
-  console.log("🔥 DELIVERY FCM TOKEN:",fcmToken);
-  await fetch(`${API}/api/notifications/saveToken`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:DBID,role:"delivery",fcmToken})});
+  if (permission !== "granted") {
+    console.log("❌ Notification permission denied");
+    return;
+  }
+
+  const fcmToken = await getToken(messaging, {
+    vapidKey: "BFcKfbosO2sXWogZ5fBBt31vEkw_1iwgQWVrZjAJ90pXdhdFBSbXM_Oppuoxm-QIidekMzIQdcl3XrJy0ltkC8s"
+  });
+
+  if (!fcmToken) {
+    console.log("❌ FCM Token not generated");
+    return;
+  }
+
+  console.log("🔥 DELIVERY FCM TOKEN:", fcmToken);
+
+  // 📡 Save token in backend
+  await fetch("https://shopbacked-vmhs.onrender.com/api/notifications/saveToken", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId,
+      role: "delivery",
+      fcmToken
+    })
+  });
+
+  console.log("✅ Delivery token saved successfully");
 }
 
-// Foreground notifications
-onMessage(messaging,payload=>{alert("📩 New Order: "+payload.notification?.title);loadOrders();});
-
-// ================= INIT =================
-window.addEventListener("load",()=>{
-  loadOrders();
-  setInterval(loadOrders,8000);
-  setInterval(getLiveLocation,15000);
-  initFCM();
-});
-    
-  
-
-  
+/* ▶️ Start */
+window.addEventListener("load", initFCM);
 
   </script>
 
