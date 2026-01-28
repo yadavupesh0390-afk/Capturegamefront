@@ -79,19 +79,32 @@ body{
 
 /* ===================== ORDER CARD ===================== */
 /* ===================== ORDER CARD ===================== */
+/* 🔥 ORDER CARD GAP FIX */
 .card.order{
   display:flex;
   flex-direction:column;
   gap:14px;
+  margin-bottom:16px;   /* 👈 cards ke beech gap */
+  padding:14px;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.06);
 }
 
 /* ===================== STATUS WRAPPER ===================== */
 .status-wrap{
   display:flex;
-  gap:8px;                 /* 🔥 status cards ke beech gap */
-  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;  
 }
-
+/* STATUS LINE WRAP */
+.status-line{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;   /* 👈 status & next content gap */
+}
 /* ===================== STATUS (ULTRA COMPACT) ===================== */
 .status-box{
   display:inline-flex;
