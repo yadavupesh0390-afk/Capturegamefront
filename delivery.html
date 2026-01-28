@@ -384,12 +384,14 @@ async function openProfile(){
   }  
 }
   
-  function getStatusHTML(status, time, wholesalerLoc, retailerLoc){
+  function getStatusHTML(status, time, wholesalerLocation, retailerLocation){
+
   const statusClass = getStatusClass(status);
   const statusText  = getStatusText(status);
 
   return `
     <div class="status-line">
+
       <span class="status-box ${statusClass}">
         ${statusText}
       </span>
@@ -397,22 +399,28 @@ async function openProfile(){
       <span class="status-time">
         🕒 ${time ? new Date(time).toLocaleString() : ""}
       </span>
-    </div>
 
-    <div class="status-wrap">
-      <button class="btn pickup"
-        onclick='openMapModal("wholesaler", ${JSON.stringify(wholesalerLoc)})'>
-        📍 Wholesaler Location
-      </button>
+      ${
+        wholesalerLocation?.lat
+        ? `<button class="btn-map" onclick="openMap(${wholesalerLocation.lat}, ${wholesalerLocation.lng})">🏪</button>`
+        : ""
+      }
 
-      <button class="btn pickup"
-        onclick='openMapModal("retailer", ${JSON.stringify(retailerLoc)})'>
-        📍 Retailer Location
-      </button>
+      ${
+        retailerLocation?.lat
+        ? `<button class="btn-map" onclick="openMap(${retailerLocation.lat}, ${retailerLocation.lng})">🏬</button>`
+        : ""
+      }
+
     </div>
   `;
 }
-
+  function openMap(lat, lng){
+  window.open(
+    `https://www.google.com/maps?q=${lat},${lng}`,
+    "_blank"
+  );
+  }
   function openMapModal(type, location){
   if(!location || !location.lat || !location.lng){
     alert("Location not available");
