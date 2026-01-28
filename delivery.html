@@ -77,16 +77,23 @@ body{
 
 /* ===================== ORDER CARD ===================== */
 /* ===================== ORDER CARD ===================== */
-/* 🔥 ORDER CARD GAP FIX */
 .card.order{
   display:flex;
   flex-direction:column;
   gap:14px;
-  margin-bottom:16px;   /* 👈 cards ke beech gap */
+  margin-bottom:16px;
   padding:14px;
-  background:#1e293b;
+
+  background:#1e293b;   /* dark blue */
+  color:#ffffff;        /* 🔥 ALL TEXT WHITE */
+
   border-radius:14px;
   box-shadow:0 4px 14px rgba(0,0,0,.06);
+}
+
+/* 🔹 inside text inherit white */
+.card.order *{
+  color:inherit;
 }
 
 /* ===================== STATUS WRAPPER ===================== */
