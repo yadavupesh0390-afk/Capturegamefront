@@ -68,39 +68,43 @@ body{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  padding:3px 8px;
-  font-size:11px;
+
+  padding:4px 10px;          /* thoda balanced padding */
+  font-size:12px;            /* readable but compact */
   font-weight:600;
-  border-radius:999px;
+
+  border-radius:14px;        /* pill look but tight */
   white-space:nowrap;
-  width:fit-content;
+
+  width:auto;                /* fit to content */
+  max-width:100%;
+  line-height:1;             /* extra height remove */
 }
 
 /* STATUS COLORS */
 .status-pending{
-  background:#fff4e5;
-  color:#b45309;
-  border:1px solid #fcd34d;
+  background:#fff7ed;        /* softer orange */
+  color:#9a3412;
+  border:1px solid #fed7aa;
 }
 
 .status-assigned{
-  background:#e0f2fe;
-  color:#0369a1;
-  border:1px solid #60a5fa;
+  background:#eff6ff;        /* soft blue */
+  color:#1e40af;
+  border:1px solid #bfdbfe;
 }
 
 .status-delivered{
-  background:#dcfce7;
+  background:#ecfdf5;        /* soft green */
   color:#166534;
-  border:1px solid #4ade80;
+  border:1px solid #6ee7b7;
 }
 
 .status-default{
-  background:#f3f4f6;
+  background:#f9fafb;
   color:#374151;
-  border:1px solid #d1d5db;
+  border:1px solid #e5e7eb;
 }
-
 /* ===================== PRODUCTS ===================== */
 .card.order ul{
   margin-left:18px;
