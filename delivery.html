@@ -527,19 +527,47 @@ function renderOrders(list){
   }).join("");
 }
   function getStatusClass(status){
-  if(status==="paid" || status==="pending") return "status-pending";
-  if(status==="delivery_accepted" || status==="assigned") return "status-assigned";
-  if(status==="picked_up" || status==="delivery_code_generated" || status==="delivered") return "status-delivered";
+  if(status==="paid" || status==="pending"){
+    return "status-pending";
+  }
+
+  if(status==="delivery_accepted" || status==="assigned"){
+    return "status-assigned";
+  }
+
+  if(
+    status==="picked_up" ||
+    status==="delivery_code_generated" ||
+    status==="delivered"
+  ){
+    return "status-delivered";
+  }
+
   return "status-default";
 }
 
 function getStatusText(status){
-  if(status==="paid") return "Pending";
-  if(status==="delivery_accepted") return "Assigned";
-  if(status==="picked_up") return "Picked Up";
-  if(status==="delivery_code_generated") return "Out for Delivery";
-  if(status==="delivered") return "Delivered";
-  return status;
+  if(status==="paid" || status==="pending"){
+    return "Pending";
+  }
+
+  if(status==="delivery_accepted" || status==="assigned"){
+    return "Assigned";
+  }
+
+  if(status==="picked_up"){
+    return "Picked Up";
+  }
+
+  if(status==="delivery_code_generated"){
+    return "Out for Delivery";
+  }
+
+  if(status==="delivered"){
+    return "Delivered";
+  }
+
+  return status.replace(/_/g," ");
 }
 /* ACTIONS */  
 async function acceptOrder(id){  
