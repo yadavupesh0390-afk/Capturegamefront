@@ -338,7 +338,7 @@ async function openProfile(){
   }  
 }
   
-  function getStatusHTML(status, time){
+  function getStatusHTML(status, time, wholesalerLoc, retailerLoc){
   const statusClass = getStatusClass(status);
   const statusText  = getStatusText(status);
 
@@ -347,9 +347,22 @@ async function openProfile(){
       <span class="status-box ${statusClass}">
         ${statusText}
       </span>
+
       <span class="status-time">
         🕒 ${time ? new Date(time).toLocaleString() : ""}
       </span>
+    </div>
+
+    <div class="status-wrap">
+      <button class="btn pickup"
+        onclick='openMapModal("wholesaler", ${JSON.stringify(wholesalerLoc)})'>
+        📍 Wholesaler Location
+      </button>
+
+      <button class="btn pickup"
+        onclick='openMapModal("retailer", ${JSON.stringify(retailerLoc)})'>
+        📍 Retailer Location
+      </button>
     </div>
   `;
 }
