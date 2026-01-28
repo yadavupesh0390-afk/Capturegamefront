@@ -293,19 +293,34 @@ hr{
   padding: 0;
 }
 
+/* 🌍 MAP FULLSCREEN MODAL */
 #mapModal {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
   display: none;
   z-index: 999;
-  height: 100%;
-  width: 100%;
+  flex-direction: column;
 }
 
 #mapModal > div {
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
+}
+
+.map-header {
+  background: #0f172a;
+  color: #fff;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
 }
 
 #mapFrame {
