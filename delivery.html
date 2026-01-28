@@ -325,21 +325,7 @@ hr{
   <button class="btn done" onclick="submitDeliveryCode()">Submit</button>  
   <button class="btn" onclick="closeCodeModal()">Cancel</button>  
  </div> 
- <!-- 🌍 MAP FULLSCREEN MODAL -->
-<div id="mapModal">
-  <div class="map-box">
-    <div class="map-header">
-      <b id="mapTitle">Live Location</b>
-      <button class="icon-btn" onclick="closeMapModal()">✖</button>
-    </div>
 
-    <iframe
-      id="mapFrame"
-      src=""
-      allowfullscreen
-      loading="lazy">
-    </iframe>
-  </div>
 </div>  <script>  
 const API = "https://shopbacked-vmhs.onrender.com";  
 const DBID = localStorage.getItem("userId");  
