@@ -434,25 +434,15 @@ async function openProfile(){
   `;
 }
   function openMapModalSimple(type, lat, lng){
+  alert(`🗺 Map clicked\nType:${type}\nLat:${lat}\nLng:${lng}`);
 
   if(!lat || !lng){
-    alert("Location not available");
+    alert("❌ Location missing");
     return;
   }
 
-  const title =
-    type === "wholesaler"
-      ? "🏪 Wholesaler Live Location"
-      : "🏬 Retailer Live Location";
-
-  document.getElementById("mapTitle").innerText = title;
-
-  document.getElementById("mapFrame").src =
-    `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-
   document.getElementById("mapModal").style.display = "block";
 }
-
 function closeMapModal(){
   document.getElementById("mapFrame").src = "";
   document.getElementById("mapModal").style.display = "none";
