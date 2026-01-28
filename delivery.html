@@ -300,7 +300,17 @@ async function openProfile(){
   }  
 }
   
-  
+  function getStatusHTML(status, time){
+  const cls = getStatusClass(status);
+  const text = getStatusText(status);
+
+  return `
+    <div class="status-line">
+      <span class="status-box ${cls}">${text}</span>
+      ${time ? `<span class="time">🕒 ${new Date(time).toLocaleString()}</span>` : ""}
+    </div>
+  `;
+  }
   
 async function saveProfile(){    
 
@@ -463,17 +473,12 @@ function renderOrders(list){
   const grouped = groupOrdersByCart(list);
 
   orders.innerHTML = grouped.map(o => {
-    // STATUS SAME JAISE WHolesaler
-    const statusClass = getStatusClass(o.status);
-    const statusText = getStatusText(o.status);
 
     return `
     <div class="card order">
 
-      <div class="status-box ${statusClass}">
-        Status: <b>${statusText}</b><br>
-        🕒 ${o.time ? new Date(o.time).toLocaleString() : ""}
-      </div>
+      <!-- 🔥 COMPACT STATUS (WHOLESALER STYLE) -->
+      ${getStatusHTML(o.status, o.time)}
 
       <hr>
 
