@@ -20,9 +20,11 @@ body{
 /* ===================== MAIN ===================== */
 .main{
   max-width:900px;
-  margin:auto;
-  padding:14px; 
-  padding-top: 160px;/* 🔥 top issue fix */
+  margin:0 auto;
+  padding:14px;
+
+  /* 🔥 fixed top + active card ka exact offset */
+  padding-top: calc(14px + 160px);
 }
 
 /* ===================== TOP BAR ===================== */
