@@ -393,33 +393,37 @@ async function openProfile(){
   }  
 }
   
-  function getStatusHTML(status, time, wholesalerLocation, retailerLocation){
+  function getStatusHTML(status, time, wholesalerLoc, retailerLoc){
+  const statusClass = getStatusClass(status);
+  const statusText  = getStatusText(status);
 
   return `
     <div class="status-line">
-
-      <span class="status-box ${getStatusClass(status)}">
-        ${getStatusText(status)}
+      <span class="status-box ${statusClass}">
+        ${statusText}
       </span>
 
       <span class="status-time">
         🕒 ${time ? new Date(time).toLocaleString() : ""}
       </span>
+    </div>
+
+    <div class="status-wrap">
 
       ${
-        wholesalerLocation?.lat
-        ? `<button class="btn-map"
-            onclick='openMapModal("wholesaler", ${JSON.stringify(wholesalerLocation)})'>
-            🏪
+        wholesalerLoc && wholesalerLoc.lat
+        ? `<button class="btn pickup"
+            onclick='openMapModal("wholesaler", ${JSON.stringify(wholesalerLoc)})'>
+            📍 Wholesaler Location
           </button>`
         : ""
       }
 
       ${
-        retailerLocation?.lat
-        ? `<button class="btn-map"
-            onclick='openMapModal("retailer", ${JSON.stringify(retailerLocation)})'>
-            🏬
+        retailerLoc && retailerLoc.lat
+        ? `<button class="btn pickup"
+            onclick='openMapModal("retailer", ${JSON.stringify(retailerLoc)})'>
+            📍 Retailer Location
           </button>`
         : ""
       }
