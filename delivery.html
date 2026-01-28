@@ -588,20 +588,24 @@ async function loadOrders(){
     const key = o.cartGroupId || o._id;
 
     if(!map[key]){
-      map[key] = {
-        key,
-        isCartOrder: !!o.cartGroupId,
-        status: o.status,
-        time: o.statusHistory?.[0]?.time || o.createdAt,
-        retailerName: o.retailerName,
-        retailerMobile: o.retailerMobile,
-        wholesalerName: o.wholesalerName,
-        wholesalerMobile: o.wholesalerMobile,
-        vehicleType: o.vehicleType,
-        deliveryBoyId: o.deliveryBoyId,
-        products: []
-      };
-    }
+  map[key] = {
+    key,
+    status: o.status,
+    time: o.statusHistory?.[0]?.time || o.createdAt,
+
+    wholesalerName: o.wholesalerName,
+    wholesalerMobile: o.wholesalerMobile,
+    wholesalerLocation: o.wholesalerLocation,   // ✅ ADD
+
+    retailerName: o.retailerName,
+    retailerMobile: o.retailerMobile,
+    retailerLocation: o.retailerLocation,       // ✅ ADD
+
+    vehicleType: o.vehicleType,
+    deliveryBoyId: o.deliveryBoyId,
+    products: []
+  };
+}
 
     map[key].products.push(o);
   });
