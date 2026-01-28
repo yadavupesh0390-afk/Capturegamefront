@@ -412,6 +412,30 @@ async function openProfile(){
     </div>
   `;
 }
+
+  function openMapModal(type, location){
+  if(!location || !location.lat || !location.lng){
+    alert("Location not available");
+    return;
+  }
+
+  const title = type === "wholesaler"
+    ? "🏪 Wholesaler Live Location"
+    : "🏬 Retailer Live Location";
+
+  document.getElementById("mapTitle").innerText = title;
+
+  const mapURL =
+    `https://www.google.com/maps?q=${location.lat},${location.lng}&z=15&output=embed`;
+
+  document.getElementById("mapFrame").src = mapURL;
+  document.getElementById("mapModal").style.display = "block";
+}
+
+function closeMapModal(){
+  document.getElementById("mapFrame").src = "";
+  document.getElementById("mapModal").style.display = "none";
+}
   
 async function saveProfile(){    
 
