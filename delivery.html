@@ -26,14 +26,24 @@ body{
 
 /* ===================== TOP BAR ===================== */
 .top{
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: calc(100% - 24px);
+  max-width: 900px;
+
   background:#0f172a;
   color:#fff;
+
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:12px 14px;
-  border-radius:14px;
-  margin-bottom:12px; /* 🔥 spacing fix */
+
+  padding:14px;
+  border-radius:16px;
+  z-index:100;
 }
 
 .icon-btn{
@@ -46,15 +56,23 @@ body{
   font-size:20px;
   cursor:pointer;
 }
+.active-card{
+  position: fixed;
+  top: 86px;                 /* top bar ke niche */
+  left: 50%;
+  transform: translateX(-50%);
 
-/* ===================== CARD ===================== */
-.card{
-  background:#fff;
-  margin-top:10px;
-  padding:12px;
-  border-radius:12px;
+  width: calc(100% - 24px);
+  max-width: 900px;
+
+  background:#ffffff;
+  padding:10px 14px;
+  border-radius:14px;
+
   box-shadow:0 4px 14px rgba(0,0,0,.08);
+  z-index:90;
 }
+
 
 /* ===================== ORDER CARD ===================== */
 .card.order{
@@ -194,10 +212,10 @@ hr{
     <button class="icon-btn" onclick="openProfile()">  
       <i class="bi bi-person-circle"></i>  
     </button>  
-  </div>    <div class="card">  
-    <b>ID:</b> <span id="dbId"></span><br>  
-    <span class="badge green">ACTIVE</span>  
-  </div>    <div id="orders"></div>  
+  </div>    <div class="card active-card">
+  <b>ID:</b> <span id="dbId"></span><br>
+  <span class="badge green">ACTIVE</span>
+</div> <div id="orders"></div>  
 </div>  <!-- PROFILE MODAL -->
 <div class="modal" id="profileModal">
  <div class="modal-box">
