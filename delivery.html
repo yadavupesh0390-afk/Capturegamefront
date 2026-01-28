@@ -447,56 +447,35 @@ async function openProfile(){
     </div>
   `;
 }
-  let map, routeLayer;
-
 function openMapModalSimple(type, destLat, destLng){
-
+  // agar live location null hai, turant fetch karo
   if(!liveLat || !liveLng){
     navigator.geolocation.getCurrentPosition(
-      pos=>{
+      (pos)=>{
         liveLat = pos.coords.latitude;
         liveLng = pos.coords.longitude;
+
+        // phir map open karo
         openMapModalSimple(type, destLat, destLng);
       },
-      err=>{
-        alert("❌ Live location not available");
+      (err)=>{
+        alert("❌ Live location not available: " + err.message);
       },
-      { enableHighAccuracy:true }
+      { enableHighAccuracy:true, timeout:10000 }
     );
-    return;
+    return; // wait karo
   }
 
+  // ✅ LIVE LOCATION available → normal route
+  const mapURL = `https://www.google.com/maps/dir/?api=1&origin=${liveLat},${liveLng}&destination=${destLat},${destLng}&travelmode=driving`;
+
+  document.getElementById("mapTitle").innerText =
+    type === "wholesaler"
+      ? "🚚 Route to Wholesaler"
+      : "🏬 Route to Retailer";
+
+  document.getElementById("mapFrame").src = mapURL;
   document.getElementById("mapModal").style.display = "block";
-
-  setTimeout(()=>{
-    if(map) map.remove();
-
-    map = L.map("map").setView([liveLat, liveLng], 13);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-      maxZoom:19
-    }).addTo(map);
-
-    // 🚚 Delivery Boy Marker
-    L.marker([liveLat, liveLng])
-      .addTo(map)
-      .bindPopup("🚚 You")
-      .openPopup();
-
-    // 🏬 Destination Marker
-    L.marker([destLat, destLng])
-      .addTo(map)
-      .bindPopup(type === "wholesaler" ? "🏪 Wholesaler" : "🏬 Retailer");
-
-    // 🔥 SIMPLE ROUTE LINE
-    routeLayer = L.polyline(
-      [[liveLat, liveLng],[destLat, destLng]],
-      { color:"blue", weight:5 }
-    ).addTo(map);
-
-    map.fitBounds(routeLayer.getBounds());
-
-  },300);
 }
 
 function closeMapModal(){
