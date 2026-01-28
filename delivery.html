@@ -128,33 +128,55 @@ body{
 }
 
 /* ===================== STATUS COLORS (SOFT + CLEAR) ===================== */
+/* 🟠 PENDING */
 .status-pending{
-  background:#fff1e6;      /* soft orange */
-  color:#9a3412;
-  border:1px solid #fdba74;
+  background:#ffedd5;      /* soft but bright orange */
+  color:#9a3412;           /* dark readable text */
+  border:1px solid #fb923c;
 }
 
+/* 🔵 ASSIGNED */
 .status-assigned{
-  background:#e8f2ff;      /* clean blue */
-  color:#1e40af;
-  border:1px solid #93c5fd;
+  background:#dbeafe;      /* light blue */
+  color:#1e3a8a;           /* deep blue text */
+  border:1px solid #60a5fa;
 }
 
+/* 🟢 DELIVERED */
 .status-delivered{
-  background:#e7f9ef;      /* fresh green */
-  color:#166534;
-  border:1px solid #86efac;
+  background:#dcfce7;      /* fresh green */
+  color:#14532d;           /* dark green */
+  border:1px solid #4ade80;
 }
 
+/* ⚪ DEFAULT */
 .status-default{
-  background:#f3f4f6;      /* neutral */
-  color:#374151;
-  border:1px solid #d1d5db;
+  background:#e5e7eb;      /* light gray */
+  color:#111827;
+  border:1px solid #9ca3af;
 }
 
-.btn.accept{background:#16a34a;color:#fff;}
-.btn.pickup{background:#f59e0b;color:#fff;}
-.btn.done{background:#2563eb;color:#fff;}
+.btn{
+  font-weight:600;
+}
+
+/* ACCEPT */
+.btn.accept{
+  background:#22c55e;      /* bright green */
+  color:#ffffff;
+}
+
+/* PICKUP / GENERATE */
+.btn.pickup{
+  background:#f59e0b;      /* amber */
+  color:#111827;
+}
+
+/* DELIVERED */
+.btn.done{
+  background:#3b82f6;      /* clear blue */
+  color:#ffffff;
+}
 
 /* ===================== MODAL ===================== */
 .modal{
