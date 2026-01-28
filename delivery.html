@@ -490,6 +490,8 @@ function renderOrders(list){
   const grouped = groupOrdersByCart(list);
 
   orders.innerHTML = grouped.map(o => {
+    // ✅ Get main order _id from first product
+    const orderId = o.products[0]._id;
 
     return `
     <div class="card order">
@@ -522,25 +524,25 @@ function renderOrders(list){
 
       ${
         o.status==="paid"
-          ? `<button class="btn accept" onclick="acceptOrder('${o.key}')">Accept</button>`
+          ? `<button class="btn accept" onclick="acceptOrder('${orderId}')">Accept</button>`
           : ""
       }
 
       ${
         o.status==="delivery_accepted"
-          ? `<button class="btn pickup" onclick="pickupOrder('${o.key}')">Pickup</button>`
+          ? `<button class="btn pickup" onclick="pickupOrder('${orderId}')">Pickup</button>`
           : ""
       }
 
       ${
         o.status==="picked_up"
-          ? `<button class="btn pickup" onclick="deliverFlow('${o.key}')">Generate Code</button>`
+          ? `<button class="btn pickup" onclick="deliverFlow('${orderId}')">Generate Code</button>`
           : ""
       }
 
       ${
         o.status==="delivery_code_generated"
-          ? `<button class="btn done" onclick="deliverFlow('${o.key}')">Delivered</button>`
+          ? `<button class="btn done" onclick="deliverFlow('${orderId}')">Delivered</button>`
           : ""
       }
 
