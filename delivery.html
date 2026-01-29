@@ -419,7 +419,7 @@ async function openProfile(){
       ${
         wholesalerLoc?.lat
         ? `<button class="btn pickup"
-            onclick="openMapModalSimple('wholesaler', ${wholesalerLoc.lat}, ${wholesalerLoc.lng})">
+            onclick="openGoogleTracking('wholesaler', ${wholesalerLoc.lat}, ${wholesalerLoc.lng})">
             📍 Wholesaler Location
           </button>`
         : ""
@@ -428,7 +428,7 @@ async function openProfile(){
       ${
         retailerLoc?.lat
         ? `<button class="btn pickup"
-            onclick="openMapModalSimple('retailer', ${retailerLoc.lat}, ${retailerLoc.lng})">
+            onclick="openGoogleTracking('retailer', ${retailerLoc.lat}, ${retailerLoc.lng})">
             📍 Retailer Location
           </button>`
         : ""
