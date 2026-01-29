@@ -4,13 +4,7 @@
 <title>Delivery Partner Dashboard</title>  
 <meta name="viewport" content="width=device-width, initial-scale=1.0">  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">  
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">    
-<!-- Leaflet CSS/JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- Leaflet Routing Machine -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
   <style>
   *{
   box-sizing:border-box;
@@ -294,39 +288,7 @@ hr{
 }
 
 /* 🌍 MAP FULLSCREEN MODAL */
-#mapModal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #000;
-  display: none;
-  z-index: 999;
-  flex-direction: column;
-}
 
-#mapModal > div {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-}
-
-.map-header {
-  background: #0f172a;
-  color: #fff;
-  padding: 12px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 100;
-}
-
-#mapFrame {
-  flex: 1;
-  width: 100%;
-}
 </style>  </head>  <body>  <div class="main">    <div class="top">  
     <h3>🚚 Delivery Partner</h3>  
     <button class="icon-btn" onclick="openProfile()">  
@@ -475,96 +437,42 @@ async function openProfile(){
     </div>
   `;
 }
-let map, routingControl, liveMarker, watchId;
+function openGoogleTracking(type, destLat, destLng){
 
-function openMapModalSimple(type, destLat, destLng){
-  if(!liveLat || !liveLng){
-    navigator.geolocation.getCurrentPosition(
-      (pos)=>{
-        liveLat = pos.coords.latitude;
-        liveLng = pos.coords.longitude;
-        openMapModalSimple(type, destLat, destLng);
-      },
-      (err)=>{
-        alert("❌ Live location not available: " + err.message);
-      },
-      { enableHighAccuracy:true, timeout:10000 }
-    );
+  if(!navigator.geolocation){
+    alert("❌ GPS not supported");
     return;
   }
 
-  document.getElementById("mapTitle").innerText =
-    type === "wholesaler"
-      ? "🚚 Route to Wholesaler"
-      : "🏬 Route to Retailer";
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      const liveLat = pos.coords.latitude;
+      const liveLng = pos.coords.longitude;
 
-  document.getElementById("mapModal").style.display = "flex";
+      const title =
+        type === "wholesaler"
+          ? "Route to Wholesaler"
+          : "Route to Retailer";
 
-  // 🔹 Agar map pehle se exist karta hai, remove kar do
-  if(map) map.remove();
-  if(watchId) navigator.geolocation.clearWatch(watchId);
+      // 🔥 GOOGLE MAPS REAL NAVIGATION
+      const googleURL =
+        `https://www.google.com/maps/dir/?api=1` +
+        `&origin=${liveLat},${liveLng}` +
+        `&destination=${destLat},${destLng}` +
+        `&travelmode=driving` +
+        `&dir_action=navigate`;
 
-  // 🔹 Leaflet Map init
-  map = L.map('mapFrame', {
-    center: [liveLat, liveLng],
-    zoom: 13
-  });
-
-  // 🔹 OpenStreetMap Tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
-
-  // 🔹 Routing
-  routingControl = L.Routing.control({
-    waypoints: [
-      L.latLng(liveLat, liveLng),
-      L.latLng(destLat, destLng)
-    ],
-    lineOptions: { styles: [{color: '#2563eb', weight: 5}] },
-    show: false,
-    addWaypoints: false,
-    draggableWaypoints: false,
-    fitSelectedRoutes: true
-  }).addTo(map);
-
-  // 🔹 Live marker
-  liveMarker = L.marker([liveLat, liveLng]).addTo(map);
-
-  // 🔹 Watch position for real-time updates
-  watchId = navigator.geolocation.watchPosition(
-    (pos) => {
-      liveLat = pos.coords.latitude;
-      liveLng = pos.coords.longitude;
-
-      // move marker
-      liveMarker.setLatLng([liveLat, liveLng]);
-
-      // optional: pan map
-      map.panTo([liveLat, liveLng]);
-
-      // update routing dynamically
-      if(routingControl){
-        routingControl.setWaypoints([
-          L.latLng(liveLat, liveLng),
-          L.latLng(destLat, destLng)
-        ]);
-      }
+      // 🚀 Open Google Maps App / Web
+      window.open(googleURL, "_blank");
     },
-    (err) => console.log("Live location error:", err.message),
-    { enableHighAccuracy:true, maximumAge:0, timeout:10000 }
+    (err)=>{
+      alert("❌ Live location not available");
+    },
+    {
+      enableHighAccuracy:true,
+      timeout:10000
+    }
   );
-}
-
-function closeMapModal(){
-  document.getElementById("mapModal").style.display = "none";
-  if(map) map.remove();
-  map = null;
-  liveMarker = null;
-
-  // stop watching live location
-  if(watchId) navigator.geolocation.clearWatch(watchId);
-  watchId = null;
 }
 
   
