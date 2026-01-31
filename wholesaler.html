@@ -440,23 +440,10 @@ function formatDateTime(ts) {
         document.getElementById("locationText").value = "";
       }
 
-      /* ===== TIMER START (SERVER DATA) ===== */
-      /* ===== TIMER START (SERVER DATA) ===== */
-if (
-  data.profile.location?.setAt &&
-  !data.profile.location?.locked
-) {
-  updateLocationTimer(data.profile.location.setAt);
-}
-
       /* ===== LOCAL BACKUP ===== */
-      localStorage.setItem(
-        key,
-        JSON.stringify(data.profile)
-      );
+      localStorage.setItem(key, JSON.stringify(data.profile));
 
     } else {
-      // ❌ profile nahi mili
       shopName.value    = "";
       shopMobile.value  = "";
       shopAddress.value = "";
@@ -467,10 +454,7 @@ if (
 
     console.error("Load profile error:", err);
 
-    /* ===== FALLBACK: LOCAL STORAGE ===== */
-    const p = JSON.parse(
-      localStorage.getItem(key) || "{}"
-    );
+    const p = JSON.parse(localStorage.getItem(key) || "{}");
 
     shopName.value    = p.shopName || "";
     shopMobile.value  = p.mobile || "";
@@ -482,16 +466,24 @@ if (
     } else {
       document.getElementById("locationText").value = "";
     }
+  }
 
-    /* ===== TIMER START (LOCAL DATA) ===== */
-   
-    if (
-      p.location?.setAt &&
-      !p.location?.locked
-    ) {
+  /* ===== TIMER FORCE REFRESH (IMPORTANT) ===== */
+  setTimeout(() => {
+
+    const p = JSON.parse(localStorage.getItem(key) || "{}");
+
+    if (p.location?.locked) {
+      const timerEl = document.getElementById("locationTimer");
+      if (timerEl) timerEl.innerText = "🔒 Location locked";
+      return;
+    }
+
+    if (p.location?.setAt) {
       updateLocationTimer(p.location.setAt);
     }
-  }
+
+  }, 200); // modal paint hone ka wait
 }
 function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}
 
