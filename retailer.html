@@ -834,7 +834,7 @@ function checkLocationLock() {
   const mins = Math.floor((left % 3600000) / 60000);
 
   document.getElementById("locationTimer").innerText =
-    `⏳ Edit allowed for ${hrs}h ${mins}m`;
+    `⏳ Aap sirf ${h} ghante ${m} minute tak hi location sudhaar sakte hain. Iske baad location permanently lock ho jayegi.`;
 }
 
 setInterval(showRemainingTime, 60000);
