@@ -546,12 +546,10 @@ async function saveWholesalerProfileToServer() {
   }
 }
 
- function getCurrentLocation(){
-
+ function getCurrentLocation() {
   const key = "wholesalerProfile_" + WID;
   const profile = JSON.parse(localStorage.getItem(key) || "{}");
 
-  // 🔒 LOCK CHECK
   if (profile.location?.locked) {
     alert("🔒 Location locked. Contact admin to change.");
     return;
@@ -567,10 +565,11 @@ async function saveWholesalerProfileToServer() {
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
+      const now = Date.now();
       const location = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
-        setAt: profile.location?.setAt || Date.now(),
+        setAt: now,       // timestamp save karo
         locked: false
       };
 
@@ -580,7 +579,7 @@ async function saveWholesalerProfileToServer() {
       profile.location = location;
       localStorage.setItem(key, JSON.stringify(profile));
 
-      updateLocationTimer(location.setAt);
+      updateLocationTimer(location.setAt); // timer start/restart
 
       alert("✅ Location set successfully");
     },
@@ -588,9 +587,21 @@ async function saveWholesalerProfileToServer() {
       alert("❌ Location permission denied");
       locInput.value = "";
     },
-    { enableHighAccuracy:true, timeout:15000 }
+    { enableHighAccuracy: true, timeout: 15000 }
   );
 }
+
+// Page load hone par check karo
+window.addEventListener("load", () => {
+  const key = "wholesalerProfile_" + WID;
+  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+
+  if (profile.location?.setAt && !profile.location?.locked) {
+    updateLocationTimer(profile.location.setAt); // resume timer
+  }
+
+  ensureWholesalerLocation(); // server se location fetch karna
+});
 let locationTimerInterval = null;
 
 function updateLocationTimer(setAt) {
