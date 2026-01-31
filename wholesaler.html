@@ -489,10 +489,10 @@ async function saveWholesalerProfileToServer() {
   }
 
   const key = "wholesalerProfile_" + WID;
-  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+  let oldProfile = JSON.parse(localStorage.getItem(key) || "{}");
 
   /* ===== LOCATION READ ===== */
-  let location = null;
+  let location = oldProfile.location || null;
   const locText = document.getElementById("locationText")?.value || "";
 
   if (locText.includes(",")) {
@@ -504,19 +504,20 @@ async function saveWholesalerProfileToServer() {
       location = {
         lat,
         lng,
-        setAt: profile.location?.setAt || Date.now(), // ⬅ keep existing timestamp or now
-        locked: profile.location?.locked || false
+        // 🔥 TIMER RESET NA HO
+        setAt: oldProfile.location?.setAt || Date.now(),
+        locked: oldProfile.location?.locked || false
       };
     }
   }
 
   /* ===== PAYLOAD ===== */
   const payload = {
-    wholesalerId: WID,              
+    wholesalerId: WID,
     shopName: shopName.value.trim(),
     mobile: shopMobile.value.trim(),
     address: shopAddress.value.trim(),
-    location: location || null       // ⬅ setAt included
+    location: location
   };
 
   try {
@@ -533,8 +534,18 @@ async function saveWholesalerProfileToServer() {
 
     if (data.success) {
 
-      /* ===== LOCAL SYNC ===== */
-      localStorage.setItem(key, JSON.stringify(payload));
+      /* ===== LOCAL MERGE SAVE (IMPORTANT) ===== */
+      oldProfile.shopName = payload.shopName;
+      oldProfile.mobile   = payload.mobile;
+      oldProfile.address  = payload.address;
+      oldProfile.location = payload.location || oldProfile.location;
+
+      localStorage.setItem(key, JSON.stringify(oldProfile));
+
+      // timer resume
+      if (oldProfile.location?.setAt && !oldProfile.location?.locked) {
+        updateLocationTimer(oldProfile.location.setAt);
+      }
 
       alert("✅ Profile & location server par save ho gaya");
       closeAll();
@@ -554,7 +565,7 @@ async function saveWholesalerProfileToServer() {
   let profile = JSON.parse(localStorage.getItem(key) || "{}");
 
   if (profile.location?.locked) {
-    alert("🔒 Location locked. Contact admin to change.");
+    alert("🔒 Location locked. Contact admin.");
     return;
   }
 
@@ -568,24 +579,28 @@ async function saveWholesalerProfileToServer() {
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      const now = Date.now();
+
+      // 🔥 IMPORTANT LINE
+      const oldSetAt = profile.location?.setAt || Date.now();
+
       profile.location = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
-        setAt: now,
+        setAt: oldSetAt,   // ❌ RESET NAHI HOGA
         locked: false
       };
 
       localStorage.setItem(key, JSON.stringify(profile));
-      locInput.value = `${profile.location.lat.toFixed(6)}, ${profile.location.lng.toFixed(6)}`;
 
-      // ⏳ Start / reset timer
+      locInput.value =
+        `${profile.location.lat.toFixed(6)}, ${profile.location.lng.toFixed(6)}`;
+
       updateLocationTimer(profile.location.setAt);
 
-      alert("✅ Location set successfully");
+      alert("✅ Location updated (Timer same)");
     },
     () => {
-      alert("❌ Location permission denied");
+      alert("❌ Permission denied");
       locInput.value = "";
     },
     { enableHighAccuracy: true, timeout: 15000 }
