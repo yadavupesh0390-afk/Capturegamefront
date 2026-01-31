@@ -488,6 +488,9 @@ async function saveWholesalerProfileToServer() {
     return;
   }
 
+  const key = "wholesalerProfile_" + WID;
+  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+
   /* ===== LOCATION READ ===== */
   let location = null;
   const locText = document.getElementById("locationText")?.value || "";
@@ -498,19 +501,22 @@ async function saveWholesalerProfileToServer() {
     const lng = parseFloat(parts[1].trim());
 
     if (!isNaN(lat) && !isNaN(lng)) {
-      location = { lat, lng };
+      location = {
+        lat,
+        lng,
+        setAt: profile.location?.setAt || Date.now(), // ⬅ keep existing timestamp or now
+        locked: profile.location?.locked || false
+      };
     }
   }
 
   /* ===== PAYLOAD ===== */
   const payload = {
-    wholesalerId: WID,              // 🔑 primary key
+    wholesalerId: WID,              
     shopName: shopName.value.trim(),
     mobile: shopMobile.value.trim(),
     address: shopAddress.value.trim(),
-
-    // 📍 NEW FIELD
-    location: location              // null ya {lat,lng}
+    location: location || null       // ⬅ setAt included
   };
 
   try {
@@ -528,10 +534,7 @@ async function saveWholesalerProfileToServer() {
     if (data.success) {
 
       /* ===== LOCAL SYNC ===== */
-      localStorage.setItem(
-        "wholesalerProfile_" + WID,
-        JSON.stringify(payload)
-      );
+      localStorage.setItem(key, JSON.stringify(payload));
 
       alert("✅ Profile & location server par save ho gaya");
       closeAll();
@@ -569,7 +572,7 @@ async function saveWholesalerProfileToServer() {
       const location = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
-        setAt: now,       // timestamp save karo
+        setAt: now,       // ⬅ important for timer
         locked: false
       };
 
@@ -590,7 +593,6 @@ async function saveWholesalerProfileToServer() {
     { enableHighAccuracy: true, timeout: 15000 }
   );
 }
-
 // Page load hone par check karo
 window.addEventListener("load", () => {
   const key = "wholesalerProfile_" + WID;
