@@ -792,7 +792,10 @@ async function loadProducts() {
     alert("Failed to load categories");
   }
 }
-
+window.addEventListener("load", () => {
+  showRemainingTime();
+  checkLocationLock();
+});
 /* ================= OPEN CATEGORY ================= */
 function openCategory(categoryId, wid) {
   window.location.href =
