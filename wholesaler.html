@@ -568,26 +568,21 @@ async function saveWholesalerProfileToServer() {
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-
-      // 🔥 IMPORTANT FIX
-      const oldSetAt = profile.location?.setAt || Date.now();
-
+      const now = Date.now();
       profile.location = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
-        setAt: oldSetAt,   // ❌ reset nahi hoga
+        setAt: now,
         locked: false
       };
 
       localStorage.setItem(key, JSON.stringify(profile));
+      locInput.value = `${profile.location.lat.toFixed(6)}, ${profile.location.lng.toFixed(6)}`;
 
-      locInput.value =
-        `${profile.location.lat.toFixed(6)}, ${profile.location.lng.toFixed(6)}`;
-
-      // ⏳ Timer resume with OLD time
+      // ⏳ Start / reset timer
       updateLocationTimer(profile.location.setAt);
 
-      alert("✅ Location updated (Timer same rahega)");
+      alert("✅ Location set successfully");
     },
     () => {
       alert("❌ Location permission denied");
