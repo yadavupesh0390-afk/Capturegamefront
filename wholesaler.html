@@ -607,17 +607,7 @@ async function saveWholesalerProfileToServer() {
   );
 }
 // Page load hone par check karo
-window.addEventListener("load", () => {
-  const key = "wholesalerProfile_" + WID;
-  let profile = JSON.parse(localStorage.getItem(key) || "{}");
 
-  if (profile.location?.setAt && !profile.location?.locked) {
-    // Resume timer
-    updateLocationTimer(profile.location.setAt);
-  }
-
-  ensureWholesalerLocation(); // Server se location fetch
-});
 let locationTimerInterval = null;
 
 function updateLocationTimer(setAt) {
