@@ -807,22 +807,36 @@ function getRetailerLocation() {
     return;
   }
 
+  // 🔒 Lock check
+  const isLocked = localStorage.getItem("retailer_location_locked");
+  if (isLocked === "true") {
+    alert("🔒 Location lock ho chuki hai. Admin permission required.");
+    return;
+  }
+
   profileLocation.value = "Fetching location...";
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
+      const now = Date.now();
+
       const loc = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude
       };
 
-      // Input में show
-      profileLocation.value =
-        loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);
+      // ⏱️ First time set timestamp
+      if (!localStorage.getItem("retailer_location_set_at")) {
+        localStorage.setItem("retailer_location_set_at", now);
+      }
 
-      // Save in localStorage
+      // 💾 Save location
       localStorage.setItem("retailer_location", JSON.stringify(loc));
       localStorage.setItem("location_updated", "yes");
+
+      // 🔢 Show in input
+      profileLocation.value =
+        loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);
 
       alert("✅ Location set successfully");
     },
