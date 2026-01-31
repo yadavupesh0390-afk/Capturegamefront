@@ -591,30 +591,36 @@ async function saveWholesalerProfileToServer() {
     { enableHighAccuracy:true, timeout:15000 }
   );
 }
-function updateLocationTimer(setAt){
+let locationTimerInterval = null;
 
+function updateLocationTimer(setAt) {
   const timerEl = document.getElementById("locationTimer");
   if (!timerEl) return;
 
-  setAt = Number(setAt); // ✅ normalize
+  setAt = Number(setAt); // Normalize
 
-  function tick(){
+  // Agar pehle interval chal raha hai to clear karo
+  if (locationTimerInterval) clearInterval(locationTimerInterval);
+
+  function tick() {
     const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
 
-    if (diff <= 0){
+    if (diff <= 0) {
       timerEl.innerText = "🔒 Location locked";
       lockWholesalerLocation();
+      clearInterval(locationTimerInterval);
       return;
     }
 
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
 
-    timerEl.innerText = `⏳ Aap sirf ${h} ghante ${m} minute tak hi location sudhaar sakte hain. Iske baad location permanently lock ho jayegi.`;
+    timerEl.innerText = `⏳ Location edit available: ${h}h ${m}m ${s}s — baad me lock ho jayegi`;
   }
 
-  tick();
-  setInterval(tick, 60000);
+  tick(); // turant update
+  locationTimerInterval = setInterval(tick, 1000); // har second update
 }
   function lockWholesalerLocation(){
 
