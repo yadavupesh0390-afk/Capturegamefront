@@ -431,11 +431,17 @@ function formatDateTime(ts) {
       shopAddress.value = data.profile.address || "";
 
       /* ===== LOCATION LOAD ===== */
-      if (data.profile.location?.lat && data.profile.location?.lng) {
+      /* ===== LOCATION LOAD ===== */
+   if (data.profile.location?.lat && data.profile.location?.lng) {
         document.getElementById("locationText").value =
-          `${data.profile.location.lat}, ${data.profile.location.lng}`;
-      } else {
+       `${data.profile.location.lat}, ${data.profile.location.lng}`;
+       } else {
         document.getElementById("locationText").value = "";
+       }
+
+     // ⏳ start location edit timer (10 hours rule)
+     if (data.profile.location?.setAt) {
+      updateLocationTimer(data.profile.location.setAt);
       }
 
       /* ===== LOCAL BACKUP ===== */
