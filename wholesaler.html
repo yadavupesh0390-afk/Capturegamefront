@@ -551,7 +551,7 @@ async function saveWholesalerProfileToServer() {
 
  function getCurrentLocation() {
   const key = "wholesalerProfile_" + WID;
-  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+  let profile = JSON.parse(localStorage.getItem(key) || "{}");
 
   if (profile.location?.locked) {
     alert("🔒 Location locked. Contact admin to change.");
@@ -564,25 +564,23 @@ async function saveWholesalerProfileToServer() {
   }
 
   const locInput = document.getElementById("locationText");
-  if (locInput) locInput.value = "📍 Fetching location...";
+  locInput.value = "📍 Fetching location...";
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const now = Date.now();
-      const location = {
+      profile.location = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
-        setAt: now,       // ⬅ important for timer
+        setAt: now,
         locked: false
       };
 
-      locInput.value =
-        location.lat.toFixed(6) + ", " + location.lng.toFixed(6);
-
-      profile.location = location;
       localStorage.setItem(key, JSON.stringify(profile));
+      locInput.value = `${profile.location.lat.toFixed(6)}, ${profile.location.lng.toFixed(6)}`;
 
-      updateLocationTimer(location.setAt); // timer start/restart
+      // ⏳ Start / reset timer
+      updateLocationTimer(profile.location.setAt);
 
       alert("✅ Location set successfully");
     },
@@ -596,13 +594,14 @@ async function saveWholesalerProfileToServer() {
 // Page load hone par check karo
 window.addEventListener("load", () => {
   const key = "wholesalerProfile_" + WID;
-  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+  let profile = JSON.parse(localStorage.getItem(key) || "{}");
 
   if (profile.location?.setAt && !profile.location?.locked) {
-    updateLocationTimer(profile.location.setAt); // resume timer
+    // Resume timer
+    updateLocationTimer(profile.location.setAt);
   }
 
-  ensureWholesalerLocation(); // server se location fetch karna
+  ensureWholesalerLocation(); // Server se location fetch
 });
 let locationTimerInterval = null;
 
@@ -610,9 +609,8 @@ function updateLocationTimer(setAt) {
   const timerEl = document.getElementById("locationTimer");
   if (!timerEl) return;
 
-  setAt = Number(setAt); // Normalize
+  setAt = Number(setAt);
 
-  // Agar pehle interval chal raha hai to clear karo
   if (locationTimerInterval) clearInterval(locationTimerInterval);
 
   function tick() {
@@ -632,19 +630,21 @@ function updateLocationTimer(setAt) {
     timerEl.innerText = `⏳ Location edit available: ${h}h ${m}m ${s}s — baad me lock ho jayegi`;
   }
 
-  tick(); // turant update
-  locationTimerInterval = setInterval(tick, 1000); // har second update
+  tick();
+  locationTimerInterval = setInterval(tick, 1000);
 }
-  function lockWholesalerLocation(){
-
+  function lockWholesalerLocation() {
   const key = "wholesalerProfile_" + WID;
-  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+  let profile = JSON.parse(localStorage.getItem(key) || "{}");
 
   if (profile.location) {
     profile.location.locked = true;
     localStorage.setItem(key, JSON.stringify(profile));
   }
-  }
+
+  const timerEl = document.getElementById("locationTimer");
+  if (timerEl) timerEl.innerText = "🔒 Location locked";
+}
 async function loadCategories(){
 
   const r = await fetch(API + "/api/products/wholesaler/" + WID);
