@@ -2075,6 +2075,24 @@ async function openOrderStatus() {
 async function openRetailerProfile() {
 
   profileModal.style.display = "flex";
+  setTimeout(() => {
+
+  const setAt = localStorage.getItem("retailer_location_set_at");
+  const locked = localStorage.getItem("retailer_location_locked");
+
+  if (locked === "true") {
+    const timerEl = document.getElementById("locationTimer");
+    if (timerEl) {
+      timerEl.innerText = "🔒 Location permanently locked";
+    }
+    return;
+  }
+
+  if (setAt) {
+    updateLocationTimer(Number(setAt));
+  }
+
+}, 200);
 
   const retailerId = localStorage.getItem("userId");
   if (!retailerId) {
