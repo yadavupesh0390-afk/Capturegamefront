@@ -610,7 +610,7 @@ function updateLocationTimer(setAt){
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
 
-    timerEl.innerText = `⏳ Left time: ${h}h ${m}m`;
+    timerEl.innerText = `⏳ Aap sirf ${h} ghante ${m} minute tak hi location sudhaar sakte hain. Iske baad location permanently lock ho jayegi.`;
   }
 
   tick();
