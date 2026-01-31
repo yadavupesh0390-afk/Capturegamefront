@@ -478,6 +478,12 @@ function formatDateTime(ts) {
     }
 
     /* ===== TIMER START (LOCAL DATA) ===== */
+   if (
+        data.profile.location?.setAt &&
+        !data.profile.location?.locked
+      ) {
+        updateLocationTimer(data.profile.location.setAt);
+   }
     if (
       p.location?.setAt &&
       !p.location?.locked
