@@ -508,14 +508,13 @@ async function saveWholesalerProfileToServer() {
 
     if (!isNaN(lat) && !isNaN(lng)) {
       location = {
-        lat,
-        lng,
-        // 🔥 TIMER RESET NA HO
-        setAt: oldProfile.location?.setAt 
-       ? oldProfile.location.setAt 
-       : Date.now(),
-        locked: oldProfile.location?.locked || false
-      };
+       lat,
+       lng,
+       setAt: oldProfile.location?.setAt 
+              ? oldProfile.location.setAt 
+             : Date.now(),
+       locked: oldProfile.location?.locked || false
+     };
     }
   }
 
