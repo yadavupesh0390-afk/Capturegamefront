@@ -441,12 +441,7 @@ function formatDateTime(ts) {
       }
 
       /* ===== TIMER START (SERVER DATA) ===== */
-      if (
-        data.profile.location?.setAt &&
-        !data.profile.location?.locked
-      ) {
-        updateLocationTimer(data.profile.location.setAt);
-      }
+      
 
       /* ===== LOCAL BACKUP ===== */
       localStorage.setItem(
