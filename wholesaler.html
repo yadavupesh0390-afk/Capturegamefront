@@ -441,7 +441,15 @@ function formatDateTime(ts) {
       }
 
       /* ===== LOCAL BACKUP ===== */
-      localStorage.setItem(key, JSON.stringify(data.profile));
+      /* ===== SAFE LOCAL MERGE ===== */
+const oldLocal = JSON.parse(localStorage.getItem(key) || "{}");
+
+data.profile.location = {
+  ...oldLocal.location,
+  ...data.profile.location
+};
+
+localStorage.setItem(key, JSON.stringify(data.profile));
 
     } else {
       shopName.value    = "";
