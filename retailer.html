@@ -819,6 +819,25 @@ function checkLocationLock() {
     }
   }
 }
+
+  function showRemainingTime() {
+  const setAt = localStorage.getItem("retailer_location_set_at");
+  if (!setAt) return;
+
+  const TEN_HOURS = 10 * 60 * 60 * 1000;
+  const left = TEN_HOURS - (Date.now() - Number(setAt));
+
+  if (left <= 0) return;
+
+  const hrs = Math.floor(left / 3600000);
+  const mins = Math.floor((left % 3600000) / 60000);
+
+  document.getElementById("locationTimer").innerText =
+    `⏳ Edit allowed for ${hrs}h ${mins}m`;
+}
+
+setInterval(showRemainingTime, 60000);
+showRemainingTime();
 /* ================= GET RETAILER LOCATION ================= */
 function getRetailerLocation() {
   const profileLocation = document.getElementById("profileLocation");
