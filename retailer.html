@@ -797,7 +797,28 @@ function openCategory(categoryId, wid) {
   window.location.href =
     `categoryProducts.html?wid=${wid}&category=${categoryId}`;
 }
+function checkLocationLock() {
+  const setAt = localStorage.getItem("retailer_location_set_at");
+  if (!setAt) return;
 
+  const TEN_HOURS = 10 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  if (now - Number(setAt) > TEN_HOURS) {
+    localStorage.setItem("retailer_location_locked", "true");
+
+    const btn = document.querySelector(
+      "#profileModal .location-group button"
+    );
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = "🔒 Location Locked";
+      btn.style.background = "#9ca3af";
+      btn.style.cursor = "not-allowed";
+    }
+  }
+}
 /* ================= GET RETAILER LOCATION ================= */
 function getRetailerLocation() {
   const profileLocation = document.getElementById("profileLocation");
