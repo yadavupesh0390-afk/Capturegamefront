@@ -585,7 +585,40 @@ async function saveWholesalerProfileToServer() {
     { enableHighAccuracy:true, timeout:15000 }
   );
 }
+function updateLocationTimer(setAt){
 
+  const timerEl = document.getElementById("locationTimer");
+  if (!timerEl) return;
+
+  function tick(){
+    const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
+
+    if (diff <= 0){
+      timerEl.innerText = "🔒 Location locked";
+      lockWholesalerLocation();
+      return;
+    }
+
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+
+    timerEl.innerText =
+      `⏳ You can edit location for ${h}h ${m}m`;
+  }
+
+  tick();
+  setInterval(tick, 60000);
+ }
+  function lockWholesalerLocation(){
+
+  const key = "wholesalerProfile_" + WID;
+  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+
+  if (profile.location) {
+    profile.location.locked = true;
+    localStorage.setItem(key, JSON.stringify(profile));
+  }
+  }
 async function loadCategories(){
 
   const r = await fetch(API + "/api/products/wholesaler/" + WID);
