@@ -441,7 +441,13 @@ function formatDateTime(ts) {
       }
 
       /* ===== TIMER START (SERVER DATA) ===== */
-      
+      /* ===== TIMER START (SERVER DATA) ===== */
+if (
+  data.profile.location?.setAt &&
+  !data.profile.location?.locked
+) {
+  updateLocationTimer(data.profile.location.setAt);
+}
 
       /* ===== LOCAL BACKUP ===== */
       localStorage.setItem(
@@ -478,12 +484,7 @@ function formatDateTime(ts) {
     }
 
     /* ===== TIMER START (LOCAL DATA) ===== */
-   if (
-        data.profile.location?.setAt &&
-        !data.profile.location?.locked
-      ) {
-        updateLocationTimer(data.profile.location.setAt);
-   }
+   
     if (
       p.location?.setAt &&
       !p.location?.locked
@@ -572,7 +573,19 @@ async function saveWholesalerProfileToServer() {
     alert("❌ Server error");
   }
 }
+window.addEventListener("load", () => {
+  ensureWholesalerLocation();
 
+  const key = "wholesalerProfile_" + WID;
+  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+
+  if (
+    profile.location?.setAt &&
+    !profile.location?.locked
+  ) {
+    updateLocationTimer(profile.location.setAt);
+  }
+});
  function getCurrentLocation() {
   const key = "wholesalerProfile_" + WID;
   let profile = JSON.parse(localStorage.getItem(key) || "{}");
