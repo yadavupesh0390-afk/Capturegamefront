@@ -411,6 +411,8 @@ function formatDateTime(ts) {
 
   profileModal.style.display = "flex";
 
+  const key = "wholesalerProfile_" + WID;
+
   try {
     const res = await fetch(
       `${API}/api/wholesalers/profile/${WID}`,
@@ -431,22 +433,24 @@ function formatDateTime(ts) {
       shopAddress.value = data.profile.address || "";
 
       /* ===== LOCATION LOAD ===== */
-      /* ===== LOCATION LOAD ===== */
-   if (data.profile.location?.lat && data.profile.location?.lng) {
+      if (data.profile.location?.lat && data.profile.location?.lng) {
         document.getElementById("locationText").value =
-       `${data.profile.location.lat}, ${data.profile.location.lng}`;
-       } else {
+          `${data.profile.location.lat}, ${data.profile.location.lng}`;
+      } else {
         document.getElementById("locationText").value = "";
-       }
+      }
 
-     // ⏳ start location edit timer (10 hours rule)
-     if (data.profile.location?.setAt) {
-      updateLocationTimer(data.profile.location.setAt);
+      /* ===== TIMER START (SERVER DATA) ===== */
+      if (
+        data.profile.location?.setAt &&
+        !data.profile.location?.locked
+      ) {
+        updateLocationTimer(data.profile.location.setAt);
       }
 
       /* ===== LOCAL BACKUP ===== */
       localStorage.setItem(
-        "wholesalerProfile_" + WID,
+        key,
         JSON.stringify(data.profile)
       );
 
@@ -464,7 +468,7 @@ function formatDateTime(ts) {
 
     /* ===== FALLBACK: LOCAL STORAGE ===== */
     const p = JSON.parse(
-      localStorage.getItem("wholesalerProfile_" + WID) || "{}"
+      localStorage.getItem(key) || "{}"
     );
 
     shopName.value    = p.shopName || "";
@@ -476,6 +480,14 @@ function formatDateTime(ts) {
         `${p.location.lat}, ${p.location.lng}`;
     } else {
       document.getElementById("locationText").value = "";
+    }
+
+    /* ===== TIMER START (LOCAL DATA) ===== */
+    if (
+      p.location?.setAt &&
+      !p.location?.locked
+    ) {
+      updateLocationTimer(p.location.setAt);
     }
   }
 }
