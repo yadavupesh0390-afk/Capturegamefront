@@ -314,7 +314,7 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
   const API = "https://shopbacked-vmhs.onrender.com";
  </script>
  <script>    
-    
+const LOCATION_EDIT_LIMIT = 10 * 60 * 60 * 1000; // 10 hours
 const TOKEN=localStorage.getItem("token");    
 const WID=localStorage.getItem("userId");    
 const ROLE=localStorage.getItem("role");    
@@ -596,6 +596,8 @@ function updateLocationTimer(setAt){
   const timerEl = document.getElementById("locationTimer");
   if (!timerEl) return;
 
+  setAt = Number(setAt); // ✅ normalize
+
   function tick(){
     const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
 
@@ -608,13 +610,12 @@ function updateLocationTimer(setAt){
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
 
-    timerEl.innerText =
-      `⏳ You can edit location for ${h}h ${m}m`;
+    timerEl.innerText = `⏳ Left time: ${h}h ${m}m`;
   }
 
   tick();
   setInterval(tick, 60000);
- }
+}
   function lockWholesalerLocation(){
 
   const key = "wholesalerProfile_" + WID;
