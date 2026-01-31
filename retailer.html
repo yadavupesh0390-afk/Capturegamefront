@@ -821,24 +821,49 @@ function checkLocationLock() {
   }
 }
 
-  function showRemainingTime() {
-  const setAt = localStorage.getItem("retailer_location_set_at");
-  if (!setAt) return;
+  let locationTimerInterval = null;
 
-  const TEN_HOURS = 10 * 60 * 60 * 1000;
-  const left = TEN_HOURS - (Date.now() - Number(setAt));
+function updateLocationTimer(setAt) {
 
-  if (left <= 0) return;
+  const timerEl = document.getElementById("locationTimer");
+  if (!timerEl) return;
 
-  const hrs = Math.floor(left / 3600000);
-  const mins = Math.floor((left % 3600000) / 60000);
+  setAt = Number(setAt);
 
-  document.getElementById("locationTimer").innerText =
-    `⏳ Aap sirf ${hrs}h ghante ${mins}m minute tak hi location sudhaar sakte hain. Iske baad location permanently lock ho jayegi.`;
+  if (locationTimerInterval) {
+    clearInterval(locationTimerInterval);
+  }
+
+  function tick() {
+
+    const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
+
+    // 🔒 Time khatam
+    if (diff <= 0) {
+      timerEl.innerText =
+        "🔒 Location permanently locked. Correction possible nahi hai.";
+      lockWholesalerLocation();
+      clearInterval(locationTimerInterval);
+      return;
+    }
+
+    // ⏱️ Time calculate
+    const hrs  = Math.floor(diff / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+
+    // 📝 Same text + seconds
+    timerEl.innerText =
+`⏳ Sirf ${hrs}h ${mins}m ${secs}s baaki hain. 
+Iske baad location permanently lock ho jayegi aur correction possible nahi hoga.`;
+  }
+
+  // First run
+  tick();
+
+  // Every second update
+  locationTimerInterval = setInterval(tick, 1000);
 }
-
-setInterval(showRemainingTime, 60000);
-showRemainingTime();
 /* ================= GET RETAILER LOCATION ================= */
 function getRetailerLocation() {
   const profileLocation = document.getElementById("profileLocation");
