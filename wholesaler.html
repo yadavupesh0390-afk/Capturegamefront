@@ -511,7 +511,9 @@ async function saveWholesalerProfileToServer() {
         lat,
         lng,
         // 🔥 TIMER RESET NA HO
-        setAt: oldProfile.location?.setAt || Date.now(),
+        setAt: oldProfile.location?.setAt 
+       ? oldProfile.location.setAt 
+       : Date.now(),
         locked: oldProfile.location?.locked || false
       };
     }
@@ -1107,9 +1109,7 @@ async function initFCM() {
 
 window.addEventListener("load", initFCM);
  // ------------------- INIT -------------------
-window.addEventListener("load", () => {
-  ensureWholesalerLocation();
-});
+
 
 </script>
 
