@@ -2069,7 +2069,12 @@ async function openOrderStatus() {
 
 // ------------------- PROFILE -------------------
 /* PROFILE */
+function handleLocationTimerFromServer(profile) {
+  const loc = profile?.location;
+  if (!loc || !loc.setAt) return;
 
+  updateLocationTimer(loc.setAt, loc.locked);
+    }
 /* ================= OPEN RETAILER PROFILE ================= */
 async function openRetailerProfile() {
 
