@@ -2091,7 +2091,7 @@ async function openRetailerProfile() {
       profileName.value   = data.profile.name || "";
       profileMobile.value = data.profile.mobile || "";
 
-      /* ===== LOCATION (SERVER BASED) ===== */
+      /* ===== LOCATION (ONLY SERVER DATA) ===== */
       if (
         data.profile.location?.lat &&
         data.profile.location?.lng
@@ -2103,10 +2103,20 @@ async function openRetailerProfile() {
         profileLocation.value = "";
       }
 
-      /* ===== TIMER (ONLY FROM SERVER) ===== */
-      handleLocationTimerFromServer(data.profile);
+      /* ===== LOCATION TIMER (ONLY SERVER BASED) ===== */
+      if (data.profile?.locationMeta?.firstSetAt) {
 
-      /* ===== OPTIONAL LOCAL CACHE (UI BACKUP ONLY) ===== */
+        updateLocationTimer(
+          data.profile.locationMeta.firstSetAt,
+          data.profile.locationMeta.locked
+        );
+
+      } else {
+        const timerEl = document.getElementById("locationTimer");
+        if (timerEl) timerEl.innerText = "";
+      }
+
+      /* ===== LOCAL CACHE (UI BACKUP ONLY) ===== */
       localStorage.setItem(
         "retailerProfile",
         JSON.stringify(data.profile)
