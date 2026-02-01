@@ -826,11 +826,12 @@ function checkLocationLock() {
 
   let locationTimerInterval = null;
 
-function updateLocationTimer(setAt) {
+function updateLocationTimer(setAt, locked) {
 
   const timerEl = document.getElementById("locationTimer");
   if (!timerEl) return;
 
+  const LIMIT = 10 * 60 * 60 * 1000; // 10 hours
   setAt = Number(setAt);
 
   if (locationTimerInterval) {
@@ -838,86 +839,84 @@ function updateLocationTimer(setAt) {
   }
 
   function tick() {
+    const diff = (setAt + LIMIT) - Date.now();
 
-    const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
-
-    // 🔒 Time khatam
-    if (diff <= 0) {
+    if (diff <= 0 || locked) {
       timerEl.innerText =
-        "🔒 Location permanently locked. Correction possible nahi hai.";
-      lockWholesalerLocation();
+        "🔒 Location permanently lock ho chuki hai. Ab correction possible nahi hai.";
+
+      const btn = document.querySelector(
+        "#profileModal .location-group button"
+      );
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "🔒 Location Locked";
+        btn.style.background = "#9ca3af";
+      }
+
       clearInterval(locationTimerInterval);
       return;
     }
 
-    // ⏱️ Time calculate
     const hrs  = Math.floor(diff / 3600000);
     const mins = Math.floor((diff % 3600000) / 60000);
     const secs = Math.floor((diff % 60000) / 1000);
 
-    // 📝 Same text + seconds
     timerEl.innerText =
-`⏳ Sirf ${hrs}h ${mins}m ${secs}s baaki hain. 
+`⏳ Sirf ${hrs}h ${mins}m ${secs}s baaki hain.
 Iske baad location permanently lock ho jayegi aur correction possible nahi hoga.`;
   }
 
-  // First run
   tick();
-
-  // Every second update
   locationTimerInterval = setInterval(tick, 1000);
 }
 /* ================= GET RETAILER LOCATION ================= */
-function getRetailerLocation() {
-  const profileLocation = document.getElementById("profileLocation");
+async function getRetailerLocation() {
 
   if (!navigator.geolocation) {
-    alert("❌ Geolocation supported नहीं है");
+    alert("Geolocation not supported");
     return;
   }
-
-  // 🔒 Lock check
-  const isLocked = localStorage.getItem("retailer_location_locked");
-  if (isLocked === "true") {
-    alert("🔒 Location lock ho chuki hai. Admin permission required.");
-    return;
-  }
-
-  profileLocation.value = "Fetching location...";
 
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const now = Date.now();
+    async (pos) => {
 
-      const loc = {
+      const location = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude
       };
 
-      // ⏱️ First time set timestamp
-      if (!localStorage.getItem("retailer_location_set_at")) {
-        localStorage.setItem("retailer_location_set_at", now);
+      const res = await fetch(`${API}/api/retailers/location`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + TOKEN
+        },
+        body: JSON.stringify({ location })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.message || "Location update failed");
+        return;
       }
 
-      // 💾 Save location
-      localStorage.setItem("retailer_location", JSON.stringify(loc));
-      localStorage.setItem("location_updated", "yes");
-
-      // 🔢 Show in input
+      // ✅ UI update
       profileLocation.value =
-        loc.lat.toFixed(6) + ", " + loc.lng.toFixed(6);
+        location.lat.toFixed(6) + ", " +
+        location.lng.toFixed(6);
 
-      alert("✅ Location set successfully");
+      // ✅ SERVER TIME se timer
+      updateLocationTimer(
+        data.location.setAt,
+        data.location.locked
+      );
+
+      alert("📍 Location set successfully");
     },
-    (err) => {
-      console.error(err);
-      alert("❌ Location access denied");
-      profileLocation.value = "";
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000
-    }
+    () => alert("Location denied"),
+    { enableHighAccuracy: true }
   );
 }
 
