@@ -2079,24 +2079,6 @@ function handleLocationTimerFromServer(profile) {
 async function openRetailerProfile() {
 
   profileModal.style.display = "flex";
-  setTimeout(() => {
-
-  const setAt = localStorage.getItem("retailer_location_set_at");
-  const locked = localStorage.getItem("retailer_location_locked");
-
-  if (locked === "true") {
-    const timerEl = document.getElementById("locationTimer");
-    if (timerEl) {
-      timerEl.innerText = "🔒 Location permanently locked";
-    }
-    return;
-  }
-
-  if (setAt) {
-    updateLocationTimer(Number(setAt));
-  }
-
-}, 200);
 
   const retailerId = localStorage.getItem("userId");
   if (!retailerId) {
@@ -2106,78 +2088,58 @@ async function openRetailerProfile() {
 
   try {
     const res = await fetch(
-      `${API}/api/retailers/profile/${retailerId}`
+      `${API}/api/retailers/profile/${retailerId}`,
+      {
+        headers: {
+          "Authorization": "Bearer " + TOKEN
+        }
+      }
     );
+
     const data = await res.json();
 
     if (data.success && data.profile) {
 
-      // 🧑 Basic fields
+      /* ===== BASIC PROFILE ===== */
       profileName.value   = data.profile.name || "";
       profileMobile.value = data.profile.mobile || "";
 
-      /* ================= LOCATION LOGIC ================= */
-
-      const locationUpdated =
-        localStorage.getItem("location_updated") === "yes";
-
-      // ✅ Case 1: user ne location update nahi ki → server wali lo
-      if (!locationUpdated && data.profile.location) {
-
-        const loc = data.profile.location;
-
-        if (loc.lat && loc.lng) {
-          profileLocation.value =
-            Number(loc.lat).toFixed(6) + ", " +
-            Number(loc.lng).toFixed(6);
-
-          // cache
-          localStorage.setItem(
-            "retailer_location",
-            JSON.stringify({
-              lat: Number(loc.lat),
-              lng: Number(loc.lng)
-            })
-          );
-        }
-
-      }
-      // ✅ Case 2: user ki updated location hai → usko chhedo mat
-      else if (locationUpdated) {
-
-        const loc =
-          JSON.parse(localStorage.getItem("retailer_location") || "{}");
-
-        if (loc.lat && loc.lng) {
-          profileLocation.value =
-            Number(loc.lat).toFixed(6) + ", " +
-            Number(loc.lng).toFixed(6);
-        } else {
-          profileLocation.value = "";
-        }
-
-      }
-      // ✅ Case 3: no location
-      else {
+      /* ===== LOCATION (SERVER BASED) ===== */
+      if (
+        data.profile.location?.lat &&
+        data.profile.location?.lng
+      ) {
+        profileLocation.value =
+          Number(data.profile.location.lat).toFixed(6) + ", " +
+          Number(data.profile.location.lng).toFixed(6);
+      } else {
         profileLocation.value = "";
       }
+
+      /* ===== TIMER (ONLY FROM SERVER) ===== */
       handleLocationTimerFromServer(data.profile);
 
-      // 🔄 Profile cache
+      /* ===== OPTIONAL LOCAL CACHE (UI BACKUP ONLY) ===== */
       localStorage.setItem(
         "retailerProfile",
         JSON.stringify(data.profile)
       );
 
     } else {
+
       profileName.value = "";
       profileMobile.value = "";
       profileLocation.value = "";
+
+      const timerEl = document.getElementById("locationTimer");
+      if (timerEl) timerEl.innerText = "";
     }
 
   } catch (err) {
+
     console.error("Profile fetch error", err);
     alert("❌ Server error");
+
   }
 }
 
