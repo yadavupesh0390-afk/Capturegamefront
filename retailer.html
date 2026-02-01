@@ -2075,12 +2075,7 @@ async function openRetailerProfile() {
 
   try {
     const res = await fetch(
-      `${API}/api/retailers/profile/${retailerId}`,
-      {
-        headers: {
-          "Authorization": "Bearer " + TOKEN
-        }
-      }
+      `${API}/api/retailers/profile/${retailerId}`
     );
 
     const data = await res.json();
@@ -2105,25 +2100,22 @@ async function openRetailerProfile() {
 
       /* ===== LOCATION TIMER (ONLY SERVER BASED) ===== */
       if (data.profile?.locationMeta?.firstSetAt) {
-
         updateLocationTimer(
           data.profile.locationMeta.firstSetAt,
           data.profile.locationMeta.locked
         );
-
       } else {
         const timerEl = document.getElementById("locationTimer");
         if (timerEl) timerEl.innerText = "";
       }
 
-      /* ===== LOCAL CACHE (UI BACKUP ONLY) ===== */
+      /* ===== UI CACHE (OPTIONAL) ===== */
       localStorage.setItem(
         "retailerProfile",
         JSON.stringify(data.profile)
       );
 
     } else {
-
       profileName.value = "";
       profileMobile.value = "";
       profileLocation.value = "";
@@ -2133,13 +2125,10 @@ async function openRetailerProfile() {
     }
 
   } catch (err) {
-
-    console.error("Profile fetch error", err);
+    console.error("REAL ERROR 👉", err);
     alert("❌ Server error");
-
   }
 }
-
 
 /* ================= SAVE PROFILE ================= */
 async function saveProfile() {
