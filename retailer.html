@@ -802,56 +802,76 @@ function openCategory(categoryId, wid) {
     `categoryProducts.html?wid=${wid}&category=${categoryId}`;
 }
 
+function normalizeSetAt(setAt) {
+  if (!setAt) return null;
+
+  // already number (milliseconds)
+  if (typeof setAt === "number" && !isNaN(setAt)) {
+    return setAt;
+  }
+
+  // number as string
+  if (typeof setAt === "string" && !isNaN(setAt)) {
+    return Number(setAt);
+  }
+
+  // ISO date string
+  const parsed = Date.parse(setAt);
+  if (!isNaN(parsed)) {
+    return parsed;
+  }
+
+  return null;
+}
 
   let locationTimerInterval = null;
 
-function updateLocationTimer(firstSetAt, locked) {
+function updateLocationTimer(setAt, locked) {
 
   const timerEl = document.getElementById("locationTimer");
-  const btn = document.querySelector(
-    "#profileModal .location-group button"
-  );
-
   if (!timerEl) return;
 
   const LIMIT = 10 * 60 * 60 * 1000; // 10 hours
-  firstSetAt = Number(firstSetAt);
+
+  const normalizedSetAt = normalizeSetAt(setAt);
+  if (!normalizedSetAt) {
+    timerEl.innerText = "";
+    return;
+  }
 
   if (locationTimerInterval) {
     clearInterval(locationTimerInterval);
   }
 
   function tick() {
-    if (locked) {
-      timerEl.innerText = "🔒 Location permanently locked";
+    const diff = (normalizedSetAt + LIMIT) - Date.now();
+
+    if (diff <= 0 || locked) {
+      timerEl.innerText =
+        "🔒 Location permanently lock ho chuki hai. Ab correction possible nahi hai.";
+
+      const btn = document.querySelector(
+        "#profileModal .location-group button"
+      );
+
       if (btn) {
         btn.disabled = true;
         btn.innerText = "🔒 Location Locked";
         btn.style.background = "#9ca3af";
+        btn.style.cursor = "not-allowed";
       }
+
       clearInterval(locationTimerInterval);
       return;
     }
 
-    const diff = (firstSetAt + LIMIT) - Date.now();
-
-    if (diff <= 0) {
-      timerEl.innerText = "🔒 Location permanently locked";
-      if (btn) {
-        btn.disabled = true;
-        btn.innerText = "🔒 Location Locked";
-        btn.style.background = "#9ca3af";
-      }
-      clearInterval(locationTimerInterval);
-      return;
-    }
-
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
+    const hrs  = Math.floor(diff / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
 
     timerEl.innerText =
-      `⏳ ${h}h ${m}m ${s}s baaki hain (10h limit)`;
+      `⏳ Sirf ${hrs}h ${mins}m ${secs}s baaki hain.\n` +
+      `Iske baad location permanently lock ho jayegi.`;
   }
 
   tick();
