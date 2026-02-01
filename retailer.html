@@ -2161,6 +2161,7 @@ async function openRetailerProfile() {
       else {
         profileLocation.value = "";
       }
+      handleLocationTimerFromServer(data.profile);
 
       // 🔄 Profile cache
       localStorage.setItem(
