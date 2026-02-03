@@ -2200,28 +2200,42 @@ async function saveProfile() {
     return;
   }
 
-  // 📍 CURRENT LOCATION (from localStorage)
-  let location = null;
-  const locLS = localStorage.getItem("retailer_location");
+  const retailerProfile =
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-  if (locLS) {
-    const loc = JSON.parse(locLS);
-    if (loc.lat && loc.lng) {
-      location = {
-        lat: Number(loc.lat),
-        lng: Number(loc.lng)
-      };
+  const locationMeta = retailerProfile.locationMeta || {};
+  const isLocationLocked = locationMeta.locked === true;
+
+  let location = null;
+
+  // ✅ LOCATION TABHI BHEJO JAB LOCK NA HO
+  if (!isLocationLocked) {
+
+    const locLS = localStorage.getItem("retailer_location");
+
+    if (locLS) {
+      const loc = JSON.parse(locLS);
+
+      if (!isNaN(loc.lat) && !isNaN(loc.lng)) {
+        location = {
+          lat: Number(loc.lat),
+          lng: Number(loc.lng)
+        };
+      }
     }
   }
+  // 🔒 locked hai → location = null (send hi nahi hogi)
 
   const payload = {
     retailerId: localStorage.getItem("userId"),
     name: profileName.value.trim(),
-    mobile: profileMobile.value.trim(),
-
-    // 🔥 MOST IMPORTANT
-    location
+    mobile: profileMobile.value.trim()
   };
+
+  // ❗ location sirf tab add karo jab allowed ho
+  if (location) {
+    payload.location = location;
+  }
 
   sendProfile(payload);
 }
