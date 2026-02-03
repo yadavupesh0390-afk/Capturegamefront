@@ -843,57 +843,61 @@ function normalizeSetAt(setAt) {
 
   let locationTimerInterval = null;
 
-function updateLocationTimer(setAt, locked) {
+function updateLocationTimer(setAt, locked = false) {
 
   const timerEl = document.getElementById("locationTimer");
+  const adminBtn = document.getElementById("adminHelpBtn");
+
   if (!timerEl) return;
 
-  const LIMIT = 10 * 60 * 60 * 1000; // 10 hours
-
-  const normalizedSetAt = normalizeSetAt(setAt);
-  if (!normalizedSetAt) {
-    timerEl.innerText = "";
-    return;
-  }
-
-  if (locationTimerInterval) {
-    clearInterval(locationTimerInterval);
-  }
+  const LOCK_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+  const endTime = Number(setAt) + LOCK_DURATION;
 
   function tick() {
-    const diff = (normalizedSetAt + LIMIT) - Date.now();
 
-    if (diff <= 0 || locked) {
+    const now = Date.now();
+    const diff = endTime - now;
+
+    // 🔒 TIME OVER OR LOCKED
+    if (diff <= 0 || locked === true) {
+
       timerEl.innerText =
-        "🔒 Location permanently lock ho chuki hai. Ab correction possible nahi hai.";
+        "🔒 Location permanently locked.\nCorrection not allowed.";
 
-      const btn = document.querySelector(
-        "#profileModal .location-group button"
-      );
+      if (adminBtn) adminBtn.style.display = "block";
 
-      if (btn) {
-        btn.disabled = true;
-        btn.innerText = "🔒 Location Locked";
-        btn.style.background = "#9ca3af";
-        btn.style.cursor = "not-allowed";
-      }
-
-      clearInterval(locationTimerInterval);
       return;
     }
 
-    const hrs  = Math.floor(diff / 3600000);
-    const mins = Math.floor((diff % 3600000) / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
+    // ⏳ TIME LEFT
+    const hrs  = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff / (1000 * 60)) % 60);
+    const secs = Math.floor((diff / 1000) % 60);
 
     timerEl.innerText =
-      `⏳ Sirf ${hrs}h ${mins}m ${secs}s baaki hain.\n` +
-      `Iske baad location permanently lock ho jayegi.`;
+`⏳ Sirf ${hrs}h ${mins}m ${secs}s baaki hain.
+Iske baad location permanently lock ho jayegi aur correction possible nahi hoga.`;
+
+    if (adminBtn) adminBtn.style.display = "none";
+
+    requestAnimationFrame(() => setTimeout(tick, 1000));
   }
 
   tick();
-  locationTimerInterval = setInterval(tick, 1000);
 }
+
+  function contactAdminForLocation() {
+
+  const retailerId = localStorage.getItem("userId");
+
+  alert(
+    "📩 Admin ko request bhej di gayi hai.\n" +
+    "Retailer ID: " + retailerId + "\n" +
+    "Admin aapse contact karega."
+  );
+
+  // OPTIONAL: API call yahan laga sakte ho
+  }
 /* ================= GET RETAILER LOCATION ================= */
 async function getRetailerLocation() {
 
