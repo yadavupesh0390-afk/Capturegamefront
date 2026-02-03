@@ -580,7 +580,24 @@ border-radius: 4px;
   <input id="profileLocation" placeholder="Fetching location..." readonly>    
   <button onclick="getRetailerLocation()">📌 Set Current Location</button>
   <small id="locationTimer" style="color:#9ca3af; display:block; margin-top:6px;"></small>
-</div>    
+</div> 
+    <button
+    id="adminHelpBtn"
+    style="
+      display:none;
+      margin-top:10px;
+      background:#dc2626;
+      color:#fff;
+      padding:10px 16px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      width:100%;
+    "
+    onclick="contactAdminForLocation()"
+  >
+    🆘 Admin Help (Location Correction)
+    </button>
     <button class="primary" onclick="saveProfile()">Save</button>    
     <button onclick="closeAll()">Close</button>    
   </div>    
