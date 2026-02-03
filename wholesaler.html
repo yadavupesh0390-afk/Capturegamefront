@@ -588,13 +588,6 @@ window.addEventListener("load", () => {
   }
 });
  function getCurrentLocation() {
-  const key = "wholesalerProfile_" + WID;
-  let profile = JSON.parse(localStorage.getItem(key) || "{}");
-
-  if (profile.location?.locked) {
-    alert("🔒 Location locked. Contact admin.");
-    return;
-  }
 
   if (!navigator.geolocation) {
     alert("❌ Location not supported");
@@ -605,32 +598,19 @@ window.addEventListener("load", () => {
   locInput.value = "📍 Fetching location...";
 
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
-
-      // 🔥 IMPORTANT LINE
-      const oldSetAt = profile.location?.setAt || Date.now();
-
-      profile.location = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-        setAt: oldSetAt,   // ❌ RESET NAHI HOGA
-        locked: false
-      };
-
-      localStorage.setItem(key, JSON.stringify(profile));
+    pos => {
 
       locInput.value =
-        `${profile.location.lat.toFixed(6)}, ${profile.location.lng.toFixed(6)}`;
+        `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
 
-      updateLocationTimer(profile.location.setAt);
+      alert("✅ Location selected (Timer server handle karega)");
 
-      alert("✅ Location updated (Timer same)");
     },
     () => {
       alert("❌ Permission denied");
       locInput.value = "";
     },
-    { enableHighAccuracy: true, timeout: 15000 }
+    { enableHighAccuracy: true }
   );
 }
 // Page load hone par check karo
