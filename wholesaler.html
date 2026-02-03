@@ -407,21 +407,15 @@ function formatDateTime(ts) {
   return `<span>${status}</span>`;
   }
   
-  async function openProfile(){
-
+  async function openProfile() {
   profileModal.style.display = "flex";
 
   const key = "wholesalerProfile_" + WID;
 
   try {
-    const res = await fetch(
-      `${API}/api/wholesalers/profile/${WID}`,
-      {
-        headers: {
-          "Authorization": "Bearer " + TOKEN
-        }
-      }
-    );
+    const res = await fetch(`${API}/api/wholesalers/profile/${WID}`, {
+      headers: { "Authorization": "Bearer " + TOKEN }
+    });
 
     const data = await res.json();
 
@@ -440,32 +434,44 @@ function formatDateTime(ts) {
         document.getElementById("locationText").value = "";
       }
 
-      /* ===== LOCAL BACKUP ===== */
-      /* ===== SAFE LOCAL MERGE ===== */
-const oldLocal = JSON.parse(localStorage.getItem(key) || "{}");
+      /* ===== LOCAL BACKUP MERGE ===== */
+      const oldLocal = JSON.parse(localStorage.getItem(key) || "{}");
 
-data.profile.location = {
-  ...oldLocal.location,
-  ...data.profile.location
-};
+      // Merge location object
+      data.profile.location = {
+        ...oldLocal.location,
+        ...data.profile.location
+      };
 
-localStorage.setItem(key, JSON.stringify(data.profile));
-     if (data.profile.locationMeta?.firstSetAt) {
-        updateLocationTimer(
-          data.profile.locationMeta.firstSetAt,
-          data.profile.locationMeta.locked
-        );
-     }
+      localStorage.setItem(key, JSON.stringify(data.profile));
+
+      /* ===== TIMER ===== */
+      const firstSetAt = data.profile.locationMeta?.firstSetAt
+                         || data.profile.location?.setAt;
+
+      if (firstSetAt) {
+        updateLocationTimer(firstSetAt);
+      } else {
+        const timerEl = document.getElementById("locationTimer");
+        if (timerEl) timerEl.innerText = "";
+      }
+
+      // Handle already locked
+      if (data.profile.location?.locked) {
+        const timerEl = document.getElementById("locationTimer");
+        if (timerEl) timerEl.innerText = "🔒 Location locked";
+      }
 
     } else {
       shopName.value    = "";
       shopMobile.value  = "";
       shopAddress.value = "";
       document.getElementById("locationText").value = "";
+      const timerEl = document.getElementById("locationTimer");
+      if (timerEl) timerEl.innerText = "";
     }
 
   } catch (err) {
-
     console.error("Load profile error:", err);
 
     const p = JSON.parse(localStorage.getItem(key) || "{}");
@@ -480,24 +486,15 @@ localStorage.setItem(key, JSON.stringify(data.profile));
     } else {
       document.getElementById("locationText").value = "";
     }
-  }
 
-  /* ===== TIMER FORCE REFRESH (IMPORTANT) ===== */
-  setTimeout(() => {
-
-    const p = JSON.parse(localStorage.getItem(key) || "{}");
-
-    if (p.location?.locked) {
+    // Timer from localStorage fallback
+    if (p.location?.setAt && !p.location?.locked) {
+      updateLocationTimer(p.location.setAt);
+    } else if (p.location?.locked) {
       const timerEl = document.getElementById("locationTimer");
       if (timerEl) timerEl.innerText = "🔒 Location locked";
-      return;
     }
-
-    if (p.location?.setAt) {
-      updateLocationTimer(p.location.setAt);
-    }
-
-  }, 200); // modal paint hone ka wait
+  }
 }
 function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}
 
