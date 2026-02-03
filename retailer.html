@@ -2200,31 +2200,28 @@ async function saveProfile() {
     return;
   }
 
-  const retailerProfile =
-    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+  let location; // ⚠️ undefined rakho (null nahi)
 
-  const locationMeta = retailerProfile.locationMeta || {};
-  const isLocationLocked = locationMeta.locked === true;
+  const locLS = localStorage.getItem("retailer_location");
 
-  let location = null;
-
-  // ✅ LOCATION TABHI BHEJO JAB LOCK NA HO
-  if (!isLocationLocked) {
-
-    const locLS = localStorage.getItem("retailer_location");
-
-    if (locLS) {
+  if (locLS) {
+    try {
       const loc = JSON.parse(locLS);
 
-      if (!isNaN(loc.lat) && !isNaN(loc.lng)) {
+      if (
+        loc &&
+        !isNaN(loc.lat) &&
+        !isNaN(loc.lng)
+      ) {
         location = {
           lat: Number(loc.lat),
           lng: Number(loc.lng)
         };
       }
+    } catch (e) {
+      console.warn("Invalid location data");
     }
   }
-  // 🔒 locked hai → location = null (send hi nahi hogi)
 
   const payload = {
     retailerId: localStorage.getItem("userId"),
@@ -2232,7 +2229,7 @@ async function saveProfile() {
     mobile: profileMobile.value.trim()
   };
 
-  // ❗ location sirf tab add karo jab allowed ho
+  // ✅ location sirf tab add hogi jab valid ho
   if (location) {
     payload.location = location;
   }
