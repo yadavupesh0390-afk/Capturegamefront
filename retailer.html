@@ -843,47 +843,68 @@ function normalizeSetAt(setAt) {
 
   let locationTimerInterval = null;
 
-function updateLocationTimer(setAt, locked = false) {
+function updateLocationTimer(setAt, locked) {
 
   const timerEl = document.getElementById("locationTimer");
-  const adminBtn = document.getElementById("adminHelpBtn");
-
   if (!timerEl) return;
 
-  const LOCK_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-  const endTime = Number(setAt) + LOCK_DURATION;
+  const LIMIT = 10 * 60 * 60 * 1000; // 10 hours
+
+  // ✅ normalize date
+  const normalizedSetAt = normalizeSetAt(setAt);
+
+  if (!normalizedSetAt) {
+    timerEl.innerText = "";
+    return;
+  }
+
+  if (locationTimerInterval) {
+    clearInterval(locationTimerInterval);
+  }
 
   function tick() {
+    const diff = (normalizedSetAt + LIMIT) - Date.now();
 
-    const now = Date.now();
-    const diff = endTime - now;
-
-    // 🔒 TIME OVER OR LOCKED
     if (diff <= 0 || locked === true) {
 
       timerEl.innerText =
-        "🔒 Location permanently locked.\nCorrection not allowed.";
+        "🔒 Location lock ho chuki hai. Correction ke liye admin se contact karein.";
 
-      if (adminBtn) adminBtn.style.display = "block";
+      // 🔒 Disable set location button
+      const btn = document.querySelector(
+        "#profileModal .location-group button"
+      );
 
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "🔒 Location Locked";
+        btn.style.background = "#9ca3af";
+        btn.style.cursor = "not-allowed";
+      }
+
+      // 🆘 SHOW ADMIN HELP
+      const helpBtn = document.getElementById("adminHelpBtn");
+      if (helpBtn) helpBtn.style.display = "block";
+
+      clearInterval(locationTimerInterval);
       return;
     }
 
-    // ⏳ TIME LEFT
-    const hrs  = Math.floor(diff / (1000 * 60 * 60));
-    const mins = Math.floor((diff / (1000 * 60)) % 60);
-    const secs = Math.floor((diff / 1000) % 60);
+    const hrs  = Math.floor(diff / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
 
     timerEl.innerText =
-`⏳ Sirf ${hrs}h ${mins}m ${secs}s baaki hain.
-Iske baad location permanently lock ho jayegi aur correction possible nahi hoga.`;
+      `⏳ ${hrs}h ${mins}m ${secs}s remaining\n` +
+      `Iske baad location lock ho jayegi.`;
 
-    if (adminBtn) adminBtn.style.display = "none";
-
-    requestAnimationFrame(() => setTimeout(tick, 1000));
+    // ❌ hide admin help while time left
+    const helpBtn = document.getElementById("adminHelpBtn");
+    if (helpBtn) helpBtn.style.display = "none";
   }
 
   tick();
+  locationTimerInterval = setInterval(tick, 1000);
 }
 
   function contactAdminForLocation() {
