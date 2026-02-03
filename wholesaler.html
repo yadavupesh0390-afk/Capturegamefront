@@ -408,6 +408,7 @@ function formatDateTime(ts) {
   }
   
   async function openProfile() {
+  const profileModal = document.getElementById("profileModal");
   profileModal.style.display = "flex";
 
   const key = "wholesalerProfile_" + WID;
@@ -416,85 +417,78 @@ function formatDateTime(ts) {
     const res = await fetch(`${API}/api/wholesalers/profile/${WID}`, {
       headers: { "Authorization": "Bearer " + TOKEN }
     });
-
     const data = await res.json();
 
     if (data.success && data.profile) {
+      const profile = data.profile;
 
-      /* ===== BASIC PROFILE ===== */
-      shopName.value    = data.profile.shopName || "";
-      shopMobile.value  = data.profile.mobile || "";
-      shopAddress.value = data.profile.address || "";
+      // ===== BASIC PROFILE FIELDS =====
+      document.getElementById("shopName").value    = profile.shopName || "";
+      document.getElementById("shopMobile").value  = profile.mobile || "";
+      document.getElementById("shopAddress").value = profile.address || "";
 
-      /* ===== LOCATION LOAD ===== */
-      if (data.profile.location?.lat && data.profile.location?.lng) {
-        document.getElementById("locationText").value =
-          `${data.profile.location.lat}, ${data.profile.location.lng}`;
-      } else {
-        document.getElementById("locationText").value = "";
-      }
-
-      /* ===== LOCAL BACKUP MERGE ===== */
+      // ===== LOCATION =====
+      let loc = profile.location || {};
       const oldLocal = JSON.parse(localStorage.getItem(key) || "{}");
 
-      // Merge location object
-      data.profile.location = {
+      // Merge old local location data (setAt, locked)
+      loc = {
         ...oldLocal.location,
-        ...data.profile.location
+        ...loc
       };
 
-      localStorage.setItem(key, JSON.stringify(data.profile));
+      document.getElementById("locationText").value =
+        loc.lat && loc.lng ? `${loc.lat}, ${loc.lng}` : "";
 
-      /* ===== TIMER ===== */
-      const firstSetAt = data.profile.locationMeta?.firstSetAt
-                         || data.profile.location?.setAt;
+      // ===== SAVE BACK TO LOCAL STORAGE =====
+      profile.location = loc;
+      localStorage.setItem(key, JSON.stringify(profile));
 
-      if (firstSetAt) {
-        updateLocationTimer(firstSetAt);
+      // ===== TIMER =====
+      const firstSet = profile.locationMeta?.firstSetAt || loc.setAt;
+      const locked = profile.locationMeta?.locked || loc.locked || false;
+
+      if (firstSet) {
+        updateLocationTimer(firstSet, locked);
       } else {
-        const timerEl = document.getElementById("locationTimer");
-        if (timerEl) timerEl.innerText = "";
+        document.getElementById("locationTimer").innerText = "";
       }
-
-      // Handle already locked
-      if (data.profile.location?.locked) {
-        const timerEl = document.getElementById("locationTimer");
-        if (timerEl) timerEl.innerText = "🔒 Location locked";
-      }
-
     } else {
-      shopName.value    = "";
-      shopMobile.value  = "";
-      shopAddress.value = "";
+      // fallback: clear fields
+      document.getElementById("shopName").value = "";
+      document.getElementById("shopMobile").value = "";
+      document.getElementById("shopAddress").value = "";
       document.getElementById("locationText").value = "";
-      const timerEl = document.getElementById("locationTimer");
-      if (timerEl) timerEl.innerText = "";
+      document.getElementById("locationTimer").innerText = "";
     }
-
   } catch (err) {
     console.error("Load profile error:", err);
 
+    // fallback to localStorage
     const p = JSON.parse(localStorage.getItem(key) || "{}");
+    document.getElementById("shopName").value    = p.shopName || "";
+    document.getElementById("shopMobile").value  = p.mobile || "";
+    document.getElementById("shopAddress").value = p.address || "";
 
-    shopName.value    = p.shopName || "";
-    shopMobile.value  = p.mobile || "";
-    shopAddress.value = p.address || "";
+    const loc = p.location || {};
+    document.getElementById("locationText").value =
+      loc.lat && loc.lng ? `${loc.lat}, ${loc.lng}` : "";
 
-    if (p.location?.lat && p.location?.lng) {
-      document.getElementById("locationText").value =
-        `${p.location.lat}, ${p.location.lng}`;
-    } else {
-      document.getElementById("locationText").value = "";
-    }
-
-    // Timer from localStorage fallback
-    if (p.location?.setAt && !p.location?.locked) {
-      updateLocationTimer(p.location.setAt);
-    } else if (p.location?.locked) {
-      const timerEl = document.getElementById("locationTimer");
-      if (timerEl) timerEl.innerText = "🔒 Location locked";
-    }
+    if (loc.setAt && !loc.locked) updateLocationTimer(loc.setAt);
+    else if (loc.locked)
+      document.getElementById("locationTimer").innerText = "🔒 Location locked";
   }
+
+  // ===== FORCE TIMER REFRESH AFTER MODAL PAINT =====
+  setTimeout(() => {
+    const p = JSON.parse(localStorage.getItem(key) || "{}");
+    const loc = p.location || {};
+    if (loc.locked) {
+      document.getElementById("locationTimer").innerText = "🔒 Location locked";
+      return;
+    }
+    if (loc.setAt) updateLocationTimer(loc.setAt);
+  }, 200);
 }
 function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}
 
