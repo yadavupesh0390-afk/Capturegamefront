@@ -450,6 +450,12 @@ data.profile.location = {
 };
 
 localStorage.setItem(key, JSON.stringify(data.profile));
+     if (data.profile.locationMeta?.firstSetAt) {
+        updateLocationTimer(
+          data.profile.locationMeta.firstSetAt,
+          data.profile.locationMeta.locked
+        );
+     }
 
     } else {
       shopName.value    = "";
