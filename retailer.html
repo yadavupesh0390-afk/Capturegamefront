@@ -2200,36 +2200,43 @@ async function saveProfile() {
     return;
   }
 
-  let location; // ⚠️ undefined rakho (null nahi)
+  // 🔍 profile meta check
+  const retailerProfile =
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-  const locLS = localStorage.getItem("retailer_location");
+  const locationMeta = retailerProfile.locationMeta || {};
+  const isLocked = locationMeta.locked === true;
 
-  if (locLS) {
-    try {
-      const loc = JSON.parse(locLS);
+  let location; // ❗ undefined by default
 
-      if (
-        loc &&
-        !isNaN(loc.lat) &&
-        !isNaN(loc.lng)
-      ) {
-        location = {
-          lat: Number(loc.lat),
-          lng: Number(loc.lng)
-        };
+  // ✅ LOCATION SIRF TAB BHEJO JAB LOCK NA HO
+  if (!isLocked) {
+    const locLS = localStorage.getItem("retailer_location");
+
+    if (locLS) {
+      try {
+        const loc = JSON.parse(locLS);
+
+        if (!isNaN(loc.lat) && !isNaN(loc.lng)) {
+          location = {
+            lat: Number(loc.lat),
+            lng: Number(loc.lng)
+          };
+        }
+      } catch (e) {
+        console.warn("Invalid location data");
       }
-    } catch (e) {
-      console.warn("Invalid location data");
     }
   }
 
+  // 📦 BASIC PROFILE PAYLOAD
   const payload = {
     retailerId: localStorage.getItem("userId"),
     name: profileName.value.trim(),
     mobile: profileMobile.value.trim()
   };
 
-  // ✅ location sirf tab add hogi jab valid ho
+  // ❗ location only if allowed
   if (location) {
     payload.location = location;
   }
