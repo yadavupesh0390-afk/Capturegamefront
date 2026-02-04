@@ -591,7 +591,18 @@ window.addEventListener("load", () => {
   );
 }
 // Page load hone par check karo
+const TEN_HOURS = 10 * 60 * 60 * 1000;
 
+function checkLocationLock(meta) {
+  if (!meta?.firstSetAt) return { locked:false };
+
+  const diff = Date.now() - new Date(meta.firstSetAt).getTime();
+
+  if (diff >= TEN_HOURS) {
+    return { locked:true };
+  }
+  return { locked:false };
+  }
 let locationTimerInterval = null;
 
 function updateLocationTimer(setAt, locked = false) {
