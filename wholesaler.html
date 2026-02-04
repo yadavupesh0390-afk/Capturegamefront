@@ -504,7 +504,7 @@ async function saveWholesalerProfileToServer() {
     const lat = parseFloat(latStr.trim());
     const lng = parseFloat(lngStr.trim());
 
-    if (!isNaN(lat) && !isNaN(lng)) {
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
       location = { lat, lng };
     }
   }
@@ -515,7 +515,7 @@ async function saveWholesalerProfileToServer() {
     shopName: shopName.value.trim(),
     mobile: shopMobile.value.trim(),
     address: shopAddress.value.trim(),
-    location // ⛔ NO setAt / locked
+    location // ❌ no setAt / locked from frontend
   };
 
   try {
@@ -541,13 +541,15 @@ async function saveWholesalerProfileToServer() {
 
     localStorage.setItem(key, JSON.stringify(profile));
 
-    /* ===== TIMER ===== */
-    if (profile.locationMeta?.locked) {
-  updateLocationTimer(profile.locationMeta.firstSetAt, true);
-}
-else if (profile.locationMeta?.firstSetAt) {
-  updateLocationTimer(profile.locationMeta.firstSetAt, false);
-}
+    /* ===== TIMER (🔥 FIXED) ===== */
+    const meta = profile.locationMeta;
+
+    if (meta?.firstSetAt) {
+      updateLocationTimer(
+        new Date(meta.firstSetAt).getTime(),
+        meta.locked === true
+      );
+    }
 
     alert("✅ Profile successfully saved");
     closeAll();
