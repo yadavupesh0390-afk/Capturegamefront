@@ -811,22 +811,41 @@ async function loadProducts() {
 }
 window.addEventListener("load", async () => {
 
-  // 🔥 retailer profile ensure (server → local)
-  await ensureRetailerLocation();
+  const retailerId = localStorage.getItem("userId");
+  if (!retailerId) return;
 
-  const profile = JSON.parse(
-    localStorage.getItem("retailerProfile") || "{}"
-  );
+  try {
+    const res = await fetch(`${API}/api/retailers/profile/${retailerId}`);
+    const data = await res.json();
 
-  const location = profile.location;
-  const setAt   = location?.setAt;
-  const locked  = location?.locked;
+    if (!data.success) return;
 
-  if (setAt) {
-    updateLocationTimer(setAt, locked === true);
-  } else {
-    const timerEl = document.getElementById("locationTimer");
-    if (timerEl) timerEl.innerText = "";
+    const profile = data.profile;
+
+    // 🔥 server → localStorage (single source of truth)
+    localStorage.setItem(
+      "retailerProfile",
+      JSON.stringify(profile)
+    );
+
+    if (profile.location?.lat && profile.location?.lng) {
+      profileLocation.value =
+        profile.location.lat + ", " +
+        profile.location.lng;
+    }
+
+    if (profile.location?.setAt) {
+      updateLocationTimer(
+        profile.location.setAt,
+        profile.location.locked === true
+      );
+    } else {
+      const timerEl = document.getElementById("locationTimer");
+      if (timerEl) timerEl.innerText = "";
+    }
+
+  } catch (err) {
+    console.error("❌ Retailer load error", err);
   }
 });
 /* ================= OPEN CATEGORY ================= */
@@ -939,49 +958,73 @@ function updateLocationTimer(setAt, locked) {
 async function getRetailerLocation() {
 
   if (!navigator.geolocation) {
-    alert("Geolocation not supported");
+    alert("❌ Geolocation not supported");
     return;
   }
+
+  profileLocation.value = "📡 Fetching location...";
 
   navigator.geolocation.getCurrentPosition(
     async (pos) => {
 
       const location = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
+        lat: Number(pos.coords.latitude),
+        lng: Number(pos.coords.longitude)
       };
 
-      const res = await fetch(`${API}/api/retailers/location`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + TOKEN
-        },
-        body: JSON.stringify({ location })
-      });
+      try {
+        const res = await fetch(`${API}/api/retailers/location`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            retailerId: localStorage.getItem("userId"),
+            location
+          })
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (!data.success) {
-        alert(data.message || "Location update failed");
-        return;
+        if (!data.success) {
+          profileLocation.value = "";
+          alert(data.message || "❌ Location save failed");
+          return;
+        }
+
+        // ✅ UI update
+        profileLocation.value =
+          location.lat.toFixed(6) + ", " +
+          location.lng.toFixed(6);
+
+        // ✅ server profile save
+        localStorage.setItem(
+          "retailerProfile",
+          JSON.stringify(data.profile)
+        );
+
+        // ✅ TIMER ALWAYS START
+        if (data.profile?.location?.setAt) {
+          updateLocationTimer(
+            data.profile.location.setAt,
+            data.profile.location.locked === true
+          );
+        }
+
+        alert("📍 Location set successfully");
+
+      } catch (err) {
+        console.error(err);
+        profileLocation.value = "";
+        alert("❌ Server error");
       }
 
-      // ✅ UI update
-      profileLocation.value =
-        location.lat.toFixed(6) + ", " +
-        location.lng.toFixed(6);
-
-      // ✅ SERVER TIME se timer
-      updateLocationTimer(
-        data.location.setAt,
-        data.location.locked
-      );
-
-      alert("📍 Location set successfully");
     },
-    () => alert("Location denied"),
-    { enableHighAccuracy: true }
+    () => {
+      profileLocation.value = "";
+      alert("❌ Location permission denied");
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
   );
 }
 
