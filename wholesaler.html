@@ -624,18 +624,7 @@ function updateLocationTimer(setAt, locked = false) {
   tick();
   locationTimerInterval = setInterval(tick, 1000);
 }
-  function lockWholesalerLocation() {
-  const key = "wholesalerProfile_" + WID;
-  let profile = JSON.parse(localStorage.getItem(key) || "{}");
-
-  if (profile.location) {
-    profile.location.locked = true;
-    localStorage.setItem(key, JSON.stringify(profile));
-  }
-
-  const timerEl = document.getElementById("locationTimer");
-  if (timerEl) timerEl.innerText = "🔒 Location locked";
-}
+  
 async function loadCategories(){
 
   const r = await fetch(API + "/api/products/wholesaler/" + WID);
