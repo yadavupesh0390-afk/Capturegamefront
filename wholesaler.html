@@ -607,34 +607,35 @@ let locationTimerInterval = null;
 
 function updateLocationTimer(setAt, locked = false) {
   const timerEl = document.getElementById("locationTimer");
-  const adminBtn = document.getElementById("adminHelpBtn");
-
   if (!timerEl) return;
 
   setAt = Number(setAt);
 
-  if (locationTimerInterval) clearInterval(locationTimerInterval);
+  // ❗ SAFE GUARD
+  if (!setAt || isNaN(setAt)) {
+    timerEl.innerText = "";
+    return;
+  }
 
-  // 🔒 already locked by server
-  if (locked) {
+  if (locationTimerInterval) {
+    clearInterval(locationTimerInterval);
+    locationTimerInterval = null;
+  }
+
+  if (locked === true) {
     timerEl.innerText = "🔒 Location locked";
-    if (adminBtn) adminBtn.style.display = "inline-block";
     return;
   }
 
   function tick() {
     const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
 
-    // ⏱️ TIME OVER → LOCK UI + SHOW ADMIN BUTTON
     if (diff <= 0) {
       timerEl.innerText = "🔒 Location locked";
-      if (adminBtn) adminBtn.style.display = "inline-block";
       clearInterval(locationTimerInterval);
+      locationTimerInterval = null;
       return;
     }
-
-    // ⏳ TIME RUNNING
-    if (adminBtn) adminBtn.style.display = "none";
 
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
