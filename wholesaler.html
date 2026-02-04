@@ -1098,7 +1098,18 @@ async function initFCM() {
 
 window.addEventListener("load", initFCM);
  // ------------------- INIT -------------------
+window.addEventListener("load", () => {
+  const key = "wholesalerProfile_" + WID;
+  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+  const meta = profile.locationMeta;
 
+  if (meta?.locked) {
+    updateLocationTimer(meta.firstSetAt, true);
+  }
+  else if (meta?.firstSetAt) {
+    updateLocationTimer(meta.firstSetAt, false);
+  }
+});
 
 </script>
 
