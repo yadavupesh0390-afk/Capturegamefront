@@ -559,19 +559,7 @@ async function saveWholesalerProfileToServer() {
     alert("❌ Server error");
   }
 }
-window.addEventListener("load", () => {
-  ensureWholesalerLocation();
 
-  const key = "wholesalerProfile_" + WID;
-  const profile = JSON.parse(localStorage.getItem(key) || "{}");
-
-  if (profile.locationMeta?.locked) {
-    locationTimer.innerText = "🔒 Location locked";
-  } 
-  else if (profile.locationMeta?.firstSetAt) {
-    updateLocationTimer(profile.locationMeta.firstSetAt, false);
-  }
-});
  function getCurrentLocation() {
 
   if (!navigator.geolocation) {
@@ -1128,18 +1116,7 @@ async function initFCM() {
 
 window.addEventListener("load", initFCM);
  // ------------------- INIT -------------------
-window.addEventListener("load", () => {
-  const key = "wholesalerProfile_" + WID;
-  const profile = JSON.parse(localStorage.getItem(key) || "{}");
-  const meta = profile.locationMeta;
 
-  if (meta?.locked) {
-    updateLocationTimer(meta.firstSetAt, true);
-  }
-  else if (meta?.firstSetAt) {
-    updateLocationTimer(meta.firstSetAt, false);
-  }
-});
 
 </script>
 
