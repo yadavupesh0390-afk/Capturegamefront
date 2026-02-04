@@ -540,10 +540,11 @@ async function saveWholesalerProfileToServer() {
 
     /* ===== TIMER ===== */
     if (profile.locationMeta?.locked) {
-      locationTimer.innerText = "🔒 Location locked";
-    } else if (profile.locationMeta?.firstSetAt) {
-      updateLocationTimer(profile.locationMeta.firstSetAt, false);
-    }
+  updateLocationTimer(profile.locationMeta.firstSetAt, true);
+}
+else if (profile.locationMeta?.firstSetAt) {
+  updateLocationTimer(profile.locationMeta.firstSetAt, false);
+}
 
     alert("✅ Profile successfully saved");
     closeAll();
