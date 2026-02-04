@@ -605,13 +605,21 @@ function checkLocationLock(meta) {
   }
 let locationTimerInterval = null;
 
-function updateLocationTimer(setAt, locked = false) {
+function updateLocationTimer(setAt, lockedFromServer = false) {
   const timerEl = document.getElementById("locationTimer");
+  const adminBtn = document.getElementById("adminHelpBtn");
+
   if (!timerEl) return;
+  if (adminBtn) adminBtn.style.display = "none";
+
+  // 🔒 Already locked (server told us)
+  if (lockedFromServer === true) {
+    timerEl.innerText = "🔒 Location locked";
+    if (adminBtn) adminBtn.style.display = "block";
+    return;
+  }
 
   setAt = Number(setAt);
-
-  // ❗ SAFE GUARD
   if (!setAt || isNaN(setAt)) {
     timerEl.innerText = "";
     return;
@@ -622,16 +630,15 @@ function updateLocationTimer(setAt, locked = false) {
     locationTimerInterval = null;
   }
 
-  if (locked === true) {
-    timerEl.innerText = "🔒 Location locked";
-    return;
-  }
-
   function tick() {
     const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
 
     if (diff <= 0) {
       timerEl.innerText = "🔒 Location locked";
+
+      // ✅ ADMIN HELP SHOW
+      if (adminBtn) adminBtn.style.display = "block";
+
       clearInterval(locationTimerInterval);
       locationTimerInterval = null;
       return;
