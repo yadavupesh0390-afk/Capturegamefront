@@ -1060,7 +1060,30 @@ async function loadOrders(){
 }
 loadCategories();
 loadCategoriesSelect();
-</script> 
+window.addEventListener("load", async () => {
+
+  // 1️⃣ Profile server se lao
+  await ensureWholesalerLocation();
+
+  // 2️⃣ Local se read karo (server sync ke baad)
+  const key = "wholesalerProfile_" + WID;
+  const profile = JSON.parse(localStorage.getItem(key) || "{}");
+  const meta = profile.locationMeta;
+
+  const timerEl = document.getElementById("locationTimer");
+  if (!timerEl) return;
+
+  // 3️⃣ TIMER LOGIC (single source of truth)
+  if (meta?.firstSetAt) {
+    updateLocationTimer(
+      new Date(meta.firstSetAt).getTime(),
+      meta.locked === true
+    );
+  } else {
+    timerEl.innerText = "";
+  }
+});
+ </script> 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
