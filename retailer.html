@@ -1010,6 +1010,8 @@ async function getRetailerLocation() {
 
         alert("📍 Location saved successfully ✅");
 
+// ⏳ Start 10 hour timer immediately
+updateLocationTimer(Date.now(), false);
       } catch (err) {
         console.error("❌ Location save error", err);
         profileLocation.value = "";
