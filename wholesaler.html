@@ -217,6 +217,13 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
         📡 Use Current Location
       </button>
      <small id="locationTimer" style="color:#475569;font-size:12px"></small>
+     <button
+  id="adminHelpBtn"
+  style="display:none; background:#dc2626; color:#fff; padding:10px 16px; border-radius:8px;"
+  onclick="contactAdminForLocation()"
+>
+  🆘 Admin Help (Location Correction)
+     </button>
     </div>
 
     <button class="primary" onclick="saveWholesalerProfileToServer()">Save</button>
@@ -589,29 +596,34 @@ let locationTimerInterval = null;
 
 function updateLocationTimer(setAt, locked = false) {
   const timerEl = document.getElementById("locationTimer");
+  const adminBtn = document.getElementById("adminHelpBtn");
+
   if (!timerEl) return;
 
   setAt = Number(setAt);
-  if (!setAt || isNaN(setAt)) {
-    timerEl.innerText = "";
-    return;
-  }
 
   if (locationTimerInterval) clearInterval(locationTimerInterval);
 
+  // 🔒 already locked by server
   if (locked) {
     timerEl.innerText = "🔒 Location locked";
+    if (adminBtn) adminBtn.style.display = "inline-block";
     return;
   }
 
   function tick() {
     const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
 
+    // ⏱️ TIME OVER → LOCK UI + SHOW ADMIN BUTTON
     if (diff <= 0) {
       timerEl.innerText = "🔒 Location locked";
+      if (adminBtn) adminBtn.style.display = "inline-block";
       clearInterval(locationTimerInterval);
       return;
     }
+
+    // ⏳ TIME RUNNING
+    if (adminBtn) adminBtn.style.display = "none";
 
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
