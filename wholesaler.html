@@ -213,9 +213,12 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
              placeholder="Latitude, Longitude"
              readonly>
 
-      <button class="loc-btn" onclick="getCurrentLocation()">
-        📡 Use Current Location
-      </button>
+      <button
+        class="loc-btn"
+       id="locationBtn"
+       onclick="getCurrentLocation()">
+      📡 Use Current Location
+     </button>
      <small id="locationTimer" style="color:#475569;font-size:12px"></small>
      <button
   id="adminHelpBtn"
@@ -611,14 +614,25 @@ let locationTimerInterval = null;
 function updateLocationTimer(setAt, lockedFromServer = false) {
   const timerEl = document.getElementById("locationTimer");
   const adminBtn = document.getElementById("adminHelpBtn");
+  const locInput = document.getElementById("locationText");
+  const locBtn   = document.getElementById("locationBtn");
 
   if (!timerEl) return;
+
+  // Default state
   if (adminBtn) adminBtn.style.display = "none";
 
-  // 🔒 Already locked (server told us)
+  // 🔒 FORCE LOCK (server says locked)
   if (lockedFromServer === true) {
     timerEl.innerText = "🔒 Location locked";
+
     if (adminBtn) adminBtn.style.display = "block";
+    if (locInput) locInput.disabled = true;
+    if (locBtn) {
+      locBtn.disabled = true;
+      locBtn.style.opacity = "0.6";
+      locBtn.style.cursor = "not-allowed";
+    }
     return;
   }
 
@@ -639,12 +653,26 @@ function updateLocationTimer(setAt, lockedFromServer = false) {
     if (diff <= 0) {
       timerEl.innerText = "🔒 Location locked";
 
-      // ✅ ADMIN HELP SHOW
+      // 🔐 LOCK EVERYTHING
       if (adminBtn) adminBtn.style.display = "block";
+      if (locInput) locInput.disabled = true;
+      if (locBtn) {
+        locBtn.disabled = true;
+        locBtn.style.opacity = "0.6";
+        locBtn.style.cursor = "not-allowed";
+      }
 
       clearInterval(locationTimerInterval);
       locationTimerInterval = null;
       return;
+    }
+
+    // ⏳ STILL EDITABLE
+    if (locInput) locInput.disabled = false;
+    if (locBtn) {
+      locBtn.disabled = false;
+      locBtn.style.opacity = "1";
+      locBtn.style.cursor = "pointer";
     }
 
     const h = Math.floor(diff / 3600000);
