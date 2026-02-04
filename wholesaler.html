@@ -434,13 +434,15 @@ function formatDateTime(ts) {
       /* ===== LOCATION TIMER (SERVER BASED ONLY) ===== */
       const meta = profile.locationMeta;
 
-      if (meta?.locked) {
-        locationTimer.innerText = "🔒 Location locked";
-      } else if (meta?.firstSetAt) {
-        updateLocationTimer(meta.firstSetAt, false);
-      } else {
-        locationTimer.innerText = "";
-      }
+   if (meta?.locked) {
+     updateLocationTimer(meta.firstSetAt, true);
+   }
+   else if (meta?.firstSetAt) {
+  updateLocationTimer(meta.firstSetAt, false);
+   }
+   else {
+     locationTimer.innerText = "";
+   }
 
     } else {
       resetProfileUI();
