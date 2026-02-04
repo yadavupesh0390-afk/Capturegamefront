@@ -958,7 +958,7 @@ function updateLocationTimer(setAt, locked) {
 async function getRetailerLocation() {
 
   if (!navigator.geolocation) {
-    alert("❌ Geolocation not supported");
+    alert("❌ Geolocation supported nahi hai");
     return;
   }
 
@@ -973,20 +973,20 @@ async function getRetailerLocation() {
       };
 
       try {
-        const res = await fetch(`${API}/api/retailers/location`, {
-          method: "PUT",
+        const res = await fetch(`${API}/api/retailers/saveProfile`, {
+          method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             retailerId: localStorage.getItem("userId"),
-            location
+            location: location
           })
         });
 
         const data = await res.json();
 
-        if (!data.success) {
+        if (!res.ok || !data.success) {
           profileLocation.value = "";
           alert(data.message || "❌ Location save failed");
           return;
@@ -997,34 +997,33 @@ async function getRetailerLocation() {
           location.lat.toFixed(6) + ", " +
           location.lng.toFixed(6);
 
-        // ✅ server profile save
+        // ✅ LocalStorage sync
         localStorage.setItem(
           "retailerProfile",
           JSON.stringify(data.profile)
         );
 
-        // ✅ TIMER ALWAYS START
-        if (data.profile?.location?.setAt) {
-          updateLocationTimer(
-            data.profile.location.setAt,
-            data.profile.location.locked === true
-          );
-        }
+        localStorage.setItem(
+          "retailer_location",
+          JSON.stringify(location)
+        );
 
-        alert("📍 Location set successfully");
+        alert("📍 Location saved successfully ✅");
 
       } catch (err) {
-        console.error(err);
+        console.error("❌ Location save error", err);
         profileLocation.value = "";
         alert("❌ Server error");
       }
-
     },
     () => {
       profileLocation.value = "";
       alert("❌ Location permission denied");
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    {
+      enableHighAccuracy: true,
+      timeout: 10000
+    }
   );
 }
 
