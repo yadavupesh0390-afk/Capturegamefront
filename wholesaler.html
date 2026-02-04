@@ -417,78 +417,77 @@ function formatDateTime(ts) {
     const res = await fetch(`${API}/api/wholesalers/profile/${WID}`, {
       headers: { "Authorization": "Bearer " + TOKEN }
     });
+
     const data = await res.json();
 
     if (data.success && data.profile) {
       const profile = data.profile;
 
-      // ===== BASIC PROFILE FIELDS =====
-      document.getElementById("shopName").value    = profile.shopName || "";
-      document.getElementById("shopMobile").value  = profile.mobile || "";
-      document.getElementById("shopAddress").value = profile.address || "";
+      /* ===== BASIC PROFILE ===== */
+      shopName.value    = profile.shopName || "";
+      shopMobile.value  = profile.mobile || "";
+      shopAddress.value = profile.address || "";
 
-      // ===== LOCATION =====
-      let loc = profile.location || {};
-      const oldLocal = JSON.parse(localStorage.getItem(key) || "{}");
+      /* ===== LOCATION ===== */
+      if (profile.location?.lat && profile.location?.lng) {
+        locationText.value =
+          `${profile.location.lat}, ${profile.location.lng}`;
+      } else {
+        locationText.value = "";
+      }
 
-      // Merge old local location data (setAt, locked)
-      loc = {
-        ...oldLocal.location,
-        ...loc
-      };
-
-      document.getElementById("locationText").value =
-        loc.lat && loc.lng ? `${loc.lat}, ${loc.lng}` : "";
-
-      // ===== SAVE BACK TO LOCAL STORAGE =====
-      profile.location = loc;
+      /* ===== SAVE PROFILE (NO TIMER DATA LOCALLY) ===== */
       localStorage.setItem(key, JSON.stringify(profile));
 
-      // ===== TIMER =====
-      const firstSet = profile.locationMeta?.firstSetAt || loc.setAt;
-      const locked = profile.locationMeta?.locked || loc.locked || false;
+      /* ===== LOCATION TIMER (SERVER BASED ONLY) ===== */
+      const meta = profile.locationMeta;
 
-      if (firstSet) {
-        updateLocationTimer(firstSet, locked);
+      if (meta?.locked) {
+        locationTimer.innerText = "🔒 Location locked";
+      } else if (meta?.firstSetAt) {
+        updateLocationTimer(meta.firstSetAt, false);
       } else {
-        document.getElementById("locationTimer").innerText = "";
+        locationTimer.innerText = "";
       }
+
     } else {
-      // fallback: clear fields
-      document.getElementById("shopName").value = "";
-      document.getElementById("shopMobile").value = "";
-      document.getElementById("shopAddress").value = "";
-      document.getElementById("locationText").value = "";
-      document.getElementById("locationTimer").innerText = "";
+      resetProfileUI();
     }
+
   } catch (err) {
     console.error("Load profile error:", err);
 
-    // fallback to localStorage
+    /* ===== FALLBACK (READ-ONLY) ===== */
     const p = JSON.parse(localStorage.getItem(key) || "{}");
-    document.getElementById("shopName").value    = p.shopName || "";
-    document.getElementById("shopMobile").value  = p.mobile || "";
-    document.getElementById("shopAddress").value = p.address || "";
 
-    const loc = p.location || {};
-    document.getElementById("locationText").value =
-      loc.lat && loc.lng ? `${loc.lat}, ${loc.lng}` : "";
+    shopName.value    = p.shopName || "";
+    shopMobile.value  = p.mobile || "";
+    shopAddress.value = p.address || "";
 
-    if (loc.setAt && !loc.locked) updateLocationTimer(loc.setAt);
-    else if (loc.locked)
-      document.getElementById("locationTimer").innerText = "🔒 Location locked";
-  }
-
-  // ===== FORCE TIMER REFRESH AFTER MODAL PAINT =====
-  setTimeout(() => {
-    const p = JSON.parse(localStorage.getItem(key) || "{}");
-    const loc = p.location || {};
-    if (loc.locked) {
-      document.getElementById("locationTimer").innerText = "🔒 Location locked";
-      return;
+    if (p.location?.lat && p.location?.lng) {
+      locationText.value =
+        `${p.location.lat}, ${p.location.lng}`;
+    } else {
+      locationText.value = "";
     }
-    if (loc.setAt) updateLocationTimer(loc.setAt);
-  }, 200);
+
+    if (p.locationMeta?.locked) {
+      locationTimer.innerText = "🔒 Location locked";
+    } else if (p.locationMeta?.firstSetAt) {
+      updateLocationTimer(p.locationMeta.firstSetAt, false);
+    } else {
+      locationTimer.innerText = "";
+    }
+  }
+}
+
+/* ===== HELPER ===== */
+function resetProfileUI() {
+  shopName.value = "";
+  shopMobile.value = "";
+  shopAddress.value = "";
+  locationText.value = "";
+  locationTimer.innerText = "";
 }
 function closeAll(){document.querySelectorAll(".modal").forEach(m=>m.style.display="none");}
 
@@ -614,20 +613,28 @@ window.addEventListener("load", () => {
 
 let locationTimerInterval = null;
 
-function updateLocationTimer(setAt) {
+function updateLocationTimer(setAt, locked = false) {
   const timerEl = document.getElementById("locationTimer");
   if (!timerEl) return;
 
   setAt = Number(setAt);
+  if (!setAt || isNaN(setAt)) {
+    timerEl.innerText = "";
+    return;
+  }
 
   if (locationTimerInterval) clearInterval(locationTimerInterval);
+
+  if (locked) {
+    timerEl.innerText = "🔒 Location locked";
+    return;
+  }
 
   function tick() {
     const diff = LOCATION_EDIT_LIMIT - (Date.now() - setAt);
 
     if (diff <= 0) {
       timerEl.innerText = "🔒 Location locked";
-      lockWholesalerLocation();
       clearInterval(locationTimerInterval);
       return;
     }
@@ -636,7 +643,8 @@ function updateLocationTimer(setAt) {
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
 
-    timerEl.innerText = `⏳ Location edit available: ${h}h ${m}m ${s}s — baad me lock ho jayegi`;
+    timerEl.innerText =
+      `⏳ Location edit available: ${h}h ${m}m ${s}s`;
   }
 
   tick();
