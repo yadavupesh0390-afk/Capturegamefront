@@ -809,9 +809,25 @@ async function loadProducts() {
     alert("Failed to load categories");
   }
 }
-window.addEventListener("load", () => {
-  showRemainingTime();
-  checkLocationLock();
+window.addEventListener("load", async () => {
+
+  // 🔥 retailer profile ensure (server → local)
+  await ensureRetailerLocation();
+
+  const profile = JSON.parse(
+    localStorage.getItem("retailerProfile") || "{}"
+  );
+
+  const location = profile.location;
+  const setAt   = location?.setAt;
+  const locked  = location?.locked;
+
+  if (setAt) {
+    updateLocationTimer(setAt, locked === true);
+  } else {
+    const timerEl = document.getElementById("locationTimer");
+    if (timerEl) timerEl.innerText = "";
+  }
 });
 /* ================= OPEN CATEGORY ================= */
 function openCategory(categoryId, wid) {
