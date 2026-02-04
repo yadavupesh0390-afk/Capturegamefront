@@ -345,35 +345,20 @@ function formatDateTime(ts) {
 }
   async function ensureWholesalerLocation() {
   const key = "wholesalerProfile_" + WID;
-  let profile = JSON.parse(localStorage.getItem(key) || "{}");
 
-  // ✅ Agar location already hai → kuch mat karo
-  if (profile.location?.lat && profile.location?.lng) {
-    console.log("📍 Wholesaler location already present");
-    return;
-  }
-
-  // ✅ Server se try karo
   try {
     const res = await fetch(`${API}/api/wholesalers/profile/${WID}`, {
       headers: { "Authorization": "Bearer " + TOKEN }
     });
-    const data = await res.json();
 
-    if (data.profile?.location?.lat) {
-      profile.location = data.profile.location;
-      localStorage.setItem(key, JSON.stringify(profile));
-      console.log("📍 Wholesaler location synced from server");
-      return;
+    const data = await res.json();
+    if (data.success && data.profile) {
+      localStorage.setItem(key, JSON.stringify(data.profile));
     }
   } catch (e) {
-    console.warn("⚠️ Server location fetch failed");
+    console.warn("Location sync skipped");
   }
-
-  // ⚠️ LAST OPTION: ask user later
-  console.warn("❌ Wholesaler location missing — ask user to set it");
-  }
-
+}
   function groupOrdersByCart(orders){
   const map = {};
 
