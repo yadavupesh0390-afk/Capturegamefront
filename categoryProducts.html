@@ -537,7 +537,7 @@ async function directBuy(e){
     return;
   }
 
-  const vehicle = vehicleType.value;
+  const vehicle = document.getElementById("vehicleType").value;
   if(!vehicle){
     alert("🚚 Select vehicle first");
     return;
@@ -554,41 +554,21 @@ async function directBuy(e){
   const total =
     Number(selectedProduct.price) + Number(lastDeliveryCharge);
 
+  // ✅ SMALL SAFE ID (instead of big notes)
+  const orderTempId = "ORD_" + Date.now();
+
   try{
     const res = await fetch(`${API}/api/orders/pay-and-create`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         amount: total,
-        notes:{
-          type:"direct",
-
-          productId: selectedProduct._id,
-          productName: selectedProduct.productName,
-          productImg: selectedProduct.images?.[0] || "",
-          price: selectedProduct.price,
-
-          wholesalerId: selectedProduct.wholesalerId,
-          wholesalerName: selectedProduct.shopName,
-          wholesalerMobile: selectedProduct.mobile,
-
-          wholesalerLocation: currentWholesalerLoc,   // ✅ FIXED
-
-          retailerName: retailerProfile.name,
-          retailerMobile: retailerProfile.mobile,
-
-          retailerLocation: currentRetailerLoc,       // ✅ FIXED
-
-          vehicleType: vehicle,
-
-          totalDelivery: lastDeliveryCharge,
-          retailerPays: lastDeliveryCharge,
-          wholesalerPays: 0
-        }
+        orderTempId
       })
     });
 
     const data = await res.json();
+
     if(!data.success){
       alert("❌ Order create failed");
       return;
@@ -598,7 +578,7 @@ async function directBuy(e){
       key: data.key,
       amount: data.amount,
       currency: "INR",
-      order_id: data.order.id,
+      order_id: data.orderId,
 
       handler(){
         alert("✅ Payment Successful 🎉");
