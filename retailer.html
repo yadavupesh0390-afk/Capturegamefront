@@ -992,26 +992,31 @@ async function getRetailerLocation() {
           return;
         }
 
-        // ✅ UI update
-        profileLocation.value =
-          location.lat.toFixed(6) + ", " +
-          location.lng.toFixed(6);
+        // ✅ UI update (server-confirmed)
+        if (data.profile?.location) {
+          profileLocation.value =
+            data.profile.location.lat.toFixed(6) + ", " +
+            data.profile.location.lng.toFixed(6);
+        }
 
-        // ✅ LocalStorage sync
+        // ✅ LocalStorage sync (optional, but safe)
         localStorage.setItem(
           "retailerProfile",
           JSON.stringify(data.profile)
         );
 
-        localStorage.setItem(
-          "retailer_location",
-          JSON.stringify(location)
-        );
-
         alert("📍 Location saved successfully ✅");
 
-// ⏳ Start 10 hour timer immediately
-updateLocationTimer(Date.now(), false);
+        // 🔥 🔥 🔥 IMPORTANT FIX
+        // ❌ Date.now() use nahi karna
+        // ✅ Timer hamesha SERVER ke setAt se chalega
+        if (data.profile?.location?.setAt) {
+          updateLocationTimer(
+            data.profile.location.setAt,
+            data.profile.location.locked === true
+          );
+        }
+
       } catch (err) {
         console.error("❌ Location save error", err);
         profileLocation.value = "";
@@ -1028,7 +1033,6 @@ updateLocationTimer(Date.now(), false);
     }
   );
 }
-
 /* ================= PAGE BACK RESTORE ================= */
 window.addEventListener("pageshow", function () {
   const wid = sessionStorage.getItem("lastWid");
