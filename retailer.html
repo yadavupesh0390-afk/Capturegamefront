@@ -1063,22 +1063,25 @@ window.addEventListener("pageshow", function () {
 
     const profile = data.profile;
 
-    // UI fill
+    // 🔹 UI location
     if (profile.location?.lat && profile.location?.lng) {
       profileLocation.value =
-        profile.location.lat + ", " + profile.location.lng;
+        profile.location.lat + ", " +
+        profile.location.lng;
     }
 
-    // 🔥 TIMER AUTO SHOW ON DASHBOARD OPEN
+    // 🔥 🔥 🔥 ONLY SOURCE OF TIMER
     if (profile.location?.setAt) {
       updateLocationTimer(
         profile.location.setAt,
         profile.location.locked === true
       );
+    } else {
+      document.getElementById("locationTimer").innerText = "";
     }
 
   } catch (err) {
-    console.error("Profile load error", err);
+    console.error("❌ Dashboard load error", err);
   }
 });
 /* ================= DUMMY CART CLEAR ================= */
