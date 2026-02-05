@@ -524,8 +524,12 @@ async function runDeliveryCalc(){
   }
 }
 // ---------------- DIRECT BUY ----------------
+let paying = false;
+
 async function directBuy(e){
   e.preventDefault();
+
+  if(paying) return;
 
   if(!selectedProduct){
     alert("❌ Product not selected");
@@ -546,7 +550,7 @@ async function directBuy(e){
   const retailerProfile =
     JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-  if(!retailerProfile.name || !retailerProfile.mobile){
+  if(!retailerProfile.id || !retailerProfile.name || !retailerProfile.mobile){
     alert("👤 Retailer profile incomplete");
     return;
   }
@@ -555,42 +559,27 @@ async function directBuy(e){
     Number(selectedProduct.price) + Number(lastDeliveryCharge);
 
   try{
-    /* ================= STEP 1 : CREATE PAYMENT ORDER ================= */
-    const res = await fetch(`${API}/api/orders/create-payment`,{
+    paying = true;
+
+    /* ================= STEP 1 : CREATE PAYMENT (LIGHT PAYLOAD) ================= */
+    const res = await fetch(`${API}/api/orders/pay-and-create`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         amount: totalAmount,
-
-        product: {
-          id: selectedProduct._id,
-          name: selectedProduct.productName,
-          image: selectedProduct.images?.[0] || "",
-          price: selectedProduct.price
-        },
-
-        wholesaler: {
-          id: selectedProduct.wholesalerId,
-          name: selectedProduct.shopName,
-          mobile: selectedProduct.mobile,
-          location: currentWholesalerLoc
-        },
-
-        retailer: {
-          name: retailerProfile.name,
-          mobile: retailerProfile.mobile,
-          location: currentRetailerLoc
-        },
-
-        delivery: {
-          vehicleType: vehicle,
-          charge: lastDeliveryCharge
+        notes:{
+          type: "direct",
+          productId: selectedProduct._id,
+          wholesalerId: selectedProduct.wholesalerId,
+          retailerId: retailerProfile.id,
+          vehicleType: vehicle
         }
       })
     });
 
     const data = await res.json();
     if(!data.success){
+      paying = false;
       alert("❌ Payment order failed");
       return;
     }
@@ -602,9 +591,14 @@ async function directBuy(e){
       currency: "INR",
       order_id: data.orderId,
 
+      prefill:{
+        name: retailerProfile.name,
+        contact: retailerProfile.mobile
+      },
+
       handler: async function (response){
 
-        /* ================= STEP 3 : VERIFY & FINAL SAVE ================= */
+        /* ================= STEP 3 : VERIFY PAYMENT ================= */
         const verifyRes = await fetch(`${API}/api/orders/verify-payment`,{
           method:"POST",
           headers:{ "Content-Type":"application/json" },
@@ -616,6 +610,7 @@ async function directBuy(e){
         });
 
         const verifyData = await verifyRes.json();
+        paying = false;
 
         if(verifyData.success){
           alert("✅ Payment Successful 🎉");
@@ -631,6 +626,7 @@ async function directBuy(e){
 
       modal:{
         ondismiss(){
+          paying = false;
           alert("❌ Payment cancelled");
         }
       }
@@ -639,6 +635,7 @@ async function directBuy(e){
     rzp.open();
 
   }catch(err){
+    paying = false;
     console.error(err);
     alert("❌ Server error");
   }
