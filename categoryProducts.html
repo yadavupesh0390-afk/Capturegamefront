@@ -528,7 +528,7 @@ async function directBuy(e){
   e.preventDefault();
 
   if(!selectedProduct){
-    alert("Product not selected");
+    alert("❌ Product not selected");
     return;
   }
 
@@ -551,13 +551,21 @@ async function directBuy(e){
     return;
   }
 
+  const retailerId = localStorage.getItem("userId");
+  if(!retailerId){
+    alert("🔐 Please login again");
+    return;
+  }
+
   const total =
     Number(selectedProduct.price) + Number(lastDeliveryCharge);
 
-  // ✅ SMALL SAFE ID (instead of big notes)
+  // ✅ small safe receipt id
   const orderTempId = "ORD_" + Date.now();
 
   try{
+    /* ================= CREATE RAZORPAY ORDER ================= */
+
     const res = await fetch(`${API}/api/orders/pay-and-create`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
@@ -574,15 +582,52 @@ async function directBuy(e){
       return;
     }
 
+    /* ================= OPEN RAZORPAY ================= */
+
     const rzp = new Razorpay({
       key: data.key,
       amount: data.amount,
       currency: "INR",
       order_id: data.orderId,
 
-      handler(){
-        alert("✅ Payment Successful 🎉");
-        closeAll();
+      handler: async function (response){
+
+        try{
+          /* ================= SAVE ORDER AFTER PAYMENT ================= */
+
+          await fetch(`${API}/api/orders/save`,{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({
+              retailerId: retailerId,
+
+              wholesalerId: selectedProduct.wholesalerId,
+              productId: selectedProduct._id,
+              productName: selectedProduct.productName,
+              productImage: selectedProduct.images?.[0] || "",
+
+              price: selectedProduct.price,
+              deliveryCharge: lastDeliveryCharge,
+              totalAmount: total,
+
+              vehicleType: vehicle,
+
+              retailerLocation: currentRetailerLoc,
+              wholesalerLocation: currentWholesalerLoc,
+
+              paymentId: response.razorpay_payment_id,
+              paymentStatus: "paid",
+              orderStatus: "pending"
+            })
+          });
+
+          alert("✅ Payment & Order Successful 🎉");
+          closeAll();
+
+        }catch(err){
+          console.error("Order save error:", err);
+          alert("⚠️ Payment done but order save failed. Contact support.");
+        }
       },
 
       modal:{
