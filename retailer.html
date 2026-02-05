@@ -2355,11 +2355,17 @@ async function sendProfile(payload) {
 
     if (data.success) {
 
-      // ✅ Always update profile cache
-      localStorage.setItem(
-        "retailerProfile",
-        JSON.stringify(data.profile)
-      );
+  const fixedProfile = {
+    name: data.profile.name || payload.name,
+    mobile: data.profile.mobile || payload.mobile,
+    location: data.profile.location || payload.location || null,
+    locationMeta: data.profile.locationMeta || {}
+  };
+
+  localStorage.setItem(
+    "retailerProfile",
+    JSON.stringify(fixedProfile)
+  );
 
       /* ================= LOCATION FIX ================= */
       const locationUpdated = localStorage.getItem("location_updated");
