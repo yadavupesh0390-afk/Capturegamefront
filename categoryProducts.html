@@ -528,7 +528,7 @@ async function directBuy(e){
   e.preventDefault();
 
   if(!selectedProduct){
-    alert("❌ Product not selected");
+    alert("Product not selected");
     return;
   }
 
@@ -537,101 +537,79 @@ async function directBuy(e){
     return;
   }
 
-  const vehicle = document.getElementById("vehicleType").value;
+  const vehicle = vehicleType.value;
   if(!vehicle){
     alert("🚚 Select vehicle first");
     return;
   }
 
-  const retailerProfile =
-    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
-
+  const retailerProfile = JSON.parse(localStorage.getItem("retailerProfile") || "{}");
   if(!retailerProfile.mobile){
     alert("👤 Please save retailer profile first");
     return;
   }
 
-  const retailerId = localStorage.getItem("userId");
-  if(!retailerId){
-    alert("🔐 Please login again");
-    return;
-  }
+  const total = Number(selectedProduct.price) + Number(lastDeliveryCharge);
 
-  const total =
-    Number(selectedProduct.price) + Number(lastDeliveryCharge);
-
-  // ✅ small safe receipt id
-  const orderTempId = "ORD_" + Date.now();
-
-  try{
-    /* ================= CREATE RAZORPAY ORDER ================= */
-
-    const res = await fetch(`${API}/api/orders/pay-and-create`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
+  try {
+    // Full info sent to backend
+    const res = await fetch(`${API}/api/orders/pay-and-create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount: total,
-        orderTempId
+        notes: {
+          type: "direct",
+          productId: selectedProduct._id,
+          productName: selectedProduct.productName,
+          productImg: selectedProduct.images?.[0] || "",
+          price: selectedProduct.price,
+          wholesalerId: selectedProduct.wholesalerId,
+          wholesalerName: selectedProduct.shopName,
+          wholesalerMobile: selectedProduct.mobile,
+          wholesalerLocation: currentWholesalerLoc,
+          retailerName: retailerProfile.name,
+          retailerMobile: retailerProfile.mobile,
+          retailerLocation: currentRetailerLoc,
+          vehicleType: vehicle,
+          totalDelivery: lastDeliveryCharge,
+          retailerPays: lastDeliveryCharge,
+          wholesalerPays: 0
+        }
       })
     });
 
     const data = await res.json();
-
     if(!data.success){
       alert("❌ Order create failed");
       return;
     }
 
-    /* ================= OPEN RAZORPAY ================= */
-
+    // Razorpay integration
     const rzp = new Razorpay({
       key: data.key,
       amount: data.amount,
       currency: "INR",
-      order_id: data.orderId,
+      order_id: data.order.id,
 
-      handler: async function (response){
+      handler: async function(response){
+        alert("✅ Payment Successful 🎉");
 
-        try{
-          /* ================= SAVE ORDER AFTER PAYMENT ================= */
+        // Update backend with payment success
+        await fetch(`${API}/api/orders/payment-success`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: data.orderId,
+            razorpayPaymentId: response.razorpay_payment_id
+          })
+        });
 
-          await fetch(`${API}/api/orders/save`,{
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify({
-              retailerId: retailerId,
-
-              wholesalerId: selectedProduct.wholesalerId,
-              productId: selectedProduct._id,
-              productName: selectedProduct.productName,
-              productImage: selectedProduct.images?.[0] || "",
-
-              price: selectedProduct.price,
-              deliveryCharge: lastDeliveryCharge,
-              totalAmount: total,
-
-              vehicleType: vehicle,
-
-              retailerLocation: currentRetailerLoc,
-              wholesalerLocation: currentWholesalerLoc,
-
-              paymentId: response.razorpay_payment_id,
-              paymentStatus: "paid",
-              orderStatus: "pending"
-            })
-          });
-
-          alert("✅ Payment & Order Successful 🎉");
-          closeAll();
-
-        }catch(err){
-          console.error("Order save error:", err);
-          alert("⚠️ Payment done but order save failed. Contact support.");
-        }
+        closeAll();
       },
 
-      modal:{
-        ondismiss(){
+      modal: {
+        ondismiss: function(){
           alert("❌ Payment cancelled");
         }
       }
@@ -639,7 +617,7 @@ async function directBuy(e){
 
     rzp.open();
 
-  }catch(err){
+  } catch(err){
     console.error("Payment Error:", err);
     alert("❌ Payment error");
   }
