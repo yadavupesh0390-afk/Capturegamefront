@@ -2293,10 +2293,10 @@ async function openRetailerProfile() {
 /* ================= SAVE PROFILE ================= */
 async function saveProfile() {
 
-  if (!profileMobile.value.trim()) {
-    alert("📱 Mobile required");
-    return;
-  }
+  if (!profileName.value.trim() || !profileMobile.value.trim()) {
+  alert("👤 Name aur Mobile dono required hain");
+  return;
+}
 
   // 🔍 profile meta check
   const retailerProfile =
