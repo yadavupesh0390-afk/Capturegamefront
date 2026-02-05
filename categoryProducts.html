@@ -567,16 +567,15 @@ if (!retailerProfile.name || !retailerProfile.mobile) {
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({
         amount: totalAmount,
-        notes:{
-          type: "direct",
-          productId: selectedProduct._id,
-          wholesalerId: selectedProduct.wholesalerId,
-          retailerId: retailerProfile.id,
-          vehicleType: vehicle
-        }
-      })
-    });
-
+        notes: {
+      type: "direct",
+      productId: selectedProduct._id,
+      wholesalerId: selectedProduct.wholesalerId,
+      retailerId: localStorage.getItem("userId"),
+      vehicleType: vehicle
+    }
+  })
+});
     const data = await res.json();
     if(!data.success){
       paying = false;
