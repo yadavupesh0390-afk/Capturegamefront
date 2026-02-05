@@ -2355,16 +2355,10 @@ async function sendProfile(payload) {
 
     if (data.success) {
 
-  const fixedProfile = {
-    name: data.profile.name || payload.name,
-    mobile: data.profile.mobile || payload.mobile,
-    location: data.profile.location || payload.location || null,
-    locationMeta: data.profile.locationMeta || {}
-  };
-
+  // ❌ yahan incomplete profile save ho rahi hai
   localStorage.setItem(
     "retailerProfile",
-    JSON.stringify(fixedProfile)
+    JSON.stringify(data.profile)
   );
 
       /* ================= LOCATION FIX ================= */
