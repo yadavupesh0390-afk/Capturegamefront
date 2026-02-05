@@ -1050,6 +1050,37 @@ window.addEventListener("pageshow", function () {
   }
 });
 
+  window.addEventListener("load", async () => {
+
+  const retailerId = localStorage.getItem("userId");
+  if (!retailerId) return;
+
+  try {
+    const res = await fetch(`${API}/api/retailers/profile/${retailerId}`);
+    const data = await res.json();
+
+    if (!res.ok || !data.success) return;
+
+    const profile = data.profile;
+
+    // UI fill
+    if (profile.location?.lat && profile.location?.lng) {
+      profileLocation.value =
+        profile.location.lat + ", " + profile.location.lng;
+    }
+
+    // 🔥 TIMER AUTO SHOW ON DASHBOARD OPEN
+    if (profile.location?.setAt) {
+      updateLocationTimer(
+        profile.location.setAt,
+        profile.location.locked === true
+      );
+    }
+
+  } catch (err) {
+    console.error("Profile load error", err);
+  }
+});
 /* ================= DUMMY CART CLEAR ================= */
 function clearCartCompletely() {
   console.log("🗑️ Cart cleared (Wholesaler changed)");
