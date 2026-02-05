@@ -525,100 +525,123 @@ async function runDeliveryCalc(){
 }
 // ---------------- DIRECT BUY ----------------
 async function directBuy(e){
-e.preventDefault();
+  e.preventDefault();
 
-if(!selectedProduct){
-alert("Product not selected");
-return;
-}
+  if(!selectedProduct){
+    alert("❌ Product not selected");
+    return;
+  }
 
-if(!currentRetailerLoc || !currentWholesalerLoc){
-alert("📍 Location missing. Please calculate delivery first");
-return;
-}
+  if(!currentRetailerLoc || !currentWholesalerLoc){
+    alert("📍 Delivery calculate karo");
+    return;
+  }
 
-const vehicle = vehicleType.value;
-if(!vehicle){
-alert("🚚 Select vehicle first");
-return;
-}
+  const vehicle = vehicleType.value;
+  if(!vehicle){
+    alert("🚚 Vehicle select karo");
+    return;
+  }
 
-const retailerProfile =
-JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+  const retailerProfile =
+    JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-if(!retailerProfile.mobile){
-alert("👤 Please save retailer profile first");
-return;
-}
+  if(!retailerProfile.name || !retailerProfile.mobile){
+    alert("👤 Retailer profile incomplete");
+    return;
+  }
 
-const total =
-Number(selectedProduct.price) + Number(lastDeliveryCharge);
+  const totalAmount =
+    Number(selectedProduct.price) + Number(lastDeliveryCharge);
 
-try{
-const res = await fetch('${API}/api/orders/pay-and-create',{
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body: JSON.stringify({
-amount: total,
-notes:{
-type:"direct",
+  try{
+    /* ================= STEP 1 : CREATE PAYMENT ORDER ================= */
+    const res = await fetch(`${API}/api/orders/create-payment`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        amount: totalAmount,
 
-productId: selectedProduct._id,
-productName: selectedProduct.productName,
-productImg: selectedProduct.images?.[0] || "",
-price: selectedProduct.price,
+        product: {
+          id: selectedProduct._id,
+          name: selectedProduct.productName,
+          image: selectedProduct.images?.[0] || "",
+          price: selectedProduct.price
+        },
 
-wholesalerId: selectedProduct.wholesalerId,
-wholesalerName: selectedProduct.shopName,
-wholesalerMobile: selectedProduct.mobile,
+        wholesaler: {
+          id: selectedProduct.wholesalerId,
+          name: selectedProduct.shopName,
+          mobile: selectedProduct.mobile,
+          location: currentWholesalerLoc
+        },
 
-wholesalerLocation: currentWholesalerLoc,   // ✅ FIXED
+        retailer: {
+          name: retailerProfile.name,
+          mobile: retailerProfile.mobile,
+          location: currentRetailerLoc
+        },
 
-retailerName: retailerProfile.name,
-retailerMobile: retailerProfile.mobile,
+        delivery: {
+          vehicleType: vehicle,
+          charge: lastDeliveryCharge
+        }
+      })
+    });
 
-retailerLocation: currentRetailerLoc,       // ✅ FIXED
+    const data = await res.json();
+    if(!data.success){
+      alert("❌ Payment order failed");
+      return;
+    }
 
-vehicleType: vehicle,
+    /* ================= STEP 2 : RAZORPAY ================= */
+    const rzp = new Razorpay({
+      key: data.key,
+      amount: data.amount,
+      currency: "INR",
+      order_id: data.orderId,
 
-totalDelivery: lastDeliveryCharge,
-retailerPays: lastDeliveryCharge,
-wholesalerPays: 0
-}
+      handler: async function (response){
 
-})
-});
+        /* ================= STEP 3 : VERIFY & FINAL SAVE ================= */
+        const verifyRes = await fetch(`${API}/api/orders/verify-payment`,{
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          })
+        });
 
-const data = await res.json();
-if(!data.success){
-alert("❌ Order create failed");
-return;
-}
+        const verifyData = await verifyRes.json();
 
-const rzp = new Razorpay({
-key: data.key,
-amount: data.amount,
-currency: "INR",
-order_id: data.order.id,
+        if(verifyData.success){
+          alert("✅ Payment Successful 🎉");
+          closeAll();
 
-handler(){
-alert("✅ Payment Successful 🎉");
-closeAll();
-},
+          // optional redirect
+          // location.href = "orders.html";
 
-modal:{
-ondismiss(){
-alert("❌ Payment cancelled");
-}
-}
-});
+        }else{
+          alert("❌ Payment verify failed");
+        }
+      },
 
-rzp.open();
+      modal:{
+        ondismiss(){
+          alert("❌ Payment cancelled");
+        }
+      }
+    });
 
-}catch(err){
-console.error("Payment Error:", err);
-alert("❌ Payment error");
-}
+    rzp.open();
+
+  }catch(err){
+    console.error(err);
+    alert("❌ Server error");
+  }
 }
 loadProducts();
 </script>
