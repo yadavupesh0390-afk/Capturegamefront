@@ -548,11 +548,11 @@ async function directBuy(e){
   }
 
   const retailerProfile =
-JSON.parse(localStorage.getItem("retailerProfile") || "{}");
+  JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-if(!retailerProfile.id || !retailerProfile.name || !retailerProfile.mobile){
-alert("👤 Retailer profile incomplete");
-return;
+if (!retailerProfile.name || !retailerProfile.mobile) {
+  alert("👤 Retailer profile incomplete");
+  return;
 }
 
   const totalAmount =
