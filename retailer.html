@@ -1256,19 +1256,31 @@ function closeChargeModal() {
 /* ================= DELIVERY ESTIMATE (PRODUCT PAGE) ================= */
 async function fetchDeliveryEstimate(orderAmount, vehicleType) {
   try {
-    const retailerLoc = JSON.parse(
-      localStorage.getItem("retailer_location")
-    );
 
-    const wholesalerLoc = selectedProduct?.wholesalerLocation;
+    // 🔥 Always ensure location first
+    const retailerLoc = await ensureRetailerLocation();
 
-    if (!retailerLoc || !wholesalerLoc) {
-      console.warn("⚠️ Location missing", {
-        retailerLoc,
-        wholesalerLoc
-      });
+    if (!retailerLoc) {
+      alert("📍 Please set your location first in Profile");
       return null;
     }
+
+    if (!selectedProduct?.wholesalerLocation) {
+      console.error("❌ Missing wholesaler location", selectedProduct);
+      alert("Wholesaler location missing");
+      return null;
+    }
+
+    if (!vehicleType) {
+      return null;
+    }
+
+    console.log("🚚 Sending Delivery Data:", {
+      orderAmount,
+      vehicleType,
+      retailerLocation: retailerLoc,
+      wholesalerLocation: selectedProduct.wholesalerLocation
+    });
 
     const res = await fetch(`${API}/api/delivery/calculate`, {
       method: "POST",
@@ -1276,14 +1288,18 @@ async function fetchDeliveryEstimate(orderAmount, vehicleType) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        orderAmount,
+        orderAmount: Number(orderAmount),
         vehicleType,
         retailerLocation: retailerLoc,
-        wholesalerLocation: wholesalerLoc
+        wholesalerLocation: selectedProduct.wholesalerLocation
       })
     });
 
-    return await res.json();
+    const data = await res.json();
+
+    console.log("📦 Delivery Response:", data);
+
+    return data;
 
   } catch (err) {
     console.error("❌ Delivery estimate failed", err);
