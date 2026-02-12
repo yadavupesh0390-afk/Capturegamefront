@@ -384,7 +384,16 @@ function updateDelivery(){
   deliveryTimer = setTimeout(runDeliveryCalc, 400); // debounce
 }
 
+function normalizeLocation(loc){
+  if(!loc) return null;
 
+  const lat = Number(loc.lat || loc.latitude);
+  const lng = Number(loc.lng || loc.longitude);
+
+  if(!lat || !lng) return null;
+
+  return { lat, lng };
+}
 
 
 async function runDeliveryCalc(){
@@ -410,44 +419,33 @@ async function runDeliveryCalc(){
   const retailerProfile =
     JSON.parse(localStorage.getItem("retailerProfile") || "{}");
 
-  currentRetailerLoc =
+  let retailerLoc =
     JSON.parse(localStorage.getItem("retailer_location")) ||
     retailerProfile.location ||
     null;
 
-  // 🔄 Normalize retailer location keys
-  if(currentRetailerLoc?.latitude && currentRetailerLoc?.longitude){
-    currentRetailerLoc = {
-      lat: currentRetailerLoc.latitude,
-      lng: currentRetailerLoc.longitude
-    };
-  }
+  retailerLoc = normalizeLocation(retailerLoc);
 
-  /* ================= WHOLESALER LOCATION (LIVE) ================= */
+  /* ================= WHOLESALER LOCATION ================= */
 
-  currentWholesalerLoc = null;
+  let wholesalerLoc = null;
 
   try{
     const resWh = await fetch(
       `${API}/api/wholesalers/profile/${selectedProduct.wholesalerId}`
     );
+
     const whData = await resWh.json();
 
-    currentWholesalerLoc =
+    wholesalerLoc =
       whData?.profile?.location ||
       whData?.wholesaler?.location ||
       whData?.location ||
       null;
 
-    // 🔄 Normalize wholesaler location keys
-    if(currentWholesalerLoc?.latitude && currentWholesalerLoc?.longitude){
-      currentWholesalerLoc = {
-        lat: currentWholesalerLoc.latitude,
-        lng: currentWholesalerLoc.longitude
-      };
-    }
+    wholesalerLoc = normalizeLocation(wholesalerLoc);
 
-    console.log("🏪 LIVE Wholesaler Location:", currentWholesalerLoc);
+    console.log("🏪 LIVE Wholesaler Location:", wholesalerLoc);
 
   }catch(err){
     console.error("❌ Wholesaler location fetch failed", err);
@@ -455,21 +453,17 @@ async function runDeliveryCalc(){
 
   /* ================= LOCATION VALIDATION ================= */
 
-  if(
-    !currentRetailerLoc?.lat ||
-    !currentRetailerLoc?.lng ||
-    !currentWholesalerLoc?.lat ||
-    !currentWholesalerLoc?.lng
-  ){
+  if(!retailerLoc || !wholesalerLoc){
     box.style.display = "block";
     dText.innerText = "📍 Location missing";
     tText.innerText = "";
     lastDeliveryCharge = 0;
 
     console.warn("⚠️ Location check failed", {
-      retailerLoc: currentRetailerLoc,
-      wholesalerLoc: currentWholesalerLoc
+      retailerLoc,
+      wholesalerLoc
     });
+
     return;
   }
 
@@ -482,33 +476,37 @@ async function runDeliveryCalc(){
       body: JSON.stringify({
         orderAmount: Number(selectedProduct.price),
         vehicleType: vehicle,
-        retailerLocation: currentRetailerLoc,
-        wholesalerLocation: currentWholesalerLoc
+        retailerLocation: retailerLoc,
+        wholesalerLocation: wholesalerLoc
       })
     });
 
     const data = await res.json();
 
+    console.log("🚚 Delivery API Response:", data);
+
     if(!data.success){
       box.style.display = "block";
-      dText.innerText = "❌ Delivery calculation failed";
+      dText.innerText = "❌ " + (data.error || "Delivery calculation failed");
       tText.innerText = "";
       lastDeliveryCharge = 0;
       return;
     }
 
-    /* ================= SAVE FOR PAYMENT ================= */
+    /* ================= SUCCESS ================= */
+
     lastDeliveryCharge = Number(data.retailerPays);
+
     const doubleDistance = (Number(data.distanceKm) * 2).toFixed(2);
     const doubleTime = Math.round(Number(data.timeMinutes) * 2);
-    /* ================= UI UPDATE ================= */
+
     box.style.display = "block";
 
     dText.innerText =
 `🚚 Delivery ₹${data.totalDelivery}
 (Retailer Pays ₹${data.retailerPays}, ${data.retailerPercent}%)
 ⏱️ ${doubleTime} min
-📍 टोटल  आने  जाने  का = ${doubleDistance} km`;
+📍 टोटल आने-जाने का = ${doubleDistance} km`;
 
     const total =
       Number(selectedProduct.price) + Number(data.retailerPays);
