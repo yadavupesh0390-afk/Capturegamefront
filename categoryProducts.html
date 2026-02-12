@@ -411,6 +411,8 @@ async function runDeliveryCalc(){
   if(!vehicle){
     box.style.display = "none";
     lastDeliveryCharge = 0;
+    currentRetailerLoc = null;
+    currentWholesalerLoc = null;
     return;
   }
 
@@ -424,7 +426,12 @@ async function runDeliveryCalc(){
     retailerProfile.location ||
     null;
 
-  retailerLoc = normalizeLocation(retailerLoc);
+  if(retailerLoc?.latitude && retailerLoc?.longitude){
+    retailerLoc = {
+      lat: Number(retailerLoc.latitude),
+      lng: Number(retailerLoc.longitude)
+    };
+  }
 
   /* ================= WHOLESALER LOCATION ================= */
 
@@ -434,7 +441,6 @@ async function runDeliveryCalc(){
     const resWh = await fetch(
       `${API}/api/wholesalers/profile/${selectedProduct.wholesalerId}`
     );
-
     const whData = await resWh.json();
 
     wholesalerLoc =
@@ -443,31 +449,41 @@ async function runDeliveryCalc(){
       whData?.location ||
       null;
 
-    wholesalerLoc = normalizeLocation(wholesalerLoc);
-
-    console.log("🏪 LIVE Wholesaler Location:", wholesalerLoc);
+    if(wholesalerLoc?.latitude && wholesalerLoc?.longitude){
+      wholesalerLoc = {
+        lat: Number(wholesalerLoc.latitude),
+        lng: Number(wholesalerLoc.longitude)
+      };
+    }
 
   }catch(err){
     console.error("❌ Wholesaler location fetch failed", err);
   }
 
-  /* ================= LOCATION VALIDATION ================= */
+  /* ================= VALIDATION ================= */
 
-  if(!retailerLoc || !wholesalerLoc){
+  if(
+    !retailerLoc?.lat ||
+    !retailerLoc?.lng ||
+    !wholesalerLoc?.lat ||
+    !wholesalerLoc?.lng
+  ){
     box.style.display = "block";
     dText.innerText = "📍 Location missing";
     tText.innerText = "";
     lastDeliveryCharge = 0;
 
-    console.warn("⚠️ Location check failed", {
-      retailerLoc,
-      wholesalerLoc
-    });
+    currentRetailerLoc = null;
+    currentWholesalerLoc = null;
 
     return;
   }
 
-  /* ================= DELIVERY CALCULATION ================= */
+  /* 🔥 IMPORTANT — SET GLOBALS HERE */
+  currentRetailerLoc = retailerLoc;
+  currentWholesalerLoc = wholesalerLoc;
+
+  /* ================= DELIVERY API ================= */
 
   try{
     const res = await fetch(`${API}/api/delivery/calculate`,{
@@ -483,17 +499,13 @@ async function runDeliveryCalc(){
 
     const data = await res.json();
 
-    console.log("🚚 Delivery API Response:", data);
-
     if(!data.success){
       box.style.display = "block";
-      dText.innerText = "❌ " + (data.error || "Delivery calculation failed");
+      dText.innerText = "❌ Delivery calculation failed";
       tText.innerText = "";
       lastDeliveryCharge = 0;
       return;
     }
-
-    /* ================= SUCCESS ================= */
 
     lastDeliveryCharge = Number(data.retailerPays);
 
