@@ -425,6 +425,7 @@ async function runDeliveryCalc(){
     null;
 
   retailerLoc = normalizeLocation(retailerLoc);
+  currentRetailerLoc = retailerLoc;
 
   /* ================= WHOLESALER LOCATION ================= */
 
@@ -444,6 +445,7 @@ async function runDeliveryCalc(){
       null;
 
     wholesalerLoc = normalizeLocation(wholesalerLoc);
+    currentWholesalerLoc = wholesalerLoc;
 
     console.log("🏪 LIVE Wholesaler Location:", wholesalerLoc);
 
