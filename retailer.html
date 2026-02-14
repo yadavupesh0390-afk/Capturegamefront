@@ -1972,7 +1972,6 @@ async function payCart() {
     return;
   }
 
-  /* ✅ DELIVERY DATA REQUIRED */
   if (!window.__cartDelivery) {
     alert("❌ Delivery calculation missing");
     return;
@@ -1988,12 +1987,13 @@ async function payCart() {
   } = window.__cartDelivery;
 
   try {
+
     /* ================= CREATE ORDER ================= */
     const res = await fetch(`${API}/api/orders/pay-and-create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: total, // ✅ FINAL TOTAL
+        amount: Number(total), // ✅ ensure number
         notes: {
           type: "cart",
 
@@ -2002,7 +2002,6 @@ async function payCart() {
 
           vehicleType: vehicle,
 
-          /* 🚚 DELIVERY BREAKUP */
           deliveryCharge: retailerPays + wholesalerPays,
           retailerDeliveryPay: retailerPays,
           wholesalerDeliveryPay: wholesalerPays,
@@ -2015,7 +2014,6 @@ async function payCart() {
               productName: p.productName,
               price: p.price,
               quantity: p.quantity || 1,
-
               wholesalerId: p.wholesalerId,
               wholesalerName: p.shopName,
               wholesalerMobile: p.mobile
@@ -2026,6 +2024,7 @@ async function payCart() {
     });
 
     const data = await res.json();
+
     if (!data.success) {
       alert(data.message || "❌ Payment init failed");
       return;
@@ -2034,9 +2033,8 @@ async function payCart() {
     /* ================= RAZORPAY ================= */
     const rzp = new Razorpay({
       key: data.key,
-      amount: data.amount,
       currency: "INR",
-      order_id: data.order.id,
+      order_id: data.orderId, // ✅ correct field
 
       handler: function () {
         localStorage.removeItem("cart");
