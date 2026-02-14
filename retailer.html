@@ -1990,39 +1990,41 @@ async function payCart() {
 
     /* ================= CREATE ORDER ================= */
     const res = await fetch(`${API}/api/orders/pay-and-create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount: Number(total), // ✅ ensure number
-        notes: {
-          type: "cart",
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    amount: Number(total) || 0,
 
-          retailerName: profile.name,
-          retailerMobile: profile.mobile,
+    notes: {
+      type: "cart",
 
-          vehicleType: vehicle,
+      retailerId: profile._id, // 🔥 IMPORTANT (webhook me kaam aayega)
+      retailerName: profile.name || "",
+      retailerMobile: profile.mobile || "",
 
-          deliveryCharge: retailerPays + wholesalerPays,
-          retailerDeliveryPay: retailerPays,
-          wholesalerDeliveryPay: wholesalerPays,
-          distanceKm,
-          timeMinutes,
+      vehicleType: vehicle || "",
 
-          products: JSON.stringify(
-            cart.map(p => ({
-              productId: p.productId || p._id,
-              productName: p.productName,
-              price: p.price,
-              quantity: p.quantity || 1,
-              wholesalerId: p.wholesalerId,
-              wholesalerName: p.shopName,
-              wholesalerMobile: p.mobile
-            }))
-          )
-        }
-      })
-    });
+      deliveryCharge: Number(retailerPays + wholesalerPays) || 0,
+      retailerDeliveryPay: Number(retailerPays) || 0,
+      wholesalerDeliveryPay: Number(wholesalerPays) || 0,
+      distanceKm: Number(distanceKm) || 0,
+      timeMinutes: Number(timeMinutes) || 0,
 
+      // 🔥 Safe products array
+      products: JSON.stringify(
+        cart.map(p => ({
+          productId: (p.productId || p._id || "").toString(),
+          productName: p.productName || "",
+          price: Number(p.price) || 0,
+          quantity: Number(p.quantity) || 1,
+          wholesalerId: (p.wholesalerId || "").toString(),
+          wholesalerName: p.shopName || "",
+          wholesalerMobile: p.mobile || ""
+        }))
+      )
+    }
+  })
+});
     const data = await res.json();
 
     if (!data.success) {
