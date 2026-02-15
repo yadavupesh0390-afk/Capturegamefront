@@ -1998,7 +1998,7 @@ async function payCart() {
     notes: {
       type: "cart",
 
-      retailerId: profile._id, // 🔥 IMPORTANT (webhook me kaam aayega)
+      retailerId: localStorage.getItem("userId"), // 🔥 IMPORTANT (webhook me kaam aayega)
       retailerName: profile.name || "",
       retailerMobile: profile.mobile || "",
 
