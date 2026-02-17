@@ -1998,9 +1998,9 @@ async function payCart() {
     notes: {
       type: "cart",
 
-      retailerId: localStorage.getItem("userId"), // 🔥 IMPORTANT (webhook me kaam aayega)
-      retailerName: profile.name || "",
-      retailerMobile: profile.mobile || "",
+      retailerId: localStorage.getItem("userId") || "",
+      retailerName: profile?.name || "",
+      retailerMobile: profile?.mobile || "",
 
       vehicleType: vehicle || "",
 
@@ -2010,7 +2010,17 @@ async function payCart() {
       distanceKm: Number(distanceKm) || 0,
       timeMinutes: Number(timeMinutes) || 0,
 
-      // 🔥 Safe products array
+      // ✅ SEND RETAILER LOCATION
+      retailerLocation: JSON.stringify(
+        profile?.location || {}
+      ),
+
+      // ✅ SEND WHOLESALER LOCATION (first product)
+      wholesalerLocation: JSON.stringify(
+        cart?.[0]?.wholesalerLocation || {}
+      ),
+
+      // ✅ PRODUCTS ARRAY
       products: JSON.stringify(
         cart.map(p => ({
           productId: (p.productId || p._id || "").toString(),
@@ -2025,12 +2035,13 @@ async function payCart() {
     }
   })
 });
-    const data = await res.json();
 
-    if (!data.success) {
-      alert(data.message || "❌ Payment init failed");
-      return;
-    }
+const data = await res.json();
+
+if (!data.success) {
+  alert(data.message || "❌ Payment init failed");
+  return;
+}
 
     /* ================= RAZORPAY ================= */
     const rzp = new Razorpay({
