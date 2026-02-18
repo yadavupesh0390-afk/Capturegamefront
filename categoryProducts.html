@@ -563,16 +563,25 @@ if (!retailerProfile.name || !retailerProfile.mobile) {
 
     /* ================= STEP 1 : CREATE PAYMENT (LIGHT PAYLOAD) ================= */
     const res = await fetch(`${API}/api/orders/pay-and-create`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        amount: totalAmount,
-        notes: {
+  method:"POST",
+  headers:{ "Content-Type":"application/json" },
+  body: JSON.stringify({
+    amount: totalAmount,
+    notes: {
       type: "direct",
+
       productId: selectedProduct._id,
       wholesalerId: selectedProduct.wholesalerId,
       retailerId: localStorage.getItem("userId"),
-      vehicleType: vehicle
+
+      vehicleType: vehicle,
+
+      deliveryCharge: lastDeliveryCharge,
+      retailerDeliveryPay: lastDeliveryCharge,
+      wholesalerDeliveryPay: 0,
+
+      retailerLocation: JSON.stringify(currentRetailerLoc),
+      wholesalerLocation: JSON.stringify(currentWholesalerLoc)
     }
   })
 });
