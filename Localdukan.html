@@ -749,66 +749,116 @@ async function ensureRetailerLocation() {
   }
 // ------------------- PRODUCTS -------------------
 async function loadProducts() {
-  const widInput = document.getElementById("wid");
-  const wid = widInput.value.trim();
 
-  if (!wid) {
-    alert("Enter Wholesaler ID");
-    return;
-  }
-
-  // Save last wholesaler
-  sessionStorage.setItem("lastWid", wid);
-
-  // Clear cart if wholesaler changed
-  if (currentWholesalerId && currentWholesalerId !== wid) {
-    clearCartCompletely();
-  }
-
-  currentWholesalerId = wid;
+  let wid = document.getElementById("wid").value.trim();
 
   try {
+
+    // 🔍 Agar ID nahi dali gayi to nearest wholesaler nikalo
+    if (!wid) {
+
+      const retailerLoc = await ensureRetailerLocation();
+
+      if (!retailerLoc) {
+        alert("📍 Please set your location first.");
+        return;
+      }
+
+      const nearRes = await fetch(`${API}/api/wholesalers/nearest`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          lat: retailerLoc.lat,
+          lng: retailerLoc.lng
+        })
+      });
+
+      const nearData = await nearRes.json();
+
+      if (
+        !nearData.success ||
+        !nearData.wholesalers ||
+        nearData.wholesalers.length === 0
+      ) {
+        document.getElementById("categories").innerHTML =
+          "<p>No nearby wholesaler found</p>";
+        return;
+      }
+
+      // ✅ Sabse nearest wholesaler
+      wid = nearData.wholesalers[0]._id;
+
+      // Optional
+      document.getElementById("wid").value = wid;
+    }
+
+    // ✅ Wholesaler change hone par cart clear
+    if (currentWholesalerId && currentWholesalerId !== wid) {
+      clearCartCompletely();
+    }
+
+    currentWholesalerId = wid;
+
+    sessionStorage.setItem("lastWid", wid);
+
+    // Products load
     const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
     const data = await res.json();
 
-    const categoriesContainer = document.getElementById("categories");
+    const categoriesContainer =
+      document.getElementById("categories");
 
-    if (!data.products || !data.products.length) {
-      categoriesContainer.innerHTML = "<p>No categories found</p>";
+    if (!data.success || !data.products || data.products.length === 0) {
+      categoriesContainer.innerHTML =
+        "<p>No Products Found</p>";
       return;
     }
 
-    // 🔥 Unique categories निकालो
     const categoryMap = {};
+
     data.products.forEach(p => {
       const cat = p.category || "Other";
       categoryMap[cat] = true;
     });
 
-    // Render categories
     categoriesContainer.innerHTML = Object.keys(categoryMap)
       .map(cat => `
         <div class="category-card"
              onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
+
           <div class="category-icon">
             <i class="bi bi-box-seam"></i>
           </div>
-          <div class="category-name">${cat}</div>
+
+          <div class="category-name">
+            ${cat}
+          </div>
+
         </div>
       `)
       .join("");
 
-    // Save categories for back navigation
     sessionStorage.setItem(
       "lastCategoriesHTML",
       categoriesContainer.innerHTML
     );
 
-  } catch (e) {
-    console.error(e);
-    alert("Failed to load categories");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load products");
   }
 }
+  window.addEventListener("load", async () => {
+
+  await ensureRetailerLocation();
+
+  if (!document.getElementById("wid").value.trim()) {
+    loadProducts();
+  }
+
+});
 window.addEventListener("load", async () => {
 
   const retailerId = localStorage.getItem("userId");
