@@ -748,32 +748,7 @@ async function ensureRetailerLocation() {
   return null;
   }
 // ------------------- PRODUCTS -------------------
-async function loadProducts() {
 
-  let wid = document.getElementById("wid").value.trim();
-
-  try {
-
-    // 🔍 Agar ID nahi dali gayi to nearest wholesaler nikalo
-    if (!wid) {
-
-      const retailerLoc = await ensureRetailerLocation();
-
-      if (!retailerLoc) {
-        alert("📍 Please set your location first.");
-        return;
-      }
-
-      const nearRes = await fetch(`${API}/api/wholesalers/nearest`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          lat: retailerLoc.lat,
-          lng: retailerLoc.lng
-        })
-      });
 
 async function loadProducts() {
 
