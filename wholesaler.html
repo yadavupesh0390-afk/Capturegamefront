@@ -682,18 +682,41 @@ async function loadCategories() {
     const r = await fetch(API + "/api/products/wholesaler/" + WID);
     const d = await r.json();
 
-    const products = d.products || d.data?.products || [];
+    console.log("RAW RESPONSE:", d);
+
+    // 🔥 safe products extraction (handles all backend formats)
+    const products =
+      d.products ||
+      d.data?.products ||
+      d.data ||
+      [];
+
+    if (!Array.isArray(products)) {
+      console.log("❌ Products is not array:", products);
+      document.getElementById("categories").innerHTML =
+        "<p>No valid products data</p>";
+      return;
+    }
 
     console.log("PRODUCTS DEBUG:", products);
 
     const map = {};
 
     products.forEach(p => {
-      const cat =
-        (p.category || "other").toLowerCase().trim();
+      if (!p) return;
 
-      if (!map[cat]) map[cat] = 0;
-      map[cat]++;
+      // 🔥 multi-field safe category detection
+      const catRaw =
+        p.category ||
+        p.cat ||
+        p.categoryName ||
+        "other";
+
+      const cat = String(catRaw).toLowerCase().trim();
+
+      if (!cat) return;
+
+      map[cat] = (map[cat] || 0) + 1;
     });
 
     const cats = Object.keys(map);
@@ -711,6 +734,8 @@ async function loadCategories() {
 
   } catch (err) {
     console.log("Category Error:", err);
+    document.getElementById("categories").innerHTML =
+      "<p>Error loading categories</p>";
   }
 }
   function openCategory(cat){
