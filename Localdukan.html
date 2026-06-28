@@ -756,7 +756,9 @@ async function loadProducts() {
 
   try {
 
-    // 🔍 Agar ID nahi dali gayi to nearest wholesaler nikalo
+    let allProducts = [];
+
+    // ✅ Agar ID manually nahi di gayi
     if (!wid) {
 
       const retailerLoc = await ensureRetailerLocation();
@@ -783,43 +785,53 @@ async function loadProducts() {
 
       console.log("Nearest API:", nearData);
 
-      if (!nearData.success || !nearData.wholesaler) {
+      if (
+        !nearData.success ||
+        !nearData.wholesalers ||
+        nearData.wholesalers.length === 0
+      ) {
         document.getElementById("categories").innerHTML =
           "<p>No wholesaler found</p>";
         return;
       }
 
-      // ✅ Nearest wholesaler
-      wid = nearData.wholesaler._id;
+      // ✅ Sabhi wholesalers ke products load karo
+      for (const w of nearData.wholesalers) {
 
-      document.getElementById("wid").value = wid;
+        const res = await fetch(`${API}/api/products/wholesaler/${w._id}`);
+        const data = await res.json();
+
+        if (data.success && data.products) {
+          allProducts.push(...data.products);
+        }
+      }
+
+    } else {
+
+      if (currentWholesalerId && currentWholesalerId !== wid) {
+        clearCartCompletely();
+      }
+
+      currentWholesalerId = wid;
+
+      const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
+      const data = await res.json();
+
+      if (data.success && data.products) {
+        allProducts = data.products;
+      }
     }
 
-    // ✅ Wholesaler change hone par cart clear
-    if (currentWholesalerId && currentWholesalerId !== wid) {
-      clearCartCompletely();
-    }
+    const categoriesContainer = document.getElementById("categories");
 
-    currentWholesalerId = wid;
-
-    sessionStorage.setItem("lastWid", wid);
-
-    // ✅ Products Load
-    const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
-    const data = await res.json();
-
-    const categoriesContainer =
-      document.getElementById("categories");
-
-    if (!data.success || !data.products || data.products.length === 0) {
-      categoriesContainer.innerHTML =
-        "<p>No Products Found</p>";
+    if (allProducts.length === 0) {
+      categoriesContainer.innerHTML = "<p>No Products Found</p>";
       return;
     }
 
     const categoryMap = {};
 
-    data.products.forEach(p => {
+    allProducts.forEach(p => {
       const cat = p.category || "Other";
       categoryMap[cat] = true;
     });
@@ -827,7 +839,7 @@ async function loadProducts() {
     categoriesContainer.innerHTML = Object.keys(categoryMap)
       .map(cat => `
         <div class="category-card"
-             onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
+             onclick="openCategory('${encodeURIComponent(cat)}')">
 
           <div class="category-icon">
             <i class="bi bi-box-seam"></i>
@@ -851,7 +863,8 @@ async function loadProducts() {
     alert("Failed to load products");
   }
 }
-  window.addEventListener("load", async () => {
+
+window.addEventListener("load", async () => {
 
   await ensureRetailerLocation();
 
