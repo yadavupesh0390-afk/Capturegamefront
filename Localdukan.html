@@ -775,22 +775,48 @@ async function loadProducts() {
         })
       });
 
-      const nearData = await nearRes.json();
+async function loadProducts() {
 
-      if (
-        !nearData.success ||
-        !nearData.wholesalers ||
-        nearData.wholesalers.length === 0
-      ) {
-        document.getElementById("categories").innerHTML =
-          "<p>No nearby wholesaler found</p>";
+  let wid = document.getElementById("wid").value.trim();
+
+  try {
+
+    // 🔍 Agar ID nahi dali gayi to nearest wholesaler nikalo
+    if (!wid) {
+
+      const retailerLoc = await ensureRetailerLocation();
+
+      if (!retailerLoc) {
+        alert("📍 Please set your location first.");
         return;
       }
 
-      // ✅ Sabse nearest wholesaler
-      wid = nearData.wholesalers[0]._id;
+      const nearRes = await fetch(`${API}/api/wholesalers/nearest`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          location: {
+            lat: retailerLoc.lat,
+            lng: retailerLoc.lng
+          }
+        })
+      });
 
-      // Optional
+      const nearData = await nearRes.json();
+
+      console.log("Nearest API:", nearData);
+
+      if (!nearData.success || !nearData.wholesaler) {
+        document.getElementById("categories").innerHTML =
+          "<p>No wholesaler found</p>";
+        return;
+      }
+
+      // ✅ Nearest wholesaler
+      wid = nearData.wholesaler._id;
+
       document.getElementById("wid").value = wid;
     }
 
@@ -803,7 +829,7 @@ async function loadProducts() {
 
     sessionStorage.setItem("lastWid", wid);
 
-    // Products load
+    // ✅ Products Load
     const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
     const data = await res.json();
 
@@ -846,7 +872,7 @@ async function loadProducts() {
     );
 
   } catch (err) {
-    console.error(err);
+    console.error("Load Products Error:", err);
     alert("Failed to load products");
   }
 }
