@@ -684,17 +684,16 @@ async function loadCategories() {
 
     const products = d.products || d.data?.products || [];
 
-    console.log("DEBUG PRODUCTS:", products);
+    console.log("PRODUCTS DEBUG:", products);
 
     const map = {};
 
     products.forEach(p => {
       const cat =
-        (p.category || p.cat || p.categoryName || "Other")
-        .trim()
-        .toUpperCase();
+        (p.category || "other").toLowerCase().trim();
 
-      map[cat] = true;
+      if (!map[cat]) map[cat] = 0;
+      map[cat]++;
     });
 
     const cats = Object.keys(map);
@@ -705,13 +704,13 @@ async function loadCategories() {
             <div class="category-card"
                  onclick="openCategory('${cat}')">
               <i class="bi bi-box-seam"></i>
-              <h4>${cat}</h4>
+              <h4>${cat} (${map[cat]})</h4>
             </div>
           `).join("")
         : "<p style='text-align:center'>No categories found</p>";
 
   } catch (err) {
-    console.log("Category Error =", err);
+    console.log("Category Error:", err);
   }
 }
   function openCategory(cat){
