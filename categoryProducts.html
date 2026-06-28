@@ -187,36 +187,20 @@ async function loadProducts(){
     const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
     const data = await res.json();
 
-    allProducts = data.products.filter(
-  p => (p.category || "Other") === category
-);
+    // safe fallback
+    const products = data.products || [];
 
-renderProducts(allProducts);
-    const container = document.getElementById("products");
+    // category filter
+    allProducts = products.filter(
+      p => (p.category || "Other") === category
+    );
 
-    if(!list.length){
-      container.innerHTML = "<p>No products found</p>";
-      return;
-    }
+    renderProducts(allProducts);
 
-    container.innerHTML = list.map(p=>{
-      const pdata = encodeURIComponent(JSON.stringify(p));
-      return `
-        <div class="product-card">
-          <img src="${p.images?.[0]||''}">
-          <div>${p.productName}</div>
-          <div class="price">₹${p.price}</div>
-          <div class="actions">
-            <button class="cart-btn" onclick='addToCart(JSON.parse(decodeURIComponent("${pdata}")))'>🛒</button>
-            <button class="buy-btn" onclick='openDetail(JSON.parse(decodeURIComponent("${pdata}")))'>⚡</button>
-          </div>
-        </div>
-      `;
-    }).join("");
   }catch(e){
-  console.warn("Products load retry / initial delay", e);
-  // ❌ alert हटा दिया
-
+    console.warn("Products load retry / initial delay", e);
+    document.getElementById("products").innerHTML =
+      "<p style='text-align:center'>Products load failed</p>";
   }
 }
 function renderProducts(list){
