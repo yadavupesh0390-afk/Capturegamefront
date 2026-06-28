@@ -678,31 +678,30 @@ function updateLocationTimer(setAt, lockedFromServer = false) {
 }
   
 async function loadCategories() {
-
   try {
-
     const r = await fetch(API + "/api/products/wholesaler/" + WID);
     const d = await r.json();
 
-    console.log("WID =", WID);
-    console.log("Response =", d);
+    const products = d.products || d.data?.products || [];
 
     const map = {};
 
-    (d.products || []).forEach(p => {
-      const cat = p.category || "Other";
+    products.forEach(p => {
+      const cat = (p.category || "Other").trim();
       map[cat] = true;
     });
 
-    console.log("Categories =", Object.keys(map));
+    const cats = Object.keys(map);
 
-    categories.innerHTML = Object.keys(map).map(cat => `
-      <div class="category-card"
-           onclick="openCategory('${cat}')">
-        <i class="bi bi-box-seam"></i>
-        <h4>${cat}</h4>
-      </div>
-    `).join("");
+    categories.innerHTML = cats.length
+      ? cats.map(cat => `
+          <div class="category-card"
+               onclick="openCategory('${cat}')">
+            <i class="bi bi-box-seam"></i>
+            <h4>${cat}</h4>
+          </div>
+        `).join("")
+      : "<p style='text-align:center'>No categories found</p>";
 
   } catch (err) {
     console.log("Category Error =", err);
@@ -859,6 +858,7 @@ async function addProduct(){
     alert("✅ Product added");
     closeAll();
     loadProducts();
+   loadCategories();   
     loadCategoriesSelect();  // 🔁 refresh select box with new category
   }
 }
