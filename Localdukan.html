@@ -915,9 +915,9 @@ window.addEventListener("load", async () => {
   }
 });
 /* ================= OPEN CATEGORY ================= */
-function openCategory(categoryId, wid) {
+function openCategory(category, wid) {
   window.location.href =
-    `categoryProducts.html?wid=${wid}&category=${categoryId}`;
+    `categoryProducts.html?wid=${wid}&category=${encodeURIComponent(category)}`;
 }
 
 function normalizeSetAt(setAt) {
