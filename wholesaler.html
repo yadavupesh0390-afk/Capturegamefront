@@ -677,27 +677,37 @@ function updateLocationTimer(setAt, lockedFromServer = false) {
   locationTimerInterval = setInterval(tick, 1000);
 }
   
-async function loadCategories(){
+async function loadCategories() {
 
-  const r = await fetch(API + "/api/products/wholesaler/" + WID);
-  const d = await r.json();
+  try {
 
-  const map = {};
+    const r = await fetch(API + "/api/products/wholesaler/" + WID);
+    const d = await r.json();
 
-  d.products.forEach(p=>{
-    const cat = p.category || "Other";
-    map[cat] = true;
-  });
+    console.log("WID =", WID);
+    console.log("Response =", d);
 
-  categories.innerHTML = Object.keys(map).map(cat=>`
-    <div class="category-card"
-         onclick="openCategory('${cat}')">
-      <i class="bi bi-box-seam"></i>
-      <h4>${cat}</h4>
-    </div>
-  `).join("");
+    const map = {};
+
+    (d.products || []).forEach(p => {
+      const cat = p.category || "Other";
+      map[cat] = true;
+    });
+
+    console.log("Categories =", Object.keys(map));
+
+    categories.innerHTML = Object.keys(map).map(cat => `
+      <div class="category-card"
+           onclick="openCategory('${cat}')">
+        <i class="bi bi-box-seam"></i>
+        <h4>${cat}</h4>
+      </div>
+    `).join("");
+
+  } catch (err) {
+    console.log("Category Error =", err);
+  }
 }
-
   function openCategory(cat){
   location.href =
     "category.html?cat=" + encodeURIComponent(cat)
