@@ -679,45 +679,61 @@ function updateLocationTimer(setAt, lockedFromServer = false) {
   
 async function loadCategories() {
   try {
-    const r = await fetch(API + "/api/products/wholesaler/" + WID);
-    const d = await r.json();
+    const res = await fetch(`${API}/api/products/wholesaler/${WID}`);
+    const data = await res.json();
 
-    console.log("FULL RESPONSE:", d);
+    console.log("RAW RESPONSE:", data);
 
-    const products = Array.isArray(d.products)
-      ? d.products
-      : Array.isArray(d.data?.products)
-      ? d.data.products
-      : [];
+    // ✅ SAFE PRODUCT EXTRACTION
+    const products =
+      Array.isArray(data?.products) ? data.products :
+      Array.isArray(data?.data?.products) ? data.data.products :
+      Array.isArray(data?.data) ? data.data :
+      [];
 
     if (!products.length) {
       document.getElementById("categories").innerHTML =
-        "<p>No products found</p>";
+        "<p style='text-align:center'>No products found</p>";
       return;
     }
+
+    console.log("PRODUCTS:", products);
 
     const map = {};
 
     products.forEach(p => {
-      const cat = (p.category || "other")
-        .toString()
-        .toLowerCase()
-        .trim();
+      if (!p) return;
+
+      // ✅ CATEGORY FIX (MOST IMPORTANT)
+      let cat =
+        p.category ||
+        p.categoryName ||
+        p.cat ||
+        "other";
+
+      cat = String(cat).toLowerCase().trim();
+
+      if (!cat || cat === "undefined") cat = "other";
 
       map[cat] = (map[cat] || 0) + 1;
     });
 
-    const html = Object.keys(map).map(cat => `
-      <div class="category-card" onclick="openCategory('${cat}')">
-        <i class="bi bi-box-seam"></i>
-        <h4>${cat} (${map[cat]})</h4>
-      </div>
-    `).join("");
+    const cats = Object.keys(map);
 
-    document.getElementById("categories").innerHTML = html;
+    document.getElementById("categories").innerHTML =
+      cats.length
+        ? cats.map(cat => `
+            <div class="category-card" onclick="openCategory('${cat}')">
+              <i class="bi bi-box-seam"></i>
+              <h4>${cat} (${map[cat]})</h4>
+            </div>
+          `).join("")
+        : "<p style='text-align:center'>No categories found</p>";
 
   } catch (err) {
     console.log("Category Error:", err);
+    document.getElementById("categories").innerHTML =
+      "<p>Error loading categories</p>";
   }
 }
   function openCategory(cat){
