@@ -758,7 +758,7 @@ async function loadProducts() {
 
     let allProducts = [];
 
-    // ✅ Agar ID manually nahi di gayi
+    // ✅ CASE 1: No manual wid → nearest wholesalers
     if (!wid) {
 
       const retailerLoc = await ensureRetailerLocation();
@@ -770,9 +770,7 @@ async function loadProducts() {
 
       const nearRes = await fetch(`${API}/api/wholesalers/nearest`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           location: {
             lat: retailerLoc.lat,
@@ -782,8 +780,6 @@ async function loadProducts() {
       });
 
       const nearData = await nearRes.json();
-
-      console.log("Nearest API:", nearData);
 
       if (
         !nearData.success ||
@@ -795,7 +791,7 @@ async function loadProducts() {
         return;
       }
 
-      // ✅ Sabhi wholesalers ke products load karo
+      // ✅ all wholesalers products merge
       for (const w of nearData.wholesalers) {
 
         const res = await fetch(`${API}/api/products/wholesaler/${w._id}`);
@@ -806,7 +802,10 @@ async function loadProducts() {
         }
       }
 
-    } else {
+    }
+
+    // ✅ CASE 2: Single wholesaler
+    else {
 
       if (currentWholesalerId && currentWholesalerId !== wid) {
         clearCartCompletely();
@@ -822,24 +821,27 @@ async function loadProducts() {
       }
     }
 
+    // ❌ no products check
     const categoriesContainer = document.getElementById("categories");
 
-    if (allProducts.length === 0) {
+    if (!allProducts.length) {
       categoriesContainer.innerHTML = "<p>No Products Found</p>";
       return;
     }
 
+    // ✅ build categories
     const categoryMap = {};
 
     allProducts.forEach(p => {
-      const cat = p.category || "Other";
+      const cat = (p.category || "Other").trim();
       categoryMap[cat] = true;
     });
 
+    // ✅ render categories WITH wid fix
     categoriesContainer.innerHTML = Object.keys(categoryMap)
       .map(cat => `
         <div class="category-card"
-             onclick="openCategory('${encodeURIComponent(cat)}')">
+             onclick="openCategory('${cat}', '${wid || ""}')">
 
           <div class="category-icon">
             <i class="bi bi-box-seam"></i>
