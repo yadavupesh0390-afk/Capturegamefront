@@ -750,66 +750,7 @@ async function ensureRetailerLocation() {
 // ------------------- PRODUCTS -------------------
 
 
-async function loadProducts() {
 
-  let wid = document.getElementById("wid").value.trim();
-
-  try {
-
-    let allProducts = [];
-
-    // ✅ CASE 1: No manual wid → nearest wholesalers
-    if (!wid) {
-
-      const retailerLoc = await ensureRetailerLocation();
-
-      if (!retailerLoc) {
-        alert("📍 Please set your location first.");
-        return;
-      }
-
-      const nearRes = await fetch(`${API}/api/wholesalers/nearest`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          location: {
-            lat: retailerLoc.lat,
-            lng: retailerLoc.lng
-          }
-        })
-      });
-
-      const nearData = await nearRes.json();
-
-      if (
-        !nearData.success ||
-        !nearData.wholesalers ||
-        nearData.wholesalers.length === 0
-      ) {
-        document.getElementById("categories").innerHTML =
-          "<p>No wholesaler found</p>";
-        return;
-      }
-
-      // ✅ Merge products of all nearby wholesalers
-      for (const w of nearData.wholesalers) {
-
-        const res = await fetch(
-          `${API}/api/products/wholesaler/${w._id}`
-        );
-
-        const data = await res.json();
-
-        if (data.success && data.products) {
-          allProducts.push(...data.products);
-        }
-      }
-
-      // ✅ Save all nearby products
-      sessionStorage.setItem(
-        "nearbyProducts",
 async function loadProducts() {
 
   try {
