@@ -770,7 +770,9 @@ async function loadProducts() {
 
       const nearRes = await fetch(`${API}/api/wholesalers/nearest`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
           location: {
             lat: retailerLoc.lat,
@@ -791,10 +793,13 @@ async function loadProducts() {
         return;
       }
 
-      // ✅ all wholesalers products merge
+      // ✅ Merge products of all nearby wholesalers
       for (const w of nearData.wholesalers) {
 
-        const res = await fetch(`${API}/api/products/wholesaler/${w._id}`);
+        const res = await fetch(
+          `${API}/api/products/wholesaler/${w._id}`
+        );
+
         const data = await res.json();
 
         if (data.success && data.products) {
@@ -802,46 +807,68 @@ async function loadProducts() {
         }
       }
 
+      // ✅ Save all nearby products
+      sessionStorage.setItem(
+        "nearbyProducts",
+        JSON.stringify(allProducts)
+      );
+
     }
 
-    // ✅ CASE 2: Single wholesaler
+    // ✅ CASE 2: Manual Wholesaler ID
     else {
 
-      if (currentWholesalerId && currentWholesalerId !== wid) {
+      if (
+        currentWholesalerId &&
+        currentWholesalerId !== wid
+      ) {
         clearCartCompletely();
       }
 
       currentWholesalerId = wid;
 
-      const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
+      const res = await fetch(
+        `${API}/api/products/wholesaler/${wid}`
+      );
+
       const data = await res.json();
 
       if (data.success && data.products) {
         allProducts = data.products;
       }
+
+      // ✅ Save manual wholesaler products also
+      sessionStorage.setItem(
+        "nearbyProducts",
+        JSON.stringify(allProducts)
+      );
     }
 
-    // ❌ no products check
-    const categoriesContainer = document.getElementById("categories");
+    const categoriesContainer =
+      document.getElementById("categories");
 
     if (!allProducts.length) {
-      categoriesContainer.innerHTML = "<p>No Products Found</p>";
+      categoriesContainer.innerHTML =
+        "<p>No Products Found</p>";
       return;
     }
 
-    // ✅ build categories
+    // ✅ Build Categories
     const categoryMap = {};
 
     allProducts.forEach(p => {
       const cat = (p.category || "Other").trim();
-      categoryMap[cat] = true;
+
+      if (!categoryMap[cat]) {
+        categoryMap[cat] = true;
+      }
     });
 
-    // ✅ render categories WITH wid fix
+    // ✅ Render Categories
     categoriesContainer.innerHTML = Object.keys(categoryMap)
       .map(cat => `
         <div class="category-card"
-             onclick="openCategory('${cat}', '${wid || ""}')">
+             onclick="openCategory('${encodeURIComponent(cat)}')">
 
           <div class="category-icon">
             <i class="bi bi-box-seam"></i>
@@ -861,8 +888,10 @@ async function loadProducts() {
     );
 
   } catch (err) {
+
     console.error("Load Products Error:", err);
     alert("Failed to load products");
+
   }
 }
 
