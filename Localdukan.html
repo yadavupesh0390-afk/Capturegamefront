@@ -748,8 +748,6 @@ async function ensureRetailerLocation() {
   return null;
   }
 // ------------------- PRODUCTS -------------------
-
-// ------------------- PRODUCTS -------------------
 async function loadProducts() {
 
   let wid = document.getElementById("wid").value.trim();
@@ -894,9 +892,6 @@ async function loadProducts() {
 
   }
 }
-  
-
-
 
 window.addEventListener("load", async () => {
 
@@ -947,9 +942,18 @@ window.addEventListener("load", async () => {
   }
 });
 /* ================= OPEN CATEGORY ================= */
-function openCategory(category, wid) {
-  window.location.href =
-    `categoryProducts.html?wid=${wid}&category=${encodeURIComponent(category)}`;
+function openCategory(category){
+
+  const wid = document.getElementById("wid").value.trim();
+
+  if(wid){
+    window.location.href =
+      `categoryProducts.html?wid=${wid}&category=${encodeURIComponent(category)}`;
+  }else{
+    window.location.href =
+      `categoryProducts.html?category=${encodeURIComponent(category)}`;
+  }
+
 }
 
 function normalizeSetAt(setAt) {
