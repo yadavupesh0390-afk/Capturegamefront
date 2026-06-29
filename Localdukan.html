@@ -810,89 +810,59 @@ async function loadProducts() {
       // ✅ Save all nearby products
       sessionStorage.setItem(
         "nearbyProducts",
-        JSON.stringify(allProducts)
-      );
+async function loadProducts() {
 
-    }
+  try {
 
-    // ✅ CASE 2: Manual Wholesaler ID
-    else {
+    let products = [];
 
-      if (
-        currentWholesalerId &&
-        currentWholesalerId !== wid
-      ) {
-        clearCartCompletely();
-      }
+    // ✅ Manual Wholesaler ID
+    if (wid) {
 
-      currentWholesalerId = wid;
-
-      const res = await fetch(
-        `${API}/api/products/wholesaler/${wid}`
-      );
-
+      const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
       const data = await res.json();
 
       if (data.success && data.products) {
-        allProducts = data.products;
+        products = data.products;
       }
 
-      // ✅ Save manual wholesaler products also
-      sessionStorage.setItem(
-        "nearbyProducts",
-        JSON.stringify(allProducts)
+    }
+
+    // ✅ Nearby Mode
+    else {
+
+      products = JSON.parse(
+        sessionStorage.getItem("nearbyProducts") || "[]"
       );
+
     }
 
-    const categoriesContainer =
-      document.getElementById("categories");
+    // ✅ Category Filter
+    allProducts = products.filter(p => {
 
-    if (!allProducts.length) {
-      categoriesContainer.innerHTML =
-        "<p>No Products Found</p>";
-      return;
-    }
+      const dbCat = (p.category || "")
+        .toLowerCase()
+        .trim();
 
-    // ✅ Build Categories
-    const categoryMap = {};
+      const urlCat = decodeURIComponent(category || "")
+        .toLowerCase()
+        .trim();
 
-    allProducts.forEach(p => {
-      const cat = (p.category || "Other").trim();
+      return dbCat === urlCat;
 
-      if (!categoryMap[cat]) {
-        categoryMap[cat] = true;
-      }
     });
 
-    // ✅ Render Categories
-    categoriesContainer.innerHTML = Object.keys(categoryMap)
-      .map(cat => `
-        <div class="category-card"
-             onclick="openCategory('${encodeURIComponent(cat)}')">
+    renderProducts(allProducts);
 
-          <div class="category-icon">
-            <i class="bi bi-box-seam"></i>
-          </div>
+  } catch (e) {
 
-          <div class="category-name">
-            ${cat}
-          </div>
+    console.error("Products load error", e);
 
-        </div>
-      `)
-      .join("");
-
-    sessionStorage.setItem(
-      "lastCategoriesHTML",
-      categoriesContainer.innerHTML
-    );
-
-  } catch (err) {
-
-    console.error("Load Products Error:", err);
-    alert("Failed to load products");
+    document.getElementById("products").innerHTML =
+      "<p style='text-align:center'>No products found</p>";
 
   }
+
 }
 
 window.addEventListener("load", async () => {
