@@ -942,9 +942,18 @@ window.addEventListener("load", async () => {
   }
 });
 /* ================= OPEN CATEGORY ================= */
-function openCategory(categoryId, wid) {
-  window.location.href =
-    `categoryProducts.html?wid=${wid}&category=${categoryId}`;
+function openCategory(category){
+
+  const wid = document.getElementById("wid").value.trim();
+
+  if(wid){
+    window.location.href =
+      `categoryProducts.html?wid=${wid}&category=${encodeURIComponent(category)}`;
+  }else{
+    window.location.href =
+      `categoryProducts.html?category=${encodeURIComponent(category)}`;
+  }
+
 }
 
 function normalizeSetAt(setAt) {
