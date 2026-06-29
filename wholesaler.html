@@ -336,8 +336,8 @@ alert("Login again"); location.href="index.html";
 widText.innerText=WID.substring(0,8).toUpperCase();
 
 /* SOCKET.IO */
-//const socket = io(API);
-//socket.emit("joinWholesaler", WID);
+const socket = io(API);
+socket.emit("joinWholesaler", WID);
 // 🔥 Real-time update when delivery boy accepts
 socket.on("orderAssigned", ({ orderId, deliveryBoyId }) => {
   console.log("Order assigned:", orderId, deliveryBoyId);
