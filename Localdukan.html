@@ -749,62 +749,154 @@ async function ensureRetailerLocation() {
   }
 // ------------------- PRODUCTS -------------------
 
-
-
+// ------------------- PRODUCTS -------------------
 async function loadProducts() {
+
+  let wid = document.getElementById("wid").value.trim();
 
   try {
 
-    let products = [];
+    let allProducts = [];
 
-    // ✅ Manual Wholesaler ID
-    if (wid) {
+    // ✅ CASE 1: No manual wid → nearest wholesalers
+    if (!wid) {
 
-      const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
-      const data = await res.json();
+      const retailerLoc = await ensureRetailerLocation();
 
-      if (data.success && data.products) {
-        products = data.products;
+      if (!retailerLoc) {
+        alert("📍 Please set your location first.");
+        return;
       }
 
-    }
+      const nearRes = await fetch(`${API}/api/wholesalers/nearest`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          location: {
+            lat: retailerLoc.lat,
+            lng: retailerLoc.lng
+          }
+        })
+      });
 
-    // ✅ Nearby Mode
-    else {
+      const nearData = await nearRes.json();
 
-      products = JSON.parse(
-        sessionStorage.getItem("nearbyProducts") || "[]"
+      if (
+        !nearData.success ||
+        !nearData.wholesalers ||
+        nearData.wholesalers.length === 0
+      ) {
+        document.getElementById("categories").innerHTML =
+          "<p>No wholesaler found</p>";
+        return;
+      }
+
+      // ✅ Merge products of all nearby wholesalers
+      for (const w of nearData.wholesalers) {
+
+        const res = await fetch(
+          `${API}/api/products/wholesaler/${w._id}`
+        );
+
+        const data = await res.json();
+
+        if (data.success && data.products) {
+          allProducts.push(...data.products);
+        }
+      }
+
+      // ✅ Save all nearby products
+      sessionStorage.setItem(
+        "nearbyProducts",
+        JSON.stringify(allProducts)
       );
 
     }
 
-    // ✅ Category Filter
-    allProducts = products.filter(p => {
+    // ✅ CASE 2: Manual Wholesaler ID
+    else {
 
-      const dbCat = (p.category || "")
-        .toLowerCase()
-        .trim();
+      if (
+        currentWholesalerId &&
+        currentWholesalerId !== wid
+      ) {
+        clearCartCompletely();
+      }
 
-      const urlCat = decodeURIComponent(category || "")
-        .toLowerCase()
-        .trim();
+      currentWholesalerId = wid;
 
-      return dbCat === urlCat;
+      const res = await fetch(
+        `${API}/api/products/wholesaler/${wid}`
+      );
 
+      const data = await res.json();
+
+      if (data.success && data.products) {
+        allProducts = data.products;
+      }
+
+      // ✅ Save manual wholesaler products also
+      sessionStorage.setItem(
+        "nearbyProducts",
+        JSON.stringify(allProducts)
+      );
+    }
+
+    const categoriesContainer =
+      document.getElementById("categories");
+
+    if (!allProducts.length) {
+      categoriesContainer.innerHTML =
+        "<p>No Products Found</p>";
+      return;
+    }
+
+    // ✅ Build Categories
+    const categoryMap = {};
+
+    allProducts.forEach(p => {
+      const cat = (p.category || "Other").trim();
+
+      if (!categoryMap[cat]) {
+        categoryMap[cat] = true;
+      }
     });
 
-    renderProducts(allProducts);
+    // ✅ Render Categories
+    categoriesContainer.innerHTML = Object.keys(categoryMap)
+      .map(cat => `
+        <div class="category-card"
+             onclick="openCategory('${encodeURIComponent(cat)}')">
 
-  } catch (e) {
+          <div class="category-icon">
+            <i class="bi bi-box-seam"></i>
+          </div>
 
-    console.error("Products load error", e);
+          <div class="category-name">
+            ${cat}
+          </div>
 
-    document.getElementById("products").innerHTML =
-      "<p style='text-align:center'>No products found</p>";
+        </div>
+      `)
+      .join("");
+
+    sessionStorage.setItem(
+      "lastCategoriesHTML",
+      categoriesContainer.innerHTML
+    );
+
+  } catch (err) {
+
+    console.error("Load Products Error:", err);
+    alert("Failed to load products");
 
   }
-
 }
+  
+
+
 
 window.addEventListener("load", async () => {
 
