@@ -749,66 +749,159 @@ async function ensureRetailerLocation() {
   }
 // ------------------- PRODUCTS -------------------
 async function loadProducts() {
-  const widInput = document.getElementById("wid");
-  const wid = widInput.value.trim();
 
-  if (!wid) {
-    alert("Enter Wholesaler ID");
-    return;
-  }
-
-  // Save last wholesaler
-  sessionStorage.setItem("lastWid", wid);
-
-  // Clear cart if wholesaler changed
-  if (currentWholesalerId && currentWholesalerId !== wid) {
-    clearCartCompletely();
-  }
-
-  currentWholesalerId = wid;
+  let wid = document.getElementById("wid").value.trim();
 
   try {
-    const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
-    const data = await res.json();
 
-    const categoriesContainer = document.getElementById("categories");
+    let allProducts = [];
 
-    if (!data.products || !data.products.length) {
-      categoriesContainer.innerHTML = "<p>No categories found</p>";
+    // ✅ CASE 1: No manual wid → nearest wholesalers
+    if (!wid) {
+
+      const retailerLoc = await ensureRetailerLocation();
+
+      if (!retailerLoc) {
+        alert("📍 Please set your location first.");
+        return;
+      }
+
+      const nearRes = await fetch(`${API}/api/wholesalers/nearest`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          location: {
+            lat: retailerLoc.lat,
+            lng: retailerLoc.lng
+          }
+        })
+      });
+
+      const nearData = await nearRes.json();
+
+      if (
+        !nearData.success ||
+        !nearData.wholesalers ||
+        nearData.wholesalers.length === 0
+      ) {
+        document.getElementById("categories").innerHTML =
+          "<p>No wholesaler found</p>";
+        return;
+      }
+
+      // ✅ Merge products of all nearby wholesalers
+      for (const w of nearData.wholesalers) {
+
+        const res = await fetch(
+          `${API}/api/products/wholesaler/${w._id}`
+        );
+
+        const data = await res.json();
+
+        if (data.success && data.products) {
+          allProducts.push(...data.products);
+        }
+      }
+
+      // ✅ Save all nearby products
+      sessionStorage.setItem(
+        "nearbyProducts",
+        JSON.stringify(allProducts)
+      );
+
+    }
+
+    // ✅ CASE 2: Manual Wholesaler ID
+    else {
+
+      if (
+        currentWholesalerId &&
+        currentWholesalerId !== wid
+      ) {
+        clearCartCompletely();
+      }
+
+      currentWholesalerId = wid;
+
+      const res = await fetch(
+        `${API}/api/products/wholesaler/${wid}`
+      );
+
+      const data = await res.json();
+
+      if (data.success && data.products) {
+        allProducts = data.products;
+      }
+
+      // ✅ Save manual wholesaler products also
+      sessionStorage.setItem(
+        "nearbyProducts",
+        JSON.stringify(allProducts)
+      );
+    }
+
+    const categoriesContainer =
+      document.getElementById("categories");
+
+    if (!allProducts.length) {
+      categoriesContainer.innerHTML =
+        "<p>No Products Found</p>";
       return;
     }
 
-    // 🔥 Unique categories निकालो
+    // ✅ Build Categories
     const categoryMap = {};
-    data.products.forEach(p => {
-      const cat = p.category || "Other";
-      categoryMap[cat] = true;
+
+    allProducts.forEach(p => {
+      const cat = (p.category || "Other").trim();
+
+      if (!categoryMap[cat]) {
+        categoryMap[cat] = true;
+      }
     });
 
-    // Render categories
+    // ✅ Render Categories
     categoriesContainer.innerHTML = Object.keys(categoryMap)
       .map(cat => `
         <div class="category-card"
-             onclick="openCategory('${encodeURIComponent(cat)}','${wid}')">
+             onclick="openCategory('${encodeURIComponent(cat)}')">
+
           <div class="category-icon">
             <i class="bi bi-box-seam"></i>
           </div>
-          <div class="category-name">${cat}</div>
+
+          <div class="category-name">
+            ${cat}
+          </div>
+
         </div>
       `)
       .join("");
 
-    // Save categories for back navigation
     sessionStorage.setItem(
       "lastCategoriesHTML",
       categoriesContainer.innerHTML
     );
 
-  } catch (e) {
-    console.error(e);
-    alert("Failed to load categories");
+  } catch (err) {
+
+    console.error("Load Products Error:", err);
+    alert("Failed to load products");
+
   }
 }
+
+window.addEventListener("load", async () => {
+
+  await ensureRetailerLocation();
+
+  if (!document.getElementById("wid").value.trim()) {
+    loadProducts();
+  }
+
+});
 window.addEventListener("load", async () => {
 
   const retailerId = localStorage.getItem("userId");
