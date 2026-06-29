@@ -182,29 +182,62 @@ const category = params.get("category");
 document.getElementById("catTitle").innerText = category || "Category Products";
 
 // ---------------- PRODUCTS ----------------
-async function loadProducts(){
-  try{
-    const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
-    const data = await res.json();
+async function loadProducts() {
 
-    const products = data.products || [];
+  try {
 
-    // ✅ FIXED CATEGORY FILTER (case + space + mismatch safe)
+    let products = [];
+
+    // ✅ Manual Wholesaler ID
+    if (wid) {
+
+      const res = await fetch(`${API}/api/products/wholesaler/${wid}`);
+      const data = await res.json();
+
+      if (data.success && data.products) {
+        products = data.products;
+      }
+
+    }
+
+    // ✅ Nearby Mode
+    else {
+
+      products = JSON.parse(
+        sessionStorage.getItem("nearbyProducts") || "[]"
+      );
+
+    }
+
+    // ✅ Category Filter
     allProducts = products.filter(p => {
-      const dbCat = (p.category || "").toLowerCase().trim();
-      const urlCat = (category || "").toLowerCase().trim();
 
-      return dbCat.includes(urlCat);
+      const dbCat = (p.category || "")
+        .toLowerCase()
+        .trim();
+
+      const urlCat = decodeURIComponent(category || "")
+        .toLowerCase()
+        .trim();
+
+      return dbCat === urlCat;
+
     });
 
     renderProducts(allProducts);
 
-  }catch(e){
-    console.warn("Products load error", e);
+  } catch (e) {
+
+    console.error("Products load error", e);
+
     document.getElementById("products").innerHTML =
       "<p style='text-align:center'>No products found</p>";
+
   }
+
 }
+
+    
 function renderProducts(list){
   const container = document.getElementById("products");
 
