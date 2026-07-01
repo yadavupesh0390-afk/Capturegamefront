@@ -849,17 +849,23 @@ function loadCategoriesSelect() {
 
   const select = document.getElementById("pcategorySelect");
 
-  select.innerHTML = '<option value="">Select Category</option>';
+  select.innerHTML = "";
 
-  ALL_CATEGORIES.forEach(cat => {
+  const categories = [
+    "Shoes",
+    "Slippers",
+    "Sandals",
+    "T-Shirts",
+    "Shirts",
+    "Jeans",
+    "Mobile",
+    "Electronics",
+    "Grocery",
+    "Other"
+  ];
 
-    const option = document.createElement("option");
-
-    option.value = cat;
-    option.textContent = cat;
-
-    select.appendChild(option);
-
+  categories.forEach(cat => {
+    select.innerHTML += `<option value="${cat}">${cat}</option>`;
   });
 
 }
