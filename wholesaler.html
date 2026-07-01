@@ -232,24 +232,29 @@ button.success{background:#16a34a;color:#fff;border:none;padding:8px 12px;border
     <button class="primary" onclick="saveWholesalerProfileToServer()">Save</button>
     <button onclick="closeAll()">Cancel</button>
   </div>
-</div> <!-- PRODUCT -->  <!-- PRODUCT MODAL -->
+</div> <!-- PRODUCT MODAL -->
 <div class="modal" id="productModal">
   <div class="modal-content">
+
     <h3>Add Product</h3>
+
     <input id="pname" placeholder="Product Name">
 
-    <!-- Category selection -->
+    <!-- Fixed Category Dropdown -->
     <select id="pcategorySelect">
-      <option value="">Select Existing Category</option>
+      <option value="">Select Category</option>
     </select>
-    <input id="pcategoryNew" placeholder="Or Enter New Category">
 
     <input id="pprice" type="number" placeholder="Price">
-    <textarea id="pdetail" placeholder="Detail"></textarea>
+
+    <textarea id="pdetail" placeholder="Product Detail"></textarea>
+
     <input id="pimg" type="file" accept="image/*" multiple>
 
-    <button class="primary" onclick="addProduct()">Save</button>
+    <button class="primary" onclick="addProduct()">Save Product</button>
+
     <button onclick="closeAll()">Cancel</button>
+
   </div>
 </div>  <!-- ORDERS -->  <div class="modal" id="orderModal">    
  <div class="modal-content">    
