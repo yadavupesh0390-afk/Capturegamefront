@@ -812,86 +812,151 @@ async function updateProduct() {
   
  
 // 🔹 Load categories into select box
-async function loadCategoriesSelect(){
-  const r = await fetch(API + "/api/products/wholesaler/" + WID);
-  const d = await r.json();
+// ==========================
+// Fixed Categories
+// ==========================
+const ALL_CATEGORIES = [
+  "Shoes",
+  "Slippers",
+  "Sandals",
+  "T-Shirts",
+  "Shirts",
+  "Jeans",
+  "Trousers",
+  "Ladies Wear",
+  "Kids Wear",
+  "Electronics",
+  "Mobile",
+  "Grocery",
+  "Cosmetics",
+  "Bags",
+  "Watches",
+  "Sports",
+  "Stationery",
+  "Home Appliances",
+  "Other"
+];
 
-  const map = {};
-  d.products.forEach(p => {
-    const cat = p.category || "Other";
-    map[cat] = true;  // unique
-  });
+// ==========================
+// Load Categories in Select
+// ==========================
+function loadCategoriesSelect() {
 
   const select = document.getElementById("pcategorySelect");
-  select.innerHTML = '<option value="">Select Existing Category</option>';
-  Object.keys(map).forEach(cat=>{
+
+  select.innerHTML = '<option value="">Select Category</option>';
+
+  ALL_CATEGORIES.forEach(cat => {
+
     const option = document.createElement("option");
+
     option.value = cat;
-    option.text = cat;
+    option.textContent = cat;
+
     select.appendChild(option);
+
   });
+
 }
 
-// 🔹 Add product with either selected or new category
+// ==========================
+// Add Product
+// ==========================
 async function addProduct(){
-  const prof = JSON.parse(localStorage.getItem("wholesalerProfile_" + WID) || "{}");
 
-  // Category: prioritize new input, else select
-  const newCat = document.getElementById("pcategoryNew").value.trim();
-  const selectCat = document.getElementById("pcategorySelect").value;
-  const category = newCat || selectCat;
+  const prof = JSON.parse(
+    localStorage.getItem("wholesalerProfile_" + WID) || "{}"
+  );
+
+  // Selected Category
+  const category = document.getElementById("pcategorySelect").value;
 
   if(!category){
-    alert("Category required");
+    alert("Please Select Category");
     return;
   }
 
   const files = [...pimg.files];
-  if(!files.length) return alert("Images required");
 
-  const images = [];
-  for(const file of files){
-    const base64 = await new Promise(res=>{
-      const r = new FileReader();
-      r.onload = ()=>res(r.result);
-      r.readAsDataURL(file);
-    });
-    images.push(base64);
+  if(!files.length){
+    alert("Images required");
+    return;
   }
 
-  const res = await fetch(API+"/api/products",{
+  const images = [];
+
+  for(const file of files){
+
+    const base64 = await new Promise(resolve=>{
+
+      const reader = new FileReader();
+
+      reader.onload = ()=>resolve(reader.result);
+
+      reader.readAsDataURL(file);
+
+    });
+
+    images.push(base64);
+
+  }
+
+  const res = await fetch(API + "/api/products",{
+
     method:"POST",
+
     headers:{
       "Content-Type":"application/json",
-      "Authorization":"Bearer "+TOKEN
+      "Authorization":"Bearer " + TOKEN
     },
-    body: JSON.stringify({
-  wholesalerId: WID,
-  productName: pname.value,
-  price: pprice.value,
-  detail: pdetail.value,
-  images,
-  category,
 
-  shopName: prof.shopName,
-  mobile: prof.mobile,
-  address: prof.address,
+    body:JSON.stringify({
 
-  // ✅ ADD THIS
-  wholesalerLocation: prof.location || null
-})
+      wholesalerId: WID,
+
+      productName: pname.value,
+
+      price: pprice.value,
+
+      detail: pdetail.value,
+
+      images: images,
+
+      category: category,
+
+      shopName: prof.shopName,
+
+      mobile: prof.mobile,
+
+      address: prof.address,
+
+      wholesalerLocation: prof.location || null
+
+    })
+
   });
 
   const d = await res.json();
-  if(d.success){
-    alert("✅ Product added");
-    closeAll();
-    loadProducts();
-   loadCategories();   
-    loadCategoriesSelect();  // 🔁 refresh select box with new category
-  }
-}
 
+  if(d.success){
+
+    alert("✅ Product Added Successfully");
+
+    closeAll();
+
+    loadProducts();
+
+    loadCategories();
+
+    loadCategoriesSelect();
+
+  }else{
+
+    alert(d.message || "Failed to add product");
+
+  }
+
+}
 // Call initially
 
 
