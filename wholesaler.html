@@ -847,25 +847,17 @@ const ALL_CATEGORIES = [
 // ==========================
 function loadCategoriesSelect() {
 
+  console.log(ALL_CATEGORIES); // Check
+
   const select = document.getElementById("pcategorySelect");
 
-  select.innerHTML = "";
+  select.innerHTML = '<option value="">Select Category</option>';
 
-  const categories = [
-    "Shoes",
-    "Slippers",
-    "Sandals",
-    "T-Shirts",
-    "Shirts",
-    "Jeans",
-    "Mobile",
-    "Electronics",
-    "Grocery",
-    "Other"
-  ];
-
-  categories.forEach(cat => {
-    select.innerHTML += `<option value="${cat}">${cat}</option>`;
+  ALL_CATEGORIES.forEach(cat => {
+    const option = document.createElement("option");
+    option.value = cat;
+    option.textContent = cat;
+    select.appendChild(option);
   });
 
 }
