@@ -348,7 +348,13 @@ socket.on("orderAssigned", ({ orderId, deliveryBoyId }) => {
   console.log("Order assigned:", orderId, deliveryBoyId);
   loadOrders(); // wholesaler order auto refresh
 });
-function openProduct(){productModal.style.display="flex";}
+function openProduct() {
+
+    loadCategoriesSelect();   // 👈 Dropdown ko pehle bharo
+
+    document.getElementById("productModal").style.display = "flex";
+
+}
 function openOrders(){orderModal.style.display="flex";loadOrders();}
 function formatDateTime(ts) {
   const d = new Date(ts);
